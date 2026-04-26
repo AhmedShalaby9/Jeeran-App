@@ -1,10 +1,11 @@
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
+import '../../domain/entities/property_filter_params.dart';
 import '../models/property_model.dart';
 
 abstract class PropertyRemoteDataSource {
-  Future<List<PropertyModel>> getProperties({int page = 1, int limit = 20});
+  Future<List<PropertyModel>> getProperties(PropertyFilterParams params);
 }
 
 class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
@@ -13,14 +14,11 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
   PropertyRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<List<PropertyModel>> getProperties({
-    int page = 1,
-    int limit = 20,
-  }) async {
+  Future<List<PropertyModel>> getProperties(PropertyFilterParams params) async {
     try {
       final response = await apiClient.get(
         ApiEndpoints.properties,
-        queryParams: {'page': page, 'limit': limit},
+        queryParams: params.toJson(),
       );
       if (response.statusCode == 200) {
         final body = response.data as Map<String, dynamic>;

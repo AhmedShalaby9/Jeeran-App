@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
 
 class HomeSearchBarWidget extends StatelessWidget {
-  const HomeSearchBarWidget({super.key});
+  final VoidCallback? onTap;
+  const HomeSearchBarWidget({super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {},
+      onTap: onTap,
       child: Container(
         height: 40,
         padding: const EdgeInsets.symmetric(horizontal: 14),

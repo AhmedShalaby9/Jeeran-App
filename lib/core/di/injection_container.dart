@@ -25,6 +25,7 @@ import '../../features/properties/data/datasources/property_remote_data_source.d
 import '../../features/properties/data/repositories/property_repository_impl.dart';
 import '../../features/properties/domain/repositories/property_repository.dart';
 import '../../features/properties/domain/usecases/get_properties.dart';
+import '../../features/properties/presentation/bloc/properties_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -33,6 +34,7 @@ Future<void> init() async {
   sl.registerFactory(() => HomeBloc(getPosts: sl()));
   sl.registerFactory(() => BannersBloc(getBanners: sl()));
   sl.registerFactory(() => ProjectsBloc(getProjects: sl()));
+  sl.registerFactory(() => PropertiesBloc(getProperties: sl()));
 
   // ── Use cases ─────────────────────────────────────────
   sl.registerLazySingleton(() => GetPosts(sl()));

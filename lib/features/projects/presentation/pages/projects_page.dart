@@ -28,7 +28,7 @@ class _ProjectsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Projects')),
+      appBar: const AppBar(title: Text('Projects')),
       backgroundColor: AppColors.background,
       body: BlocBuilder<ProjectsBloc, ProjectsState>(
         builder: (context, state) {
@@ -36,10 +36,12 @@ class _ProjectsView extends StatelessWidget {
           if (state is ProjectsError) {
             return ProjectsErrorView(
               message: state.message,
-              onRetry: () => context.read<ProjectsBloc>().add(const FetchProjectsEvent()),
+              onRetry: () =>
+                  context.read<ProjectsBloc>().add(const FetchProjectsEvent()),
             );
           }
-          if (state is ProjectsLoaded) return _ProjectsGrid(projects: state.projects);
+          if (state is ProjectsLoaded)
+            return _ProjectsGrid(projects: state.projects);
           return const SizedBox.shrink();
         },
       ),
@@ -59,7 +61,7 @@ class _ProjectsGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio:1.0,
+        childAspectRatio: 1.0,
       ),
       itemCount: projects.length,
       itemBuilder: (_, i) => ProjectCard(project: projects[i]),

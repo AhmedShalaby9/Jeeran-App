@@ -15,14 +15,8 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-
-  static const List<Widget> _pages = [
-    HomePage(),
-    SearchPage(),
-    ProjectsPage(),
-    FavoritesPage(),
-    MorePage(),
-  ];
+  late final List<Widget> _pages;
+  final _searchResetNotifier = ValueNotifier<bool>(false);
 
   static const List<_NavItem> _navItems = [
     _NavItem(
@@ -52,9 +46,33 @@ class _MainPageState extends State<MainPage> {
     ),
   ];
 
+  void _goToProjects() {
+    if (_selectedIndex == 2) return;
+    setState(() => _selectedIndex = 2);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      HomePage(onSearchTap: _goToProjects),
+      SearchPage(resetNotifier: _searchResetNotifier),
+      const ProjectsPage(),
+      const FavoritesPage(),
+      const MorePage(),
+    ];
+  }
+
+  @override
+  void dispose() {
+    _searchResetNotifier.dispose();
+    super.dispose();
+  }
+
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return;
     setState(() => _selectedIndex = index);
+    _searchResetNotifier.value = !_searchResetNotifier.value;
   }
 
   @override

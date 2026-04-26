@@ -23,12 +23,9 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
         statusBarBrightness: Brightness.light,
       ),
       surfaceTintColor: Colors.transparent,
-      backgroundColor: Colors.white,
       pinned: false,
       floating: false,
       automaticallyImplyLeading: false,
-      elevation: 2,
-      shadowColor: Colors.black.withValues(alpha: 0.08),
       centerTitle: true,
       title: Row(
         mainAxisSize: MainAxisSize.min,

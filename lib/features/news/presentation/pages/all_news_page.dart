@@ -27,7 +27,7 @@ class _AllNewsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('News')),
+      appBar: const AppBar(title: Text('News')),
       backgroundColor: AppColors.background,
       body: BlocBuilder<NewsBloc, NewsState>(
         builder: (context, state) {
