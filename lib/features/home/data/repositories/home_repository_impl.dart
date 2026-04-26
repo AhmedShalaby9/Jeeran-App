@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
+import '../../domain/entities/city.dart';
 import '../../domain/entities/post.dart';
 import '../../domain/repositories/home_repository.dart';
 import '../datasources/home_local_data_source.dart';
@@ -35,6 +36,20 @@ class HomeRepositoryImpl implements HomeRepository {
       } on CacheException {
         return Left(CacheFailure());
       }
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<City>>> getCities() async {
+    if (await networkInfo.isConnected) {
+      try {
+        final cities = await remoteDataSource.getCities();
+        return Right(cities);
+      } on ServerException {
+        return Left(ServerFailure());
+      }
+    } else {
+      return Left(NetworkFailure());
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../widgets/explore_cities_widget.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -55,6 +56,8 @@ class HomePage extends StatelessWidget {
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _SearchBar(),
+                const SizedBox(height: 24),
+                const ExploreCitiesWidget(),
                 const SizedBox(height: 24),
                 _SectionTitle(title: 'Featured Properties'),
                 const SizedBox(height: 12),

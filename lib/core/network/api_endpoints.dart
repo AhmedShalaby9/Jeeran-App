@@ -9,6 +9,9 @@ class ApiEndpoints {
   static const String profile = '/user/profile';
   static const String updateProfile = '/user/profile';
 
+  // Cities
+  static const String cities = '/cities';
+
   // Projects
   static const String projects = '/projects';
 

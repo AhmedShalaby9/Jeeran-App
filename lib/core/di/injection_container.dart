@@ -7,7 +7,9 @@ import '../../features/home/data/datasources/home_local_data_source.dart';
 import '../../features/home/data/datasources/home_remote_data_source.dart';
 import '../../features/home/data/repositories/home_repository_impl.dart';
 import '../../features/home/domain/repositories/home_repository.dart';
+import '../../features/home/domain/usecases/get_cities.dart';
 import '../../features/home/domain/usecases/get_posts.dart';
+import '../../features/home/presentation/bloc/cities_bloc.dart';
 import '../../features/home/presentation/bloc/home_bloc.dart';
 import '../../features/projects/data/datasources/project_remote_data_source.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
@@ -20,10 +22,12 @@ final sl = GetIt.instance;
 Future<void> init() async {
   // ── BLoC ──────────────────────────────────────────────
   sl.registerFactory(() => HomeBloc(getPosts: sl()));
+  sl.registerFactory(() => CitiesBloc(getCities: sl()));
   sl.registerFactory(() => ProjectsBloc(getProjects: sl()));
 
   // ── Use cases ─────────────────────────────────────────
   sl.registerLazySingleton(() => GetPosts(sl()));
+  sl.registerLazySingleton(() => GetCities(sl()));
   sl.registerLazySingleton(() => GetProjects(sl()));
 
   // ── Repositories ──────────────────────────────────────
