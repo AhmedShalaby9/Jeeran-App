@@ -21,6 +21,10 @@ import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/project_repository.dart';
 import '../../features/projects/domain/usecases/get_projects.dart';
 import '../../features/projects/presentation/bloc/projects_bloc.dart';
+import '../../features/properties/data/datasources/property_remote_data_source.dart';
+import '../../features/properties/data/repositories/property_repository_impl.dart';
+import '../../features/properties/domain/repositories/property_repository.dart';
+import '../../features/properties/domain/usecases/get_properties.dart';
 
 final sl = GetIt.instance;
 
@@ -34,6 +38,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetPosts(sl()));
   sl.registerLazySingleton(() => GetBanners(sl()));
   sl.registerLazySingleton(() => GetProjects(sl()));
+  sl.registerLazySingleton(() => GetProperties(sl()));
 
   // ── Repositories ──────────────────────────────────────
   sl.registerLazySingleton<HomeRepository>(
@@ -46,10 +51,16 @@ Future<void> init() async {
   sl.registerLazySingleton<ProjectRepository>(
     () => ProjectRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
+  sl.registerLazySingleton<PropertyRepository>(
+    () => PropertyRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
 
   // ── Data sources ──────────────────────────────────────
   sl.registerLazySingleton<ProjectRemoteDataSource>(
     () => ProjectRemoteDataSourceImpl(apiClient: sl()),
+  );
+  sl.registerLazySingleton<PropertyRemoteDataSource>(
+    () => PropertyRemoteDataSourceImpl(apiClient: sl()),
   );
   sl.registerLazySingleton<HomeRemoteDataSource>(
     () => HomeRemoteDataSourceImpl(apiClient: sl()),
