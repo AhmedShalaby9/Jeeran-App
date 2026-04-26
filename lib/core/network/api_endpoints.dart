@@ -9,8 +9,8 @@ class ApiEndpoints {
   static const String profile = '/user/profile';
   static const String updateProfile = '/user/profile';
 
-  // Cities
-  static const String cities = '/cities';
+  // Banners
+  static const String banners = '/banners';
 
   // Projects
   static const String projects = '/projects';
@@ -20,4 +20,7 @@ class ApiEndpoints {
   static String propertyById(int id) => '/properties/$id';
   static const String featuredProperties = '/properties/featured';
   static const String searchProperties = '/properties/search';
+
+  // News
+  static const String news = '/news';
 }

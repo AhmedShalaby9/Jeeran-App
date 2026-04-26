@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
-import '../widgets/explore_cities_widget.dart';
+import '../../../news/presentation/widgets/news_carousel_widget.dart';
+import '../../../projects/presentation/widgets/explore_projects_widget.dart';
+import '../widgets/banners_carousel_widget.dart';
+import '../widgets/home_greeting_widget.dart';
+import '../widgets/home_search_bar_widget.dart';
+import '../widgets/home_sliver_app_bar.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -11,53 +16,20 @@ class HomePage extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            expandedHeight: 200,
-            floating: false,
-            pinned: true,
-            backgroundColor: AppColors.primary,
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Jeeran',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      AppColors.primary,
-                      AppColors.secondary,
-                    ],
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.home_rounded,
-                    size: 64,
-                    color: Colors.white30,
-                  ),
-                ),
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                onPressed: () {},
-              ),
-            ],
-          ),
+          const HomeSliverAppBar(),
           SliverPadding(
             padding: const EdgeInsets.all(16),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _SearchBar(),
-                const SizedBox(height: 24),
-                const ExploreCitiesWidget(),
+                const HomeGreetingWidget(),
+                const SizedBox(height: 12),
+                const HomeSearchBarWidget(),
+                const SizedBox(height: 16),
+                const BannersCarouselWidget(),
+                const SizedBox(height: 8),
+                const ExploreProjectsWidget(),
+                const SizedBox(height: 8),
+                const NewsCarouselWidget(),
                 const SizedBox(height: 24),
                 _SectionTitle(title: 'Featured Properties'),
                 const SizedBox(height: 12),
@@ -85,39 +57,6 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _SearchBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.search, color: AppColors.grey),
-            const SizedBox(width: 12),
-            Text(
-              'Search properties...',
-              style: TextStyle(color: AppColors.grey, fontSize: 15),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _SectionTitle extends StatelessWidget {
   final String title;
   const _SectionTitle({required this.title});
@@ -137,10 +76,7 @@ class _SectionTitle extends StatelessWidget {
         ),
         TextButton(
           onPressed: () {},
-          child: Text(
-            'See all',
-            style: TextStyle(color: AppColors.primary),
-          ),
+          child: Text('See all', style: TextStyle(color: AppColors.primary)),
         ),
       ],
     );
@@ -182,10 +118,16 @@ class _FeaturedCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: AppColors.primary.withValues(alpha: 0.15),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(14),
+                ),
               ),
               child: Center(
-                child: Icon(Icons.apartment, size: 40, color: AppColors.primary),
+                child: Icon(
+                  Icons.apartment,
+                  size: 40,
+                  color: AppColors.primary,
+                ),
               ),
             ),
           ),
@@ -241,7 +183,9 @@ class _PropertyCard extends StatelessWidget {
             height: 100,
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(14),
+              ),
             ),
             child: Center(
               child: Icon(

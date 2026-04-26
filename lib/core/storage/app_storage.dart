@@ -6,6 +6,7 @@ class AppStorage {
   static const String _keyAuthToken = 'auth_token';
   static const String _keyRefreshToken = 'refresh_token';
   static const String _keyUserId = 'user_id';
+  static const String _keyUserName = 'user_name';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -28,20 +29,28 @@ class AppStorage {
 
   static int? get userId => _box.get(_keyUserId) as int?;
 
+  static String? get userName => _box.get(_keyUserName) as String?;
+
   static Future<void> saveAuthTokens({
     required String token,
     String? refreshToken,
     int? userId,
+    String? userName,
   }) async {
     await _box.put(_keyAuthToken, token);
     if (refreshToken != null) await _box.put(_keyRefreshToken, refreshToken);
     if (userId != null) await _box.put(_keyUserId, userId);
+    if (userName != null) await _box.put(_keyUserName, userName);
   }
+
+  static Future<void> saveUserName(String name) =>
+      _box.put(_keyUserName, name);
 
   static Future<void> clearAuth() async {
     await _box.delete(_keyAuthToken);
     await _box.delete(_keyRefreshToken);
     await _box.delete(_keyUserId);
+    await _box.delete(_keyUserName);
   }
 
   static bool get isLoggedIn => authToken != null;

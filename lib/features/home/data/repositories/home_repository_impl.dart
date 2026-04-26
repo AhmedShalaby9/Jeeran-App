@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
-import '../../domain/entities/city.dart';
+import '../../domain/entities/app_banner.dart';
 import '../../domain/entities/post.dart';
 import '../../domain/repositories/home_repository.dart';
 import '../datasources/home_local_data_source.dart';
@@ -40,11 +40,11 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<Either<Failure, List<City>>> getCities() async {
+  Future<Either<Failure, List<AppBanner>>> getBanners() async {
     if (await networkInfo.isConnected) {
       try {
-        final cities = await remoteDataSource.getCities();
-        return Right(cities);
+        final banners = await remoteDataSource.getBanners();
+        return Right(banners);
       } on ServerException {
         return Left(ServerFailure());
       }
