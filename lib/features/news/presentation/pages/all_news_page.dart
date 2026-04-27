@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -27,7 +28,7 @@ class _AllNewsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppBar(title: Text('News')),
+      appBar: AppBar(title: Text('news.title'.tr())),
       backgroundColor: AppColors.background,
       body: BlocBuilder<NewsBloc, NewsState>(
         builder: (context, state) {
@@ -44,7 +45,7 @@ class _AllNewsView extends StatelessWidget {
                   ElevatedButton(
                     onPressed: () =>
                         context.read<NewsBloc>().add(const FetchNewsEvent()),
-                    child: const Text('Retry'),
+                    child: Text('actions.retry'.tr()),
                   ),
                 ],
               ),

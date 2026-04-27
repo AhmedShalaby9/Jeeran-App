@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -52,8 +53,8 @@ class _NewsCarouselView extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'News',
+            Text(
+              'news.title'.tr(),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -66,7 +67,7 @@ class _NewsCarouselView extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const AllNewsPage()),
               ),
               child: Text(
-                'Show all',
+                'news.show_all'.tr(),
                 style: TextStyle(color: AppColors.primary),
               ),
             ),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -306,10 +307,10 @@ class _NewsDetailsPageState extends State<NewsDetailsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 10),
           child: Text(
-            'Gallery',
+            'news.gallery'.tr(),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
