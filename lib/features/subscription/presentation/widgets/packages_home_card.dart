@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jeeran_flutter/features/subscription/presentation/pages/plans_page.dart';
 import '../../../../core/utils/app_colors.dart';
 
 enum PackagesCardState { unsubscribed, active, lowQuota }
@@ -54,7 +55,10 @@ class _UnsubCard extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [_kGold.withValues(alpha: 0.22), const Color(0x00B8893D)],
+                  colors: [
+                    _kGold.withValues(alpha: 0.22),
+                    const Color(0x00B8893D),
+                  ],
                 ),
               ),
             ),
@@ -137,7 +141,12 @@ class _UnsubCard extends StatelessWidget {
                   width: double.infinity,
                   height: 46,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => PlansPage()),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: AppColors.primary,
@@ -305,7 +314,10 @@ class _ActiveCard extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [_kGold.withValues(alpha: 0.18), const Color(0x00B8893D)],
+                  colors: [
+                    _kGold.withValues(alpha: 0.18),
+                    const Color(0x00B8893D),
+                  ],
                 ),
               ),
             ),
