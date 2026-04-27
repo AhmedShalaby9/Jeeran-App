@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../home/presentation/pages/home_page.dart';
 import '../../../search/presentation/pages/search_page.dart';
@@ -18,31 +19,31 @@ class _MainPageState extends State<MainPage> {
   late final List<Widget> _pages;
   final _searchResetNotifier = ValueNotifier<bool>(false);
 
-  static const List<_NavItem> _navItems = [
+  static final List<_NavItem> _navItems = [
     _NavItem(
       icon: Icons.home_rounded,
       activeIcon: Icons.home_rounded,
-      label: 'Home',
+      label: 'bottom_nav.home'.tr(),
     ),
     _NavItem(
       icon: Icons.search_outlined,
       activeIcon: Icons.search,
-      label: 'Search',
+      label: 'bottom_nav.search'.tr(),
     ),
     _NavItem(
       icon: Icons.business_outlined,
       activeIcon: Icons.business,
-      label: 'Projects',
+      label: 'bottom_nav.projects'.tr(),
     ),
     _NavItem(
       icon: Icons.favorite_border,
       activeIcon: Icons.favorite,
-      label: 'Favorites',
+      label: 'bottom_nav.favorites'.tr(),
     ),
     _NavItem(
       icon: Icons.more_horiz,
       activeIcon: Icons.more_horiz,
-      label: 'More',
+      label: 'bottom_nav.more'.tr(),
     ),
   ];
 
