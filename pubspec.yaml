@@ -46,6 +46,7 @@ dependencies:
   shimmer: ^3.0.0
   flutter_svg: ^2.0.10+1
   url_launcher: ^6.3.1
+  easy_localization: ^3.0.7
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
 
   assets:
     - assets/icon/
+    - assets/translations/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

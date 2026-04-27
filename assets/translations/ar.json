@@ -1,0 +1,159 @@
+{
+  "app_name": "جيران",
+  "splash_tagline": "جد منزل أحلامك",
+
+  "bottom_nav": {
+    "home": "الرئيسية",
+    "search": "بحث",
+    "projects": "مشاريع",
+    "favorites": "المفضلة",
+    "more": "المزيد"
+  },
+
+  "home": {
+    "hello": "مرحباً",
+    "hello_user": "مرحباً، {userName}",
+    "search_hint": "بحث",
+    "featured_properties": "عقارات مميزة",
+    "see_all": "عرض الكل",
+    "phone_call": "اتصال هاتفي",
+    "whatsapp": "واتساب"
+  },
+
+  "search": {
+    "filters": {
+      "title": "فلاتر البحث",
+      "query_hint": "مدينة، منطقة، أو كلمة مفتاحية…",
+      "status": "الحالة",
+      "property_type": "نوع العقار",
+      "project": "المشروع",
+      "price_range": "نطاق السعر (د.أ)",
+      "min": "الحد الأدنى",
+      "max": "الحد الأقصى",
+      "bedrooms": "غرف النوم",
+      "bedrooms_plus": "{count}+",
+      "featured_only": "المميز فقط",
+      "sort_by": "ترتيب حسب",
+      "order": "الترتيب",
+      "search_button": "بحث",
+      "loading_projects": "جاري تحميل المشاريع…",
+      "select_project": "اختر مشروعاً",
+      "select_project_sheet_title": "اختيار مشروع",
+      "featured_tooltip": "عرض العقارات المميزة فقط"
+    }
+  },
+
+  "status": {
+    "for_sale": "للبيع",
+    "for_rent": "للإيجار",
+    "for_rent_furnished": "للإيجار مفروش"
+  },
+
+  "type": {
+    "villa": "فيلا",
+    "apartment": "شقة",
+    "land": "أرض",
+    "studio": "ستوديو",
+    "chalet": "شاليه",
+    "duplex": "دوبلكس"
+  },
+
+  "sort": {
+    "price": "السعر",
+    "date": "التاريخ",
+    "bedrooms": "غرف النوم"
+  },
+
+  "order": {
+    "ascending": "تصاعدي",
+    "descending": "تنازلي"
+  },
+
+  "properties": {
+    "title": "عقارات",
+    "reset_filters": "إعادة ضبط الفلاتر",
+    "no_results": "لا توجد عقارات",
+    "featured_badge": "مميز",
+    "unit_sqm": " م²",
+    "active_filters": "الفلاتر النشطة"
+  },
+
+  "projects": {
+    "title": "مشاريع",
+    "explore": "استكشف المشاريع"
+  },
+
+  "project_details": {
+    "about": "نبذة",
+    "features": "المميزات والتفاصيل",
+    "gallery": "معرض الصور",
+    "show_all_properties": "عرض جميع عقارات المشروع"
+  },
+
+  "news": {
+    "title": "الأخبار",
+    "show_all": "عرض الكل",
+    "gallery": "معرض الصور"
+  },
+
+  "favorites": {
+    "title": "المفضلة",
+    "empty_title": "لا توجد مفضلات",
+    "empty_subtitle": "احفظ العقارات التي تحبها واعثر عليها هنا.",
+    "browse": "تصفح العقارات"
+  },
+
+  "more": {
+    "title": "المزيد",
+    "guest_user": "زائر",
+    "sign_in_prompt": "سجل الدخول للوصول إلى جميع الميزات",
+    "sign_in": "تسجيل الدخول",
+    "account": "الحساب",
+    "my_profile": "ملفي الشخصي",
+    "my_properties": "عقاراتي",
+    "saved_searches": "عمليات البحث المحفوظة",
+    "messages": "الرسائل",
+    "add_listing": "إضافة إعلان",
+    "add_property": "إضافة عقار",
+    "settings": "الإعدادات",
+    "language": "اللغة",
+    "language_english": "English",
+    "dark_mode": "الوضع الداكن",
+    "notifications": "الإشعارات",
+    "support": "الدعم",
+    "about": "عن جيران",
+    "contact_us": "تواصل معنا",
+    "privacy_policy": "سياسة الخصوصية",
+    "terms_of_service": "شروط الخدمة"
+  },
+
+  "onboarding": {
+    "welcome_title": "مرحباً بك في جيران",
+    "welcome_desc": "اكتشف العقار المثالي لك مع منصتنا الشاملة للعقارات",
+    "find_home_title": "جد منزلك المثالي",
+    "find_home_desc": "تصفح آلاف العقارات واعثر على ما يناسب احتياجاتك",
+    "search_title": "بحث وفلاتر سهلة",
+    "search_desc": "استخدم خيارات البحث والفلترة المتقدمة لدينا للعثور على ما تبحث عنه بالضبط",
+    "skip": "تخطي",
+    "next": "التالي",
+    "get_started": "ابدأ الآن"
+  },
+
+  "errors": {
+    "server": "حدث خطأ في الخادم",
+    "network": "لا يوجد اتصال بالإنترنت",
+    "unexpected": "حدث خطأ غير متوقع",
+    "cache": "حدث خطأ في التخزين المؤقت"
+  },
+
+  "actions": {
+    "retry": "إعادة المحاولة"
+  },
+
+  "language": {
+    "title": "اللغة",
+    "english": "English",
+    "arabic": "العربية",
+    "select": "اختيار اللغة"
+  }
+}

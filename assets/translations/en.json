@@ -1,0 +1,159 @@
+{
+  "app_name": "Jeeran",
+  "splash_tagline": "Find Your Dream Home",
+
+  "bottom_nav": {
+    "home": "Home",
+    "search": "Search",
+    "projects": "Projects",
+    "favorites": "Favorites",
+    "more": "More"
+  },
+
+  "home": {
+    "hello": "Hello",
+    "hello_user": "Hello, {userName}",
+    "search_hint": "Search",
+    "featured_properties": "Featured Properties",
+    "see_all": "See all",
+    "phone_call": "Phone Call",
+    "whatsapp": "WhatsApp"
+  },
+
+  "search": {
+    "filters": {
+      "title": "Search Filters",
+      "query_hint": "City, area, or keyword…",
+      "status": "Status",
+      "property_type": "Property Type",
+      "project": "Project",
+      "price_range": "Price Range (JOD)",
+      "min": "Min",
+      "max": "Max",
+      "bedrooms": "Bedrooms",
+      "bedrooms_plus": "{count}+",
+      "featured_only": "Featured Only",
+      "sort_by": "Sort By",
+      "order": "Order",
+      "search_button": "Search",
+      "loading_projects": "Loading projects…",
+      "select_project": "Select a project",
+      "select_project_sheet_title": "Select a Project",
+      "featured_tooltip": "Show only featured properties"
+    }
+  },
+
+  "status": {
+    "for_sale": "For Sale",
+    "for_rent": "For Rent",
+    "for_rent_furnished": "For Rent (Furnished)"
+  },
+
+  "type": {
+    "villa": "Villa",
+    "apartment": "Apartment",
+    "land": "Land",
+    "studio": "Studio",
+    "chalet": "Chalet",
+    "duplex": "Duplex"
+  },
+
+  "sort": {
+    "price": "Price",
+    "date": "Date",
+    "bedrooms": "Bedrooms"
+  },
+
+  "order": {
+    "ascending": "Ascending",
+    "descending": "Descending"
+  },
+
+  "properties": {
+    "title": "Properties",
+    "reset_filters": "Reset Filters",
+    "no_results": "No properties found",
+    "featured_badge": "Featured",
+    "unit_sqm": " m²",
+    "active_filters": "Active Filters"
+  },
+
+  "projects": {
+    "title": "Projects",
+    "explore": "Explore Projects"
+  },
+
+  "project_details": {
+    "about": "About",
+    "features": "Features & Highlights",
+    "gallery": "Gallery",
+    "show_all_properties": "Show all project properties"
+  },
+
+  "news": {
+    "title": "News",
+    "show_all": "Show all",
+    "gallery": "Gallery"
+  },
+
+  "favorites": {
+    "title": "Favorites",
+    "empty_title": "No Favorites Yet",
+    "empty_subtitle": "Save properties you love and find them here.",
+    "browse": "Browse Properties"
+  },
+
+  "more": {
+    "title": "More",
+    "guest_user": "Guest User",
+    "sign_in_prompt": "Sign in to access all features",
+    "sign_in": "Sign In",
+    "account": "Account",
+    "my_profile": "My Profile",
+    "my_properties": "My Properties",
+    "saved_searches": "Saved Searches",
+    "messages": "Messages",
+    "add_listing": "Add Listing",
+    "add_property": "Add Property",
+    "settings": "Settings",
+    "language": "Language",
+    "language_english": "English",
+    "dark_mode": "Dark Mode",
+    "notifications": "Notifications",
+    "support": "Support",
+    "about": "About Jeeran",
+    "contact_us": "Contact Us",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service"
+  },
+
+  "onboarding": {
+    "welcome_title": "Welcome to Jeeran",
+    "welcome_desc": "Discover your perfect property with our comprehensive real estate platform",
+    "find_home_title": "Find Your Perfect Home",
+    "find_home_desc": "Browse through thousands of properties and find the one that suits your needs",
+    "search_title": "Easy Search & Filters",
+    "search_desc": "Use our advanced search and filter options to find exactly what you're looking for",
+    "skip": "Skip",
+    "next": "Next",
+    "get_started": "Get Started"
+  },
+
+  "errors": {
+    "server": "Server error occurred",
+    "network": "No internet connection",
+    "unexpected": "An unexpected error occurred",
+    "cache": "Cache error occurred"
+  },
+
+  "actions": {
+    "retry": "Retry"
+  },
+
+  "language": {
+    "title": "Language",
+    "english": "English",
+    "arabic": "العربية",
+    "select": "Select Language"
+  }
+}
