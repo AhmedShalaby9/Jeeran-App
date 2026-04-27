@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:video_player/video_player.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -22,23 +23,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _OnboardingPageData(
       videoUrl:
           'https://ik.imagekit.io/0ws5wi9ww/videos/WhatsApp%20Video%202026-01-25%20at%2023.17.33.mp4',
-      title: 'Welcome to Jeeran',
+      title: 'onboarding.welcome_title',
       description:
-          'Discover your perfect property with our comprehensive real estate platform',
+          'onboarding.welcome_desc',
     ),
     _OnboardingPageData(
       videoUrl:
           'https://ik.imagekit.io/0ws5wi9ww/videos/WhatsApp%20Video%202026-01-25%20at%2023.18.19.mp4',
-      title: 'Find Your Perfect Home',
+      title: 'onboarding.find_home_title',
       description:
-          'Browse through thousands of properties and find the one that suits your needs',
+          'onboarding.find_home_desc',
     ),
     _OnboardingPageData(
       videoUrl:
           'https://ik.imagekit.io/0ws5wi9ww/videos/WhatsApp%20Video%202026-01-25%20at%2023.18.49.mp4',
-      title: 'Easy Search & Filters',
+      title: 'onboarding.search_title',
       description:
-          'Use our advanced search and filter options to find exactly what you\'re looking for',
+          'onboarding.search_desc',
     ),
   ];
 
@@ -129,8 +130,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             right: 20,
             child: TextButton(
               onPressed: _completeOnboarding,
-              child: const Text(
-                'Skip',
+              child: Text(
+                'onboarding.skip'.tr(),
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 16,
@@ -182,8 +183,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                       child: Text(
                         _currentPage == _pages.length - 1
-                            ? 'Get Started'
-                            : 'Next',
+                            ? 'onboarding.get_started'.tr()
+                            : 'onboarding.next'.tr(),
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -264,7 +265,7 @@ class _OnboardingPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  data.title,
+                  data.title.tr(),
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,
@@ -282,7 +283,7 @@ class _OnboardingPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  data.description,
+                  data.description.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.9),
