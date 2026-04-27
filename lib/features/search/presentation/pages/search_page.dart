@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../projects/domain/entities/project.dart';
@@ -31,18 +32,18 @@ class _SearchPageState extends State<SearchPage> {
   int? _selectedProjectId;
   String? _selectedProjectName;
 
-  static const _statuses = ['For Sale', 'For Rent', 'For Rent (Furnished)'];
+  static const _statuses = ['for_sale', 'for_rent', 'for_rent_furnished'];
   static const _types = [
-    'Villa',
-    'Apartment',
-    'Land',
-    'Studio',
-    'Chalet',
-    'Duplex',
+    'villa',
+    'apartment',
+    'land',
+    'studio',
+    'chalet',
+    'duplex',
   ];
   static const _bedroomOptions = [1, 2, 3, 4, 5];
-  static const _sortOptions = ['Price', 'Date', 'Bedrooms'];
-  static const _orderOptions = ['Ascending', 'Descending'];
+  static const _sortOptions = ['price', 'date', 'bedrooms'];
+  static const _orderOptions = ['ASC', 'DESC'];
 
   @override
   void initState() {
@@ -93,7 +94,7 @@ class _SearchPageState extends State<SearchPage> {
       page: 1,
       perPage: 20,
       q: _queryController.text.isNotEmpty ? _queryController.text : null,
-      status: _mapStatus(_selectedStatus),
+      status: _selectedStatus,
       type: _mapType(_selectedType),
       projectId: _selectedProjectId,
       minPrice: _minPriceController.text.isNotEmpty
@@ -104,38 +105,18 @@ class _SearchPageState extends State<SearchPage> {
           : null,
       bedrooms: _selectedBedrooms,
       isFeatured: _isFeatured,
-      sort: _mapSort(_selectedSort),
-      order: _mapOrder(_selectedOrder),
+      sort: _selectedSort,
+      order: _selectedOrder,
     );
   }
 
-  String? _mapStatus(String? value) => switch (value) {
-    'For Sale' => 'for_sale',
-    'For Rent' => 'for_rent',
-    'For Rent (Furnished)' => 'for_rent_furnished',
-    _ => value,
-  };
-
   String? _mapType(String? value) => switch (value) {
-    'Villa' => 'فيلا',
-    'Apartment' => 'شقة',
-    'Land' => 'أرض',
-    'Studio' => 'ستوديو',
-    'Chalet' => 'شاليه',
-    'Duplex' => 'دوبلكس',
-    _ => value,
-  };
-
-  String? _mapSort(String? value) => switch (value) {
-    'Price' => 'price',
-    'Date' => 'date',
-    'Bedrooms' => 'bedrooms',
-    _ => value,
-  };
-
-  String? _mapOrder(String? value) => switch (value) {
-    'Ascending' => 'ASC',
-    'Descending' => 'DESC',
+    'villa' => 'فيلا',
+    'apartment' => 'شقة',
+    'land' => 'أرض',
+    'studio' => 'ستوديو',
+    'chalet' => 'شاليه',
+    'duplex' => 'دوبلكس',
     _ => value,
   };
 
@@ -161,20 +142,27 @@ class _SearchPageState extends State<SearchPage> {
               children: [_QueryField(controller: _queryController)],
             ),
             _FilterSection(
-              title: 'Status',
+              title: 'search.filters.status'.tr(),
               child: _ChipGroup(
                 options: _statuses,
                 selected: _selectedStatus,
+                labelBuilder: (v) => switch (v) {
+                  'for_sale' => 'status.for_sale'.tr(),
+                  'for_rent' => 'status.for_rent'.tr(),
+                  'for_rent_furnished' => 'status.for_rent_furnished'.tr(),
+                  _ => v,
+                },
                 onSelected: (v) => setState(
                   () => _selectedStatus = _selectedStatus == v ? null : v,
                 ),
               ),
             ),
             _FilterSection(
-              title: 'Property Type',
+              title: 'search.filters.property_type'.tr(),
               child: _ChipGroup(
                 options: _types,
                 selected: _selectedType,
+                labelBuilder: (v) => 'type.$v'.tr(),
                 onSelected: (v) => setState(
                   () => _selectedType = _selectedType == v ? null : v,
                 ),
@@ -182,7 +170,7 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
             _FilterSection(
-              title: 'Project',
+              title: 'search.filters.project'.tr(),
               child: _ProjectSelector(
                 selectedId: _selectedProjectId,
                 selectedName: _selectedProjectName,
@@ -197,14 +185,14 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
             _FilterSection(
-              title: 'Price Range (JOD)',
+              title: 'search.filters.price_range'.tr(),
               child: _PriceRange(
                 minController: _minPriceController,
                 maxController: _maxPriceController,
               ),
             ),
             _FilterSection(
-              title: 'Bedrooms',
+              title: 'search.filters.bedrooms'.tr(),
               child: _BedroomSelector(
                 options: _bedroomOptions,
                 selected: _selectedBedrooms,
@@ -214,27 +202,33 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
             _FilterSection(
-              title: 'Featured Only',
+              title: 'search.filters.featured_only'.tr(),
               child: _FeaturedToggle(
                 value: _isFeatured,
                 onChanged: (v) => setState(() => _isFeatured = v),
               ),
             ),
             _FilterSection(
-              title: 'Sort By',
+              title: 'search.filters.sort_by'.tr(),
               child: _ChipGroup(
                 options: _sortOptions,
                 selected: _selectedSort,
+                labelBuilder: (v) => 'sort.$v'.tr(),
                 onSelected: (v) => setState(
                   () => _selectedSort = _selectedSort == v ? null : v,
                 ),
               ),
             ),
             _FilterSection(
-              title: 'Order',
+              title: 'search.filters.order'.tr(),
               child: _ChipGroup(
                 options: _orderOptions,
                 selected: _selectedOrder,
+                labelBuilder: (v) => switch (v) {
+                  'ASC' => 'order.ascending'.tr(),
+                  'DESC' => 'order.descending'.tr(),
+                  _ => v,
+                },
                 onSelected: (v) => setState(
                   () => _selectedOrder = _selectedOrder == v ? null : v,
                 ),
@@ -252,9 +246,9 @@ class _SearchPageState extends State<SearchPage> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                child: const Text(
-                  'Search',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                child: Text(
+                  'search.filters.search_button'.tr(),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -266,7 +260,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   AppBar _buildAppBar() {
-    return AppBar(title: Text('Search Filters'));
+    return AppBar(title: Text('search.filters.title'.tr()));
   }
 }
 
@@ -352,7 +346,7 @@ class _QueryField extends StatelessWidget {
     return TextField(
       controller: controller,
       decoration: InputDecoration(
-        hintText: 'City, area, or keyword…',
+        hintText: 'search.filters.query_hint'.tr(),
         hintStyle: TextStyle(color: AppColors.grey, fontSize: 14),
         prefixIcon: Icon(Icons.search_rounded, color: AppColors.grey, size: 22),
         border: InputBorder.none,
@@ -367,12 +361,14 @@ class _ChipGroup extends StatelessWidget {
   final String? selected;
   final ValueChanged<String> onSelected;
   final bool wrap;
+  final String Function(String)? labelBuilder;
 
   const _ChipGroup({
     required this.options,
     required this.selected,
     required this.onSelected,
     this.wrap = false,
+    this.labelBuilder,
   });
 
   @override
@@ -394,7 +390,7 @@ class _ChipGroup extends StatelessWidget {
             ),
           ),
           child: Text(
-            o,
+            labelBuilder?.call(o) ?? o,
             style: TextStyle(
               fontSize: 13,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
@@ -430,7 +426,7 @@ class _PriceRange extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: _PriceField(controller: minController, hint: 'Min'),
+          child: _PriceField(controller: minController, hint: 'search.filters.min'.tr()),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -440,7 +436,7 @@ class _PriceRange extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: _PriceField(controller: maxController, hint: 'Max'),
+          child: _PriceField(controller: maxController, hint: 'search.filters.max'.tr()),
         ),
       ],
     );
@@ -478,7 +474,7 @@ class _BedroomSelector extends StatelessWidget {
       children: [
         ...options.map((n) {
           final isSelected = n == selected;
-          final label = n == 5 ? '5+' : '$n';
+          final label = n == 5 ? 'search.filters.bedrooms_plus'.tr(namedArgs: {'count': '5'}) : '$n';
           return Expanded(
             child: GestureDetector(
               onTap: () => onSelected(n),
@@ -580,11 +576,11 @@ class _ProjectSelector extends StatelessWidget {
                 Expanded(
                   child: isLoading
                       ? Text(
-                          'Loading projects…',
+                          'search.filters.loading_projects'.tr(),
                           style: TextStyle(color: AppColors.grey, fontSize: 14),
                         )
                       : Text(
-                          selectedName ?? 'Select a project',
+                          selectedName ?? 'search.filters.select_project'.tr(),
                           style: TextStyle(
                             fontSize: 14,
                             color: selectedName != null
@@ -643,8 +639,8 @@ class _ProjectPickerSheet extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        const Text(
-          'Select a Project',
+        Text(
+          'search.filters.select_project_sheet_title'.tr(),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
@@ -761,7 +757,7 @@ class _FeaturedToggle extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              'Show only featured properties',
+              'search.filters.featured_tooltip'.tr(),
               style: TextStyle(
                 fontSize: 14,
                 color: value ? AppColors.onBackground : AppColors.grey,
