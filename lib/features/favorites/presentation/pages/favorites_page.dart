@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 
 class FavoritesPage extends StatelessWidget {
@@ -8,7 +9,7 @@ class FavoritesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text('Favorites')),
+      appBar: AppBar(title: Text('favorites.title'.tr())),
       body: const _EmptyFavorites(),
     );
   }
@@ -37,8 +38,8 @@ class _EmptyFavorites extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Text(
-            'No Favorites Yet',
+          Text(
+            'favorites.empty_title'.tr(),
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -47,7 +48,7 @@ class _EmptyFavorites extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Save properties you love and\nfind them here.',
+            'favorites.empty_subtitle'.tr(),
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: AppColors.grey, height: 1.5),
           ),
@@ -55,7 +56,7 @@ class _EmptyFavorites extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: () {},
             icon: const Icon(Icons.search),
-            label: const Text('Browse Properties'),
+            label: Text('favorites.browse'.tr()),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
