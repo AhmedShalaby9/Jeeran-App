@@ -1,4 +1,4 @@
-class ApiEndpoints {
+﻿class ApiEndpoints {
   // Auth
   static const String login = '/auth/login';
   static const String register = '/auth/register';
@@ -23,4 +23,7 @@ class ApiEndpoints {
 
   // News
   static const String news = '/news';
+
+  // Subscription
+  static const String packages = '/packages';
 }
