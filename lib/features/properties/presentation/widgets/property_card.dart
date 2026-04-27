@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_image.dart';
 import '../../domain/entities/property.dart';
@@ -257,15 +258,15 @@ class _HorizontalCard extends StatelessWidget {
                           if (property.propertyStatus != null &&
                               property.propertyStatus!.isNotEmpty)
                             _TagChip(
-                              label: property.propertyStatus!,
+                              label: _statusLabel(property.propertyStatus),
                               backgroundColor: AppColors.primary.withValues(
                                 alpha: 0.08,
                               ),
                               textColor: AppColors.primary,
                             ),
                           if (property.isFeatured)
-                            const _TagChip(
-                              label: 'Featured',
+                            _TagChip(
+                              label: 'properties.featured_badge'.tr(),
                               backgroundColor: Color(0xFFFFF8E1),
                               textColor: Color(0xFFFFB800),
                               icon: Icons.star,
@@ -412,8 +413,8 @@ class _VerticalCard extends StatelessWidget {
                           textColor: AppColors.primary,
                         ),
                       if (property.isFeatured)
-                        const _TagChip(
-                          label: 'Featured',
+                        _TagChip(
+                          label: 'properties.featured_badge'.tr(),
                           backgroundColor: Color(0xFFFFF8E1),
                           textColor: Color(0xFFFFB800),
                           icon: Icons.star,
@@ -486,13 +487,13 @@ class _FeaturedBadge extends StatelessWidget {
         color: const Color(0xFFFFB800),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.star, size: 12, color: Colors.white),
-          SizedBox(width: 4),
+          const Icon(Icons.star, size: 12, color: Colors.white),
+          const SizedBox(width: 4),
           Text(
-            'Featured',
+            'properties.featured_badge'.tr(),
             style: TextStyle(
               color: Colors.white,
               fontSize: 11,
@@ -506,9 +507,9 @@ class _FeaturedBadge extends StatelessWidget {
 }
 
 String _statusLabel(String? key) => switch (key) {
-  'for_sale' => 'For Sale',
-  'for_rent' => 'For Rent',
-  'for_rent_furnished' => 'For Rent (Furnished)',
+  'for_sale' => 'status.for_sale'.tr(),
+  'for_rent' => 'status.for_rent'.tr(),
+  'for_rent_furnished' => 'status.for_rent_furnished'.tr(),
   _ => key ?? '',
 };
 
@@ -629,7 +630,7 @@ class _SpecsRow extends StatelessWidget {
         if (property.size != null)
           _SpecItem(
             icon: Icons.square_foot_outlined,
-            label: '${property.size} m²',
+            label: '${property.size}${'properties.unit_sqm'.tr()}',
             color: color,
           ),
       ],

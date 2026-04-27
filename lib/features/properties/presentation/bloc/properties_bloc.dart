@@ -39,7 +39,7 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
     final currentState = state;
     if (currentState is! PropertiesLoaded || currentState.hasReachedMax) return;
 
-    emit(PropertiesLoadingMore(currentState.properties));
+    emit(PropertiesLoadingMore(currentState.properties, params: currentState.params));
 
     final nextPage = currentState.currentPage + 1;
     final params = currentState.params.copyWith(page: nextPage);

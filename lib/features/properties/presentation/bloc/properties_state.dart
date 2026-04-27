@@ -45,9 +45,10 @@ class PropertiesLoaded extends PropertiesState {
 
 class PropertiesLoadingMore extends PropertiesState {
   final List<Property> currentProperties;
-  const PropertiesLoadingMore(this.currentProperties);
+  final PropertyFilterParams params;
+  const PropertiesLoadingMore(this.currentProperties, {required this.params});
   @override
-  List<Object?> get props => [currentProperties];
+  List<Object?> get props => [currentProperties, params];
 }
 
 class PropertiesError extends PropertiesState {
