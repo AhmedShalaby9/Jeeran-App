@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
@@ -150,7 +151,7 @@ class _BannersCarouselViewState extends State<_BannersCarouselView> {
             children: [
               ListTile(
                 leading: const Icon(Icons.phone, color: AppColors.primary),
-                title: const Text('Phone Call'),
+                title: Text('home.phone_call'.tr()),
                 onTap: () {
                   Navigator.pop(context);
                   _makePhoneCall(phone);
@@ -158,7 +159,7 @@ class _BannersCarouselViewState extends State<_BannersCarouselView> {
               ),
               ListTile(
                 leading: Icon(Icons.chat, color: Colors.green.shade600),
-                title: const Text('WhatsApp'),
+                title: Text('home.whatsapp'.tr()),
                 onTap: () {
                   Navigator.pop(context);
                   _openWhatsApp(phone);

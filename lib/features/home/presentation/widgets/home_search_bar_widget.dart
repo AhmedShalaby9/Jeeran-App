@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 
 class HomeSearchBarWidget extends StatelessWidget {
@@ -21,7 +22,7 @@ class HomeSearchBarWidget extends StatelessWidget {
             Icon(Icons.tune_rounded, color: AppColors.grey, size: 22),
             Expanded(
               child: Text(
-                'بحث',
+                'home.search_hint'.tr(),
                 textAlign: TextAlign.end,
                 style: TextStyle(color: AppColors.grey, fontSize: 15),
               ),
