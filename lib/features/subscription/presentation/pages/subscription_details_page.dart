@@ -137,7 +137,7 @@ class SubscriptionDetailsPage extends StatelessWidget {
                 width: 180, height: 180,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [_kGold.withValues(alpha: 0.15), Colors.transparent]),
+                  gradient: RadialGradient(colors: [_kGold.withValues(alpha: 0.15), const Color(0x00B8893D)]),
                 ),
               ),
             ),
