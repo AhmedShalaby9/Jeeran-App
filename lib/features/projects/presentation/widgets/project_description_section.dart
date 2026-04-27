@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 
 class ProjectDescriptionSection extends StatelessWidget {
@@ -12,8 +13,8 @@ class ProjectDescriptionSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'About',
+          Text(
+            'project_details.about'.tr(),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

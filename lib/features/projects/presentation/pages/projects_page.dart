@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -28,7 +29,7 @@ class _ProjectsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppBar(title: Text('Projects')),
+      appBar: AppBar(title: Text('projects.title'.tr())),
       backgroundColor: AppColors.background,
       body: BlocBuilder<ProjectsBloc, ProjectsState>(
         builder: (context, state) {
