@@ -8,6 +8,8 @@ class AuthInterceptor extends Interceptor {
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
+    final lang = AppStorage.language ?? 'en';
+    options.headers['Accept-Language'] = lang;
     handler.next(options);
   }
 

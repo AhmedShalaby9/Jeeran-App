@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'core/config/app_config.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/storage/app_storage.dart';
@@ -10,8 +11,19 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.setEnvironment(AppEnvironment.staging);
   await AppStorage.init();
+  await EasyLocalization.ensureInitialized();
   await di.init();
-  runApp(const JeeranApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('en'), Locale('ar')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      startLocale: AppStorage.language != null
+          ? Locale(AppStorage.language!)
+          : const Locale('en'),
+      child: const JeeranApp(),
+    ),
+  );
 }
 
 class JeeranApp extends StatelessWidget {
@@ -22,13 +34,16 @@ class JeeranApp extends StatelessWidget {
     return MaterialApp(
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
         useMaterial3: true,
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.white,
           elevation: 0,
-          centerTitle: true,
+          centerTitle: false,
           titleTextStyle: TextStyle(
             color: AppColors.onBackground,
             fontWeight: FontWeight.bold,

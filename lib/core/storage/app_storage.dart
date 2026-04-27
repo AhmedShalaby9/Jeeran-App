@@ -7,6 +7,7 @@ class AppStorage {
   static const String _keyRefreshToken = 'refresh_token';
   static const String _keyUserId = 'user_id';
   static const String _keyUserName = 'user_name';
+  static const String _keyLanguage = 'language';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -54,4 +55,9 @@ class AppStorage {
   }
 
   static bool get isLoggedIn => authToken != null;
+
+  // Language
+  static String? get language => _box.get(_keyLanguage) as String?;
+
+  static Future<void> setLanguage(String value) => _box.put(_keyLanguage, value);
 }
