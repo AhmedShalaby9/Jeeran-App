@@ -1,72 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../auth/presentation/pages/login_page.dart';
 
 class MorePage extends StatelessWidget {
   const MorePage({super.key});
 
-  void _showLanguageSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.grey.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'language.select'.tr(),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.onBackground,
-                ),
-              ),
-              const Divider(height: 20),
-              ListTile(
-                leading: const Icon(Icons.language, color: AppColors.primary),
-                title: Text('language.english'.tr()),
-                trailing: context.locale.languageCode == 'en'
-                    ? const Icon(Icons.check_circle, color: AppColors.primary)
-                    : null,
-                onTap: () async {
-                  await context.setLocale(const Locale('en'));
-                  await AppStorage.setLanguage('en');
-                  if (context.mounted) Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.language, color: AppColors.primary),
-                title: Text('language.arabic'.tr()),
-                trailing: context.locale.languageCode == 'ar'
-                    ? const Icon(Icons.check_circle, color: AppColors.primary)
-                    : null,
-                onTap: () async {
-                  await context.setLocale(const Locale('ar'));
-                  await AppStorage.setLanguage('ar');
-                  if (context.mounted) Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<AuthBloc>()..add(const AuthGetMeEvent()),
+      child: const _MoreView(),
     );
   }
+}
+
+class _MoreView extends StatelessWidget {
+  const _MoreView();
 
   @override
   Widget build(BuildContext context) {
@@ -77,72 +33,76 @@ class MorePage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           // Profile card
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.primary, AppColors.secondary],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    shape: BoxShape.circle,
+          BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              final user = state is AuthMeLoaded ? state.user : null;
+              final displayName = user?.name ?? AppStorage.userName ?? 'more.guest_user'.tr();
+              final phone = user?.phone ?? '';
+
+
+              return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.secondary],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  child: const Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 32,
-                  ),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'more.guest_user'.tr(),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        shape: BoxShape.circle,
+                        image: user?.avatar != null
+                            ? DecorationImage(
+                                image: NetworkImage(user!.avatar!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
                       ),
-                      SizedBox(height: 4),
-                      Text(
-                        'more.sign_in_prompt'.tr(),
-                        style: TextStyle(color: Colors.white70, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    'more.sign_in'.tr(),
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
+                      child: user?.avatar == null
+                          ? const Icon(
+                              Icons.person,
+                              color: Colors.white,
+                              size: 32,
+                            )
+                          : null,
                     ),
-                  ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            displayName,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (phone.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              phone,
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
 
           const SizedBox(height: 24),
@@ -151,21 +111,11 @@ class MorePage extends StatelessWidget {
           _MoreTile(
             icon: Icons.person_outline,
             label: 'more.my_profile'.tr(),
-            onTap: () => _showLanguageSheet(context),
+            onTap: () {},
           ),
           _MoreTile(
             icon: Icons.home_work_outlined,
             label: 'more.my_properties'.tr(),
-            onTap: () {},
-          ),
-          _MoreTile(
-            icon: Icons.favorite_border,
-            label: 'more.saved_searches'.tr(),
-            onTap: () {},
-          ),
-          _MoreTile(
-            icon: Icons.message_outlined,
-            label: 'more.messages'.tr(),
             onTap: () {},
           ),
 
@@ -185,11 +135,6 @@ class MorePage extends StatelessWidget {
             icon: Icons.language_outlined,
             label: 'more.language'.tr(),
             trailing: context.locale.languageCode == 'ar' ? 'language.arabic'.tr() : 'language.english'.tr(),
-            onTap: () {},
-          ),
-          _MoreTile(
-            icon: Icons.dark_mode_outlined,
-            label: 'more.dark_mode'.tr(),
             onTap: () {},
           ),
           _MoreTile(
@@ -222,7 +167,48 @@ class MorePage extends StatelessWidget {
             onTap: () {},
           ),
 
+          const SizedBox(height: 16),
+
+          // Logout
+          if (AppStorage.isLoggedIn)
+            _MoreTile(
+              icon: Icons.logout_outlined,
+              label: 'more.logout'.tr(),
+              onTap: () => _onLogout(context),
+            ),
+
           const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  void _onLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('more.logout_title'.tr()),
+        content: Text('more.logout_confirm'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('actions.cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              AppStorage.clearAuth();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+                (_) => false,
+              );
+            },
+            child: Text(
+              'actions.logout'.tr(),
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
         ],
       ),
     );

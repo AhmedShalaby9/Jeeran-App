@@ -4,6 +4,8 @@
   static const String register = '/auth/register';
   static const String logout = '/auth/logout';
   static const String refreshToken = '/auth/refresh';
+  static const String completeProfile = '/auth/profile';
+  static const String me = '/auth/me';
 
   // User
   static const String profile = '/user/profile';

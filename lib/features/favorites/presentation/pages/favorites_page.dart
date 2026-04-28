@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../properties/domain/entities/property_filter_params.dart';
+import '../../../properties/presentation/pages/properties_screen.dart';
 
 class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});
@@ -54,7 +56,12 @@ class _EmptyFavorites extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const PropertiesScreen(params: PropertyFilterParams()),
+              ),
+            ),
             icon: const Icon(Icons.search),
             label: Text('favorites.browse'.tr()),
             style: ElevatedButton.styleFrom(
