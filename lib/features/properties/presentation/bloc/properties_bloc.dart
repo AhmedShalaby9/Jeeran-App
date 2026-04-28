@@ -1,15 +1,16 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/app_strings.dart';
 import '../../domain/entities/property_filter_params.dart';
-import '../../domain/usecases/get_properties.dart';
+import '../../domain/repositories/property_repository.dart';
 import 'properties_event.dart';
 import 'properties_state.dart';
 
 class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
-  final GetProperties getProperties;
+  final PropertyRepository repository;
 
-  PropertiesBloc({required this.getProperties}) : super(PropertiesInitial()) {
+  PropertiesBloc({required this.repository}) : super(PropertiesInitial()) {
     on<FetchPropertiesEvent>(_onFetch);
     on<LoadMorePropertiesEvent>(_onLoadMore);
     on<ResetFiltersEvent>(_onResetFilters);
@@ -19,8 +20,9 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
     FetchPropertiesEvent event,
     Emitter<PropertiesState> emit,
   ) async {
+    if (state is PropertiesLoading || state is PropertiesLoaded) return;
     emit(PropertiesLoading());
-    final result = await getProperties(event.params);
+    final result = await repository.getProperties(event.params);
     result.fold(
       (failure) => emit(PropertiesError(_mapFailure(failure))),
       (properties) => emit(PropertiesLoaded(
@@ -44,9 +46,9 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
     final nextPage = currentState.currentPage + 1;
     final params = currentState.params.copyWith(page: nextPage);
 
-    final result = await getProperties(params);
+    final result = await repository.getProperties(params);
     result.fold(
-      (_) => emit(currentState), // keep current state on load-more error
+      (_) => emit(currentState),
       (newProperties) {
         if (newProperties.isEmpty) {
           emit(currentState.copyWith(hasReachedMax: true));
@@ -66,8 +68,9 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
     ResetFiltersEvent event,
     Emitter<PropertiesState> emit,
   ) async {
+    if (state is PropertiesLoading || state is PropertiesLoaded) return;
     emit(PropertiesLoading());
-    final result = await getProperties(const PropertyFilterParams());
+    final result = await repository.getProperties(const PropertyFilterParams());
     result.fold(
       (failure) => emit(PropertiesError(_mapFailure(failure))),
       (properties) => emit(PropertiesLoaded(
@@ -80,8 +83,8 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
   }
 
   String _mapFailure(Failure failure) => switch (failure) {
-        NetworkFailure _ => AppStrings.networkError,
-        ServerFailure _ => AppStrings.serverError,
-        _ => AppStrings.unexpectedError,
-      };
+    NetworkFailure _ => AppStrings.networkError,
+    ServerFailure _ => AppStrings.serverError,
+    _ => AppStrings.unexpectedError,
+  };
 }

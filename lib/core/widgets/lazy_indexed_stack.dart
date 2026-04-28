@@ -38,6 +38,7 @@ class _LazyIndexedStackState extends State<LazyIndexedStack> {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      fit: StackFit.expand,
       children: List.generate(widget.children.length, (i) {
         if (!_loaded[i]) return const SizedBox.shrink();
         return Offstage(

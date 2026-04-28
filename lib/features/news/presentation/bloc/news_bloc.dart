@@ -1,15 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/error/failures.dart';
-import '../../../../core/usecases/usecase.dart';
 import '../../../../core/utils/app_strings.dart';
-import '../../domain/usecases/get_news.dart';
+import '../../domain/repositories/news_repository.dart';
 import 'news_event.dart';
 import 'news_state.dart';
 
 class NewsBloc extends Bloc<NewsEvent, NewsState> {
-  final GetNews getNews;
+  final NewsRepository repository;
 
-  NewsBloc({required this.getNews}) : super(NewsInitial()) {
+  NewsBloc({required this.repository}) : super(NewsInitial()) {
     on<FetchNewsEvent>(_onFetchNews);
   }
 
@@ -17,8 +17,9 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
     FetchNewsEvent event,
     Emitter<NewsState> emit,
   ) async {
+    if (state is NewsLoading || state is NewsLoaded) return;
     emit(NewsLoading());
-    final result = await getNews(NoParams());
+    final result = await repository.getNews();
     result.fold(
       (failure) => emit(NewsError(_mapFailure(failure))),
       (news) => emit(NewsLoaded(news)),
@@ -26,8 +27,8 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
   }
 
   String _mapFailure(Failure failure) => switch (failure) {
-        NetworkFailure _ => AppStrings.networkError,
-        ServerFailure _ => AppStrings.serverError,
-        _ => AppStrings.unexpectedError,
-      };
+    NetworkFailure _ => AppStrings.networkError,
+    ServerFailure _ => AppStrings.serverError,
+    _ => AppStrings.unexpectedError,
+  };
 }
