@@ -26,6 +26,11 @@ class AppColors {
   static const Color tagSuccessFg = Color(0xFF1E6E4D);
   static const Color tagNeutralBg = Color(0xFFEEF0F4);
   static const Color navButtonBg = Color(0xFFF2F4F7);
+  static const Color goldLight = Color(0xFFF5D89A);
+  static const Color dangerPink = Color(0xFFFF4A6B);
+  static const Color whatsapp = Color(0xFF25D366);
+  static const Color heroGradientEnd = Color(0xFF143763);
+  static const Color agentGradientEnd = Color(0xFF1E5A9E);
   static const Color promoGradientMid = Color(0xFF1A4A80);
   static const Color promoLightGold = Color(0xFFF0C060);
   static const Color successLight = Color(0xFF5DE0A5);

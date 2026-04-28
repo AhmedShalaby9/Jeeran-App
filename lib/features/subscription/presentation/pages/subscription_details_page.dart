@@ -1,6 +1,8 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
-
+import '../widgets/subscription_hero_card.dart';
+import '../widgets/subscription_widgets.dart';
 
 class SubscriptionDetailsPage extends StatelessWidget {
   const SubscriptionDetailsPage({super.key});
@@ -15,56 +17,58 @@ class SubscriptionDetailsPage extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: _buildHeader(context)),
-          SliverToBoxAdapter(child: _buildHeroCard()),
+          const SliverToBoxAdapter(
+            child: SubscriptionHeroCard(used: _used, total: _total),
+          ),
           SliverToBoxAdapter(child: _buildQuickActions()),
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: SliverList.list(
               children: [
-                _Section(
-                  title: 'PLAN',
+                SubscriptionSection(
+                  title: 'subscription.plan'.tr(),
                   children: [
-                    _DetailRow(label: 'Tier', value: 'Growth'),
-                    _DetailRow(label: 'Monthly listings', value: '20', chevron: false),
-                    _DetailRow(label: 'Next renewal', value: 'May 18, 2026', chevron: false, last: true),
+                    DetailRow(label: 'subscription.tier'.tr(), value: 'Growth'),
+                    DetailRow(label: 'subscription.monthly_listings'.tr(), value: '20', chevron: false),
+                    DetailRow(label: 'subscription.next_renewal'.tr(), value: 'May 18, 2026', chevron: false, last: true),
                   ],
                 ),
-                _Section(
-                  title: 'ADD-ONS',
-                  action: 'Add',
+                SubscriptionSection(
+                  title: 'subscription.add_ons'.tr(),
+                  action: 'subscription.add'.tr(),
                   children: [
-                    _DetailRow(label: 'Pay-as-you-go wallet', value: '15 JOD', valueColor: AppColors.primary),
-                    _DetailRow(label: 'Featured placements', value: '2 remaining', last: true),
+                    DetailRow(label: 'subscription.payg_wallet'.tr(), value: '15 JOD', valueColor: AppColors.primary),
+                    DetailRow(label: 'subscription.featured_placements'.tr(), value: '2 remaining', last: true),
                   ],
                 ),
-                _Section(
-                  title: 'PAYMENT METHOD',
-                  action: 'Change',
-                  children: [_FawryRow()],
+                SubscriptionSection(
+                  title: 'subscription.payment_method'.tr(),
+                  action: 'subscription.change'.tr(),
+                  children: const [FawryRow()],
                 ),
-                _Section(
-                  title: 'BILLING HISTORY',
-                  action: 'See all',
+                SubscriptionSection(
+                  title: 'subscription.billing_history'.tr(),
+                  action: 'subscription.see_all'.tr(),
                   children: [
-                    _BillingRow(date: 'Apr 18, 2026', amount: '49.00 JOD'),
-                    _BillingRow(date: 'Mar 18, 2026', amount: '49.00 JOD'),
-                    _BillingRow(date: 'Feb 18, 2026', amount: '19.00 JOD', last: true),
+                    BillingRow(date: 'Apr 18, 2026', amount: '49.00 JOD'),
+                    BillingRow(date: 'Mar 18, 2026', amount: '49.00 JOD'),
+                    BillingRow(date: 'Feb 18, 2026', amount: '19.00 JOD', last: true),
                   ],
                 ),
-                _Section(
-                  title: 'MANAGE',
+                SubscriptionSection(
+                  title: 'subscription.manage'.tr(),
                   children: [
-                    _DetailRow(label: 'Switch plan', value: ''),
-                    _DetailRow(label: 'Pause renewal', value: ''),
-                    _ManageRow(label: 'Cancel subscription', danger: true),
+                    DetailRow(label: 'subscription.switch_plan'.tr(), value: ''),
+                    DetailRow(label: 'subscription.pause_renewal'.tr(), value: ''),
+                    ManageRow(label: 'subscription.cancel'.tr(), danger: true),
                   ],
                 ),
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(8, 0, 8, 24),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
                   child: Text(
-                    'Cancel anytime. Already-published listings stay visible until your cycle ends.',
+                    'subscription.cancel_note'.tr(),
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 11, color: AppColors.inkMute, height: 1.5),
+                    style: const TextStyle(fontSize: 11, color: AppColors.inkMute, height: 1.5),
                   ),
                 ),
               ],
@@ -85,103 +89,31 @@ class SubscriptionDetailsPage extends StatelessWidget {
             GestureDetector(
               onTap: () => Navigator.maybePop(context),
               child: Container(
-                width: 36, height: 36,
-                decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFF2F4F7)),
-                child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: AppColors.ink),
-              ),
-            ),
-            const Expanded(
-              child: Text(
-                'Subscription',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.ink),
-              ),
-            ),
-            const SizedBox(width: 36),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeroCard() {
-    final pct = _used / _total;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0B2A4A), Color(0xFF143763)],
-            stops: [0, 1],
-          ),
-          boxShadow: [BoxShadow(color: AppColors.primary.withValues(alpha: 0.25), blurRadius: 24, offset: const Offset(0, 10))],
-        ),
-        clipBehavior: Clip.hardEdge,
-        child: Stack(
-          children: [
-            Positioned(
-              top: -60, right: -40,
-              child: Container(
-                width: 180, height: 180,
-                decoration: BoxDecoration(
+                width: 36,
+                height: 36,
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [AppColors.gold.withValues(alpha: 0.15), const Color(0x00B8893D)]),
+                  color: AppColors.navButtonBg,
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 16,
+                  color: AppColors.ink,
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      _ActiveTag(),
-                      const SizedBox(width: 8),
-                      Text('Renews May 18, 2026', style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.7))),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  Text('Growth plan', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: 0.8))),
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      const Text('49', style: TextStyle(fontSize: 40, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -1.2, height: 1)),
-                      const SizedBox(width: 6),
-                      Text('JOD / month', style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.75))),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Listings used this cycle', style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.8))),
-                      Text('$_used of $_total', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: pct,
-                      minHeight: 8,
-                      backgroundColor: Colors.white.withValues(alpha: 0.15),
-                      valueColor: const AlwaysStoppedAnimation(AppColors.gold),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '${_total - _used} remaining آ· resets in 12 days',
-                    style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.7)),
-                  ),
-                ],
+            Expanded(
+              child: Text(
+                'subscription.title'.tr(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.ink,
+                ),
               ),
             ),
+            const SizedBox(width: 36),
           ],
         ),
       ),
@@ -193,25 +125,25 @@ class SubscriptionDetailsPage extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
       child: Row(
         children: [
-          _QuickAction(
-            label: 'New listing',
+          QuickAction(
+            label: 'subscription.new_listing'.tr(),
             iconBg: AppColors.primary.withValues(alpha: 0.08),
             icon: Icons.add_rounded,
             iconColor: AppColors.primary,
             onTap: () {},
           ),
           const SizedBox(width: 10),
-          _QuickAction(
-            label: 'Upgrade',
+          QuickAction(
+            label: 'subscription.upgrade'.tr(),
             iconBg: AppColors.goldSoft,
             icon: Icons.auto_awesome_rounded,
             iconColor: AppColors.gold,
             onTap: () {},
           ),
           const SizedBox(width: 10),
-          _QuickAction(
-            label: 'Invoices',
-            iconBg: const Color(0xFFEEF0F4),
+          QuickAction(
+            label: 'subscription.invoices'.tr(),
+            iconBg: AppColors.tagNeutralBg,
             icon: Icons.receipt_long_rounded,
             iconColor: AppColors.inkSub,
             onTap: () {},
@@ -221,242 +153,3 @@ class SubscriptionDetailsPage extends StatelessWidget {
     );
   }
 }
-
-// â”€â”€ Section wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-class _Section extends StatelessWidget {
-  final String title;
-  final String? action;
-  final List<Widget> children;
-  const _Section({required this.title, required this.children, this.action});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 22),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 0, 4, 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(title, style: const TextStyle(fontSize: 11, color: AppColors.inkMute, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
-                if (action != null)
-                  GestureDetector(
-                    onTap: () {},
-                    child: Text(action!, style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600)),
-                  ),
-              ],
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.hairline),
-            ),
-            clipBehavior: Clip.hardEdge,
-            child: Column(children: children),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// â”€â”€ Row types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-class _DetailRow extends StatelessWidget {
-  final String label, value;
-  final bool chevron, last;
-  final Color? valueColor;
-  const _DetailRow({required this.label, required this.value, this.chevron = true, this.last = false, this.valueColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        border: last ? null : const Border(bottom: BorderSide(color: AppColors.hairline)),
-      ),
-      child: Row(
-        children: [
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 14, color: AppColors.inkSub))),
-          if (value.isNotEmpty)
-            Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: valueColor ?? AppColors.ink)),
-          if (chevron) ...[
-            const SizedBox(width: 6),
-            const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkMute),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _ManageRow extends StatelessWidget {
-  final String label;
-  final bool danger;
-  const _ManageRow({required this.label, this.danger = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(fontSize: 14, color: danger ? AppColors.danger : AppColors.ink, fontWeight: FontWeight.w500),
-            ),
-          ),
-          const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkMute),
-        ],
-      ),
-    );
-  }
-}
-
-class _BillingRow extends StatelessWidget {
-  final String date, amount;
-  final bool last;
-  const _BillingRow({required this.date, required this.amount, this.last = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        border: last ? null : const Border(bottom: BorderSide(color: AppColors.hairline)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Growth â€” monthly', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
-                const SizedBox(height: 2),
-                Text(date, style: const TextStyle(fontSize: 12, color: AppColors.inkSub)),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(amount, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
-              const SizedBox(height: 2),
-              const Text('Paid', style: TextStyle(fontSize: 11, color: AppColors.success, fontWeight: FontWeight.w600)),
-            ],
-          ),
-          const SizedBox(width: 8),
-          const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkMute),
-        ],
-      ),
-    );
-  }
-}
-
-class _FawryRow extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 46, height: 32,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6),
-              gradient: const LinearGradient(colors: [AppColors.primary, Color(0xFF143763)]),
-            ),
-            child: const Center(
-              child: Text('FAWRY', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
-            ),
-          ),
-          const SizedBox(width: 12),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Fawry Pay', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
-                Text('+962 79 â€¢â€¢ â€¢â€¢ 342', style: TextStyle(fontSize: 12, color: AppColors.inkSub)),
-              ],
-            ),
-          ),
-          _DefaultTag(),
-        ],
-      ),
-    );
-  }
-}
-
-// â”€â”€ Small components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-class _ActiveTag extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.gold.withValues(alpha: 0.22),
-        borderRadius: BorderRadius.circular(99),
-      ),
-      child: const Text('Active', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFF5D89A), letterSpacing: 0.2)),
-    );
-  }
-}
-
-class _DefaultTag extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(99),
-      ),
-      child: const Text('Default', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.primary)),
-    );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  final String label;
-  final Color iconBg, iconColor;
-  final IconData icon;
-  final VoidCallback onTap;
-  const _QuickAction({required this.label, required this.iconBg, required this.icon, required this.iconColor, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.hairline),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 36, height: 36,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: iconBg),
-                child: Icon(icon, size: 18, color: iconColor),
-              ),
-              const SizedBox(height: 8),
-              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
