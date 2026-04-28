@@ -138,7 +138,13 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
           padding: const EdgeInsets.only(bottom: 16),
           child: PropertyCard.horizontalCard(
             property: properties[index],
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PropertyDetailsPage(property: properties[index]))),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    PropertyDetailsPage(property: properties[index]),
+              ),
+            ),
           ),
         );
       },
