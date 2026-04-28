@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/config/app_config.dart';
 import 'core/di/injection_container.dart' as di;
+import 'core/observers/app_bloc_observer.dart';
 import 'core/storage/app_storage.dart';
 import 'core/utils/app_colors.dart';
 import 'core/utils/app_strings.dart';
@@ -13,6 +15,7 @@ void main() async {
   await AppStorage.init();
   await EasyLocalization.ensureInitialized();
   await di.init();
+  Bloc.observer = AppBlocObserver();
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ar')],
