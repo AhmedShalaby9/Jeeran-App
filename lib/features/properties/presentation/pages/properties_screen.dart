@@ -10,6 +10,7 @@ import '../bloc/properties_event.dart';
 import '../bloc/properties_state.dart';
 import '../widgets/properties_shimmer.dart';
 import '../widgets/property_card.dart';
+import 'property_details_page.dart';
 
 class PropertiesScreen extends StatefulWidget {
   final PropertyFilterParams params;
@@ -137,7 +138,7 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
           padding: const EdgeInsets.only(bottom: 16),
           child: PropertyCard.horizontalCard(
             property: properties[index],
-            onTap: () {},
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PropertyDetailsPage(property: properties[index]))),
           ),
         );
       },

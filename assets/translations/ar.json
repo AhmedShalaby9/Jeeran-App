@@ -1,7 +1,6 @@
 {
   "app_name": "جيران",
   "splash_tagline": "جد منزل أحلامك",
-
   "bottom_nav": {
     "home": "الرئيسية",
     "search": "بحث",
@@ -9,7 +8,6 @@
     "favorites": "المفضلة",
     "more": "المزيد"
   },
-
   "home": {
     "hello": "مرحباً",
     "hello_user": "مرحباً، {userName}",
@@ -19,7 +17,6 @@
     "phone_call": "اتصال هاتفي",
     "whatsapp": "واتساب"
   },
-
   "search": {
     "filters": {
       "title": "فلاتر البحث",
@@ -42,13 +39,11 @@
       "featured_tooltip": "عرض العقارات المميزة فقط"
     }
   },
-
   "status": {
     "for_sale": "للبيع",
     "for_rent": "للإيجار",
     "for_rent_furnished": "للإيجار مفروش"
   },
-
   "type": {
     "villa": "فيلا",
     "apartment": "شقة",
@@ -57,18 +52,15 @@
     "chalet": "شاليه",
     "duplex": "دوبلكس"
   },
-
   "sort": {
     "price": "السعر",
     "date": "التاريخ",
     "bedrooms": "غرف النوم"
   },
-
   "order": {
     "ascending": "تصاعدي",
     "descending": "تنازلي"
   },
-
   "properties": {
     "title": "عقارات",
     "reset_filters": "إعادة ضبط الفلاتر",
@@ -77,32 +69,27 @@
     "unit_sqm": " م²",
     "active_filters": "الفلاتر النشطة"
   },
-
   "projects": {
     "title": "مشاريع",
     "explore": "استكشف المشاريع"
   },
-
   "project_details": {
     "about": "نبذة",
     "features": "المميزات والتفاصيل",
     "gallery": "معرض الصور",
     "show_all_properties": "عرض جميع عقارات المشروع"
   },
-
   "news": {
     "title": "الأخبار",
     "show_all": "عرض الكل",
     "gallery": "معرض الصور"
   },
-
   "favorites": {
     "title": "المفضلة",
     "empty_title": "لا توجد مفضلات",
     "empty_subtitle": "احفظ العقارات التي تحبها واعثر عليها هنا.",
     "browse": "تصفح العقارات"
   },
-
   "more": {
     "title": "المزيد",
     "guest_user": "زائر",
@@ -126,7 +113,6 @@
     "privacy_policy": "سياسة الخصوصية",
     "terms_of_service": "شروط الخدمة"
   },
-
   "onboarding": {
     "welcome_title": "مرحباً بك في جيران",
     "welcome_desc": "اكتشف العقار المثالي لك مع منصتنا الشاملة للعقارات",
@@ -138,18 +124,36 @@
     "next": "التالي",
     "get_started": "ابدأ الآن"
   },
-
   "errors": {
     "server": "حدث خطأ في الخادم",
     "network": "لا يوجد اتصال بالإنترنت",
     "unexpected": "حدث خطأ غير متوقع",
     "cache": "حدث خطأ في التخزين المؤقت"
   },
-
   "actions": {
     "retry": "إعادة المحاولة"
   },
-
+  "plans": {
+    "title": "فتح تحميلات القوائم",
+    "subtitle": "اختر خطة لبدء نشر العقارات على جيران. ترقية أو تخفيض أو إلغاء في أي وقت.",
+    "restore": "استعادة",
+    "monthly_plan": "الخطة الشهرية",
+    "pay_as_you_go": "ادفع حسب استخدامك",
+    "no_commitment": "بدون التزام",
+    "payg_desc": "اشترِ رصيد إعلانات، استخدم خلال 6 أشهر.",
+    "ad": "إعلان",
+    "ads": "إعلانات",
+    "jod_per_ad": "د.أ للإعلان",
+    "save_percent": "وفر {percent}",
+    "subscribe_price": "اشتراك — {price} د.أ/شهر",
+    "top_up_wallet": "شحن المحفظة",
+    "billing_note": "تُدفع شهرياً عبر فوري أو المحفظة. يمكنك الإلغاء في أي وقت من الإعدادات.",
+    "recommended": "موصى به",
+    "features_included": "{count} إعلانات مدرجة",
+    "promo_title": "ابدأ بنشر\\nالعقارات",
+    "view_all": "عرض جميع الخطط",
+    "popular": "الأكثر شيوعاً"
+  },
   "language": {
     "title": "اللغة",
     "english": "English",

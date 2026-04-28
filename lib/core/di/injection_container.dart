@@ -16,6 +16,7 @@ import '../../features/news/data/repositories/news_repository_impl.dart';
 import '../../features/news/domain/repositories/news_repository.dart';
 import '../../features/news/domain/usecases/get_news.dart';
 import '../../features/news/presentation/bloc/news_bloc.dart';
+import '../../features/plans/presentation/bloc/plans_bloc.dart';
 import '../../features/projects/data/datasources/project_remote_data_source.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/project_repository.dart';
@@ -26,10 +27,10 @@ import '../../features/properties/data/repositories/property_repository_impl.dar
 import '../../features/properties/domain/repositories/property_repository.dart';
 import '../../features/properties/domain/usecases/get_properties.dart';
 import '../../features/properties/presentation/bloc/properties_bloc.dart';
-import '../../features/subscription/data/datasources/plan_remote_data_source.dart';
-import '../../features/subscription/data/repositories/plan_repository_impl.dart';
-import '../../features/subscription/domain/repositories/plan_repository.dart';
-import '../../features/subscription/domain/usecases/get_plans.dart';
+import '../../features/plans/data/datasources/plan_remote_data_source.dart';
+import '../../features/plans/data/repositories/plan_repository_impl.dart';
+import '../../features/plans/domain/repositories/plan_repository.dart';
+import '../../features/plans/domain/usecases/get_plans.dart';
 
 final sl = GetIt.instance;
 
@@ -40,6 +41,7 @@ Future<void> init() async {
   sl.registerFactory(() => ProjectsBloc(getProjects: sl()));
   sl.registerFactory(() => PropertiesBloc(getProperties: sl()));
   sl.registerFactory(() => NewsBloc(getNews: sl()));
+  sl.registerFactory(() => PlansBloc(getPlans: sl()));
 
   // -- Use cases -----------------------------------------
   sl.registerLazySingleton(() => GetPosts(sl()));
@@ -99,3 +101,4 @@ Future<void> init() async {
   // -- External ------------------------------------------
   sl.registerLazySingleton(() => InternetConnection());
 }
+

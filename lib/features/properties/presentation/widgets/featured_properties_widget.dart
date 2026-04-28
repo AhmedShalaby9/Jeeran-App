@@ -7,6 +7,7 @@ import '../bloc/properties_bloc.dart';
 import '../bloc/properties_event.dart';
 import '../bloc/properties_state.dart';
 import 'property_card.dart';
+import '../pages/property_details_page.dart';
 
 class FeaturedPropertiesWidget extends StatelessWidget {
   const FeaturedPropertiesWidget({super.key});
@@ -56,7 +57,7 @@ class _FeaturedPropertiesView extends StatelessWidget {
         itemCount: properties.length,
         itemBuilder: (context, i) => PropertyCard.featured(
           property: properties[i],
-          onTap: () {},
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PropertyDetailsPage(property: properties[i]))),
         ),
       ),
     );

@@ -1,15 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
 
-const _kGold = Color(0xFFB8893D);
-const _kGoldSoft = Color(0xFFF5ECDB);
-const _kBg = Color(0xFFF5F6F8);
-const _kInk = Color(0xFF0E1726);
-const _kInkSub = Color(0xFF5B6474);
-const _kInkMute = Color(0xFF8A93A3);
-const _kHairline = Color(0x14081E3C);
-const _kSuccess = Color(0xFF1E8A5F);
-const _kDanger = Color(0xFFC23B3B);
 
 class SubscriptionDetailsPage extends StatelessWidget {
   const SubscriptionDetailsPage({super.key});
@@ -20,7 +11,7 @@ class SubscriptionDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _kBg,
+      backgroundColor: AppColors.background,
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(child: _buildHeader(context)),
@@ -73,7 +64,7 @@ class SubscriptionDetailsPage extends StatelessWidget {
                   child: Text(
                     'Cancel anytime. Already-published listings stay visible until your cycle ends.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 11, color: _kInkMute, height: 1.5),
+                    style: TextStyle(fontSize: 11, color: AppColors.inkMute, height: 1.5),
                   ),
                 ),
               ],
@@ -96,14 +87,14 @@ class SubscriptionDetailsPage extends StatelessWidget {
               child: Container(
                 width: 36, height: 36,
                 decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFF2F4F7)),
-                child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: _kInk),
+                child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: AppColors.ink),
               ),
             ),
             const Expanded(
               child: Text(
                 'Subscription',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _kInk),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.ink),
               ),
             ),
             const SizedBox(width: 36),
@@ -137,7 +128,7 @@ class SubscriptionDetailsPage extends StatelessWidget {
                 width: 180, height: 180,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: RadialGradient(colors: [_kGold.withValues(alpha: 0.15), const Color(0x00B8893D)]),
+                  gradient: RadialGradient(colors: [AppColors.gold.withValues(alpha: 0.15), const Color(0x00B8893D)]),
                 ),
               ),
             ),
@@ -180,12 +171,12 @@ class SubscriptionDetailsPage extends StatelessWidget {
                       value: pct,
                       minHeight: 8,
                       backgroundColor: Colors.white.withValues(alpha: 0.15),
-                      valueColor: const AlwaysStoppedAnimation(_kGold),
+                      valueColor: const AlwaysStoppedAnimation(AppColors.gold),
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${_total - _used} remaining · resets in 12 days',
+                    '${_total - _used} remaining آ· resets in 12 days',
                     style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.7)),
                   ),
                 ],
@@ -212,9 +203,9 @@ class SubscriptionDetailsPage extends StatelessWidget {
           const SizedBox(width: 10),
           _QuickAction(
             label: 'Upgrade',
-            iconBg: _kGoldSoft,
+            iconBg: AppColors.goldSoft,
             icon: Icons.auto_awesome_rounded,
-            iconColor: _kGold,
+            iconColor: AppColors.gold,
             onTap: () {},
           ),
           const SizedBox(width: 10),
@@ -222,7 +213,7 @@ class SubscriptionDetailsPage extends StatelessWidget {
             label: 'Invoices',
             iconBg: const Color(0xFFEEF0F4),
             icon: Icons.receipt_long_rounded,
-            iconColor: _kInkSub,
+            iconColor: AppColors.inkSub,
             onTap: () {},
           ),
         ],
@@ -231,7 +222,7 @@ class SubscriptionDetailsPage extends StatelessWidget {
   }
 }
 
-// ── Section wrapper ───────────────────────────────────────────
+// â”€â”€ Section wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _Section extends StatelessWidget {
   final String title;
@@ -251,7 +242,7 @@ class _Section extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(title, style: const TextStyle(fontSize: 11, color: _kInkMute, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
+                Text(title, style: const TextStyle(fontSize: 11, color: AppColors.inkMute, fontWeight: FontWeight.w700, letterSpacing: 0.8)),
                 if (action != null)
                   GestureDetector(
                     onTap: () {},
@@ -264,7 +255,7 @@ class _Section extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: _kHairline),
+              border: Border.all(color: AppColors.hairline),
             ),
             clipBehavior: Clip.hardEdge,
             child: Column(children: children),
@@ -275,7 +266,7 @@ class _Section extends StatelessWidget {
   }
 }
 
-// ── Row types ─────────────────────────────────────────────────
+// â”€â”€ Row types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _DetailRow extends StatelessWidget {
   final String label, value;
@@ -288,16 +279,16 @@ class _DetailRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        border: last ? null : const Border(bottom: BorderSide(color: _kHairline)),
+        border: last ? null : const Border(bottom: BorderSide(color: AppColors.hairline)),
       ),
       child: Row(
         children: [
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 14, color: _kInkSub))),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 14, color: AppColors.inkSub))),
           if (value.isNotEmpty)
-            Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: valueColor ?? _kInk)),
+            Text(value, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: valueColor ?? AppColors.ink)),
           if (chevron) ...[
             const SizedBox(width: 6),
-            const Icon(Icons.chevron_right_rounded, size: 18, color: _kInkMute),
+            const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkMute),
           ],
         ],
       ),
@@ -319,10 +310,10 @@ class _ManageRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(fontSize: 14, color: danger ? _kDanger : _kInk, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 14, color: danger ? AppColors.danger : AppColors.ink, fontWeight: FontWeight.w500),
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, size: 18, color: _kInkMute),
+          const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkMute),
         ],
       ),
     );
@@ -339,7 +330,7 @@ class _BillingRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        border: last ? null : const Border(bottom: BorderSide(color: _kHairline)),
+        border: last ? null : const Border(bottom: BorderSide(color: AppColors.hairline)),
       ),
       child: Row(
         children: [
@@ -347,22 +338,22 @@ class _BillingRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Growth — monthly', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _kInk)),
+                const Text('Growth â€” monthly', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
                 const SizedBox(height: 2),
-                Text(date, style: const TextStyle(fontSize: 12, color: _kInkSub)),
+                Text(date, style: const TextStyle(fontSize: 12, color: AppColors.inkSub)),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(amount, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _kInk)),
+              Text(amount, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
               const SizedBox(height: 2),
-              const Text('Paid', style: TextStyle(fontSize: 11, color: _kSuccess, fontWeight: FontWeight.w600)),
+              const Text('Paid', style: TextStyle(fontSize: 11, color: AppColors.success, fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.chevron_right_rounded, size: 18, color: _kInkMute),
+          const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkMute),
         ],
       ),
     );
@@ -391,8 +382,8 @@ class _FawryRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Fawry Pay', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _kInk)),
-                Text('+962 79 •• •• 342', style: TextStyle(fontSize: 12, color: _kInkSub)),
+                Text('Fawry Pay', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
+                Text('+962 79 â€¢â€¢ â€¢â€¢ 342', style: TextStyle(fontSize: 12, color: AppColors.inkSub)),
               ],
             ),
           ),
@@ -403,7 +394,7 @@ class _FawryRow extends StatelessWidget {
   }
 }
 
-// ── Small components ──────────────────────────────────────────
+// â”€â”€ Small components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _ActiveTag extends StatelessWidget {
   @override
@@ -411,7 +402,7 @@ class _ActiveTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: _kGold.withValues(alpha: 0.22),
+        color: AppColors.gold.withValues(alpha: 0.22),
         borderRadius: BorderRadius.circular(99),
       ),
       child: const Text('Active', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFF5D89A), letterSpacing: 0.2)),
@@ -450,7 +441,7 @@ class _QuickAction extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: _kHairline),
+            border: Border.all(color: AppColors.hairline),
           ),
           child: Column(
             children: [
@@ -460,7 +451,7 @@ class _QuickAction extends StatelessWidget {
                 child: Icon(icon, size: 18, color: iconColor),
               ),
               const SizedBox(height: 8),
-              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _kInk)),
+              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.ink)),
             ],
           ),
         ),
@@ -468,3 +459,4 @@ class _QuickAction extends StatelessWidget {
     );
   }
 }
+

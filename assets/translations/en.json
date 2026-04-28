@@ -1,7 +1,6 @@
 {
   "app_name": "Jeeran",
   "splash_tagline": "Find Your Dream Home",
-
   "bottom_nav": {
     "home": "Home",
     "search": "Search",
@@ -9,7 +8,6 @@
     "favorites": "Favorites",
     "more": "More"
   },
-
   "home": {
     "hello": "Hello",
     "hello_user": "Hello, {userName}",
@@ -19,7 +17,6 @@
     "phone_call": "Phone Call",
     "whatsapp": "WhatsApp"
   },
-
   "search": {
     "filters": {
       "title": "Search Filters",
@@ -42,13 +39,11 @@
       "featured_tooltip": "Show only featured properties"
     }
   },
-
   "status": {
     "for_sale": "For Sale",
     "for_rent": "For Rent",
     "for_rent_furnished": "For Rent (Furnished)"
   },
-
   "type": {
     "villa": "Villa",
     "apartment": "Apartment",
@@ -57,18 +52,15 @@
     "chalet": "Chalet",
     "duplex": "Duplex"
   },
-
   "sort": {
     "price": "Price",
     "date": "Date",
     "bedrooms": "Bedrooms"
   },
-
   "order": {
     "ascending": "Ascending",
     "descending": "Descending"
   },
-
   "properties": {
     "title": "Properties",
     "reset_filters": "Reset Filters",
@@ -77,32 +69,27 @@
     "unit_sqm": " m²",
     "active_filters": "Active Filters"
   },
-
   "projects": {
     "title": "Projects",
     "explore": "Explore Projects"
   },
-
   "project_details": {
     "about": "About",
     "features": "Features & Highlights",
     "gallery": "Gallery",
     "show_all_properties": "Show all project properties"
   },
-
   "news": {
     "title": "News",
     "show_all": "Show all",
     "gallery": "Gallery"
   },
-
   "favorites": {
     "title": "Favorites",
     "empty_title": "No Favorites Yet",
     "empty_subtitle": "Save properties you love and find them here.",
     "browse": "Browse Properties"
   },
-
   "more": {
     "title": "More",
     "guest_user": "Guest User",
@@ -126,7 +113,6 @@
     "privacy_policy": "Privacy Policy",
     "terms_of_service": "Terms of Service"
   },
-
   "onboarding": {
     "welcome_title": "Welcome to Jeeran",
     "welcome_desc": "Discover your perfect property with our comprehensive real estate platform",
@@ -138,18 +124,36 @@
     "next": "Next",
     "get_started": "Get Started"
   },
-
   "errors": {
     "server": "Server error occurred",
     "network": "No internet connection",
     "unexpected": "An unexpected error occurred",
     "cache": "Cache error occurred"
   },
-
   "actions": {
     "retry": "Retry"
   },
-
+  "plans": {
+    "title": "Unlock listing uploads",
+    "subtitle": "Pick a plan to start posting properties on Jeeran. Upgrade, downgrade or cancel anytime.",
+    "restore": "Restore",
+    "monthly_plan": "Monthly plan",
+    "pay_as_you_go": "Pay as you go",
+    "no_commitment": "No commitment",
+    "payg_desc": "Buy ad credits, use within 6 months.",
+    "ad": "ad",
+    "ads": "ads",
+    "jod_per_ad": "JOD per ad",
+    "save_percent": "save {percent}",
+    "subscribe_price": "Subscribe — {price} JOD/mo",
+    "top_up_wallet": "Top up wallet",
+    "billing_note": "Billed monthly via Fawry or wallet. Cancel anytime from settings.",
+    "recommended": "Recommended",
+    "features_included": "{count} ads included",
+    "promo_title": "Start posting\\nproperties",
+    "view_all": "View all plans",
+    "popular": "Popular"
+  },
   "language": {
     "title": "Language",
     "english": "English",
