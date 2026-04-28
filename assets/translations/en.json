@@ -207,6 +207,8 @@
     "contact_note": ". Contact them directly for viewings, pricing, or any questions about the property.",
     "similar_properties": "Similar Properties",
     "see_all": "See all",
+    "more_from_agent": "More from {agent}",
+    "no_agent_properties": "No other properties from this agent.",
     "whatsapp": "WhatsApp",
     "call": "Call"
   },

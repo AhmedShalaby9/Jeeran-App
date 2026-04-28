@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:video_player/video_player.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
-import '../../../main/presentation/pages/main_page.dart';
+import '../../../auth/presentation/pages/login_page.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -101,7 +101,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const MainPage()),
+      MaterialPageRoute(builder: (context) => const LoginPage()),
     );
   }
 

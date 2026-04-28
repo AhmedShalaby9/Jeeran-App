@@ -249,6 +249,15 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
       );
     }
 
+    if (params.agentName != null && params.agentName!.isNotEmpty) {
+      chips.add(
+        _FilterChip(
+          label: params.agentName!,
+          onRemove: () => _applyParams(params.copyWith(agentName: null)),
+        ),
+      );
+    }
+
     return chips;
   }
 

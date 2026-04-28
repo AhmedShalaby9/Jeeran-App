@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/property.dart';
+import 'property_similar_section.dart';
 import 'property_widgets.dart';
 
 class PropertyOverviewTab extends StatelessWidget {
@@ -44,6 +45,8 @@ class PropertyOverviewTab extends StatelessWidget {
               ),
           ],
         ),
+        const SizedBox(height: 24),
+        PropertySimilarSection(property: property),
       ],
     );
   }

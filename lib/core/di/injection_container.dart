@@ -23,6 +23,7 @@ import '../../features/properties/data/datasources/property_remote_data_source.d
 import '../../features/properties/data/repositories/property_repository_impl.dart';
 import '../../features/properties/domain/repositories/property_repository.dart';
 import '../../features/properties/presentation/bloc/properties_bloc.dart';
+import '../../features/properties/presentation/bloc/property_similar_bloc.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
@@ -30,6 +31,10 @@ import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/plans/data/datasources/plan_remote_data_source.dart';
 import '../../features/plans/data/repositories/plan_repository_impl.dart';
 import '../../features/plans/domain/repositories/plan_repository.dart';
+import '../../features/favorites/data/datasources/favorites_remote_data_source.dart';
+import '../../features/favorites/data/repositories/favorites_repository_impl.dart';
+import '../../features/favorites/domain/repositories/favorites_repository.dart';
+import '../../features/favorites/presentation/bloc/favorites_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -39,9 +44,11 @@ Future<void> init() async {
   sl.registerLazySingleton(() => BannersBloc(repository: sl()));
   sl.registerLazySingleton(() => ProjectsBloc(repository: sl()));
   sl.registerFactory(() => PropertiesBloc(repository: sl()));
+  sl.registerFactory(() => PropertySimilarBloc(repository: sl()));
   sl.registerLazySingleton(() => NewsBloc(repository: sl()));
   sl.registerFactory(() => PlansBloc(repository: sl()));
   sl.registerFactory(() => AuthBloc(repository: sl()));
+  sl.registerLazySingleton(() => FavoritesBloc(repository: sl()));
 
   // -- Repositories --------------------------------------
   sl.registerLazySingleton<HomeRepository>(
@@ -66,6 +73,9 @@ Future<void> init() async {
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
+  sl.registerLazySingleton<FavoritesRepository>(
+    () => FavoritesRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
 
   // -- Data sources --------------------------------------
   sl.registerLazySingleton<ProjectRemoteDataSource>(
@@ -77,7 +87,7 @@ Future<void> init() async {
   sl.registerLazySingleton<HomeRemoteDataSource>(
     () => HomeRemoteDataSourceImpl(apiClient: sl()),
   );
-  sl.registerLazySingleton<HomeLocalDataSource>(
+sl.registerLazySingleton<HomeLocalDataSource>(
     () => HomeLocalDataSourceImpl(),
   );
   sl.registerLazySingleton<NewsRemoteDataSource>(
@@ -89,8 +99,11 @@ Future<void> init() async {
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(apiClient: sl()),
   );
+  sl.registerLazySingleton<FavoritesRemoteDataSource>(
+    () => FavoritesRemoteDataSourceImpl(apiClient: sl()),
+  );
 
-  // -- Core ----------------------------------------------
+// -- Core ----------------------------------------------
   sl.registerLazySingleton<NetworkInfo>(
     () => NetworkInfoImpl(sl()),
   );
@@ -105,6 +118,9 @@ Future<void> init() async {
         InternetCheckOption(
           uri: Uri.parse(AppConfig.baseUrl),
           timeout: const Duration(seconds: 5),
+          // Any HTTP response (including 4xx) means the server is reachable
+          responseStatusFn: (response) =>
+              response.statusCode >= 100 && response.statusCode < 600,
         ),
       ],
     ),

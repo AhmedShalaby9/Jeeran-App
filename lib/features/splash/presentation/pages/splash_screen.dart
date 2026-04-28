@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_strings.dart';
+import '../../../auth/presentation/pages/login_page.dart';
 import '../../../onboarding/presentation/pages/onboarding_screen.dart';
 import '../../../main/presentation/pages/main_page.dart';
 
@@ -83,10 +84,11 @@ class _SplashScreenState extends State<SplashScreen>
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            AppStorage.isFirstTimeUser
-                ? const OnboardingScreen()
-                : const MainPage(),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          if (AppStorage.isFirstTimeUser) return const OnboardingScreen();
+          if (!AppStorage.isLoggedIn) return const LoginPage();
+          return const MainPage();
+        },
         transitionDuration: Duration.zero,
       ),
     );

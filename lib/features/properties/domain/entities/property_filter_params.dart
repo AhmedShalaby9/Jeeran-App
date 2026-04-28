@@ -11,6 +11,7 @@ class PropertyFilterParams extends Equatable {
   final String? maxPrice;
   final int? bedrooms;
   final String? q;
+  final String? agentName;
   final String? sort;
   final String? order;
 
@@ -25,6 +26,7 @@ class PropertyFilterParams extends Equatable {
     this.maxPrice,
     this.bedrooms,
     this.q,
+    this.agentName,
     this.sort,
     this.order,
   });
@@ -41,6 +43,7 @@ class PropertyFilterParams extends Equatable {
       if (maxPrice != null) 'max_price': maxPrice,
       if (bedrooms != null) 'bedrooms': bedrooms.toString(),
       if (q != null) 'q': q,
+      if (agentName != null) 'agent_name': agentName,
       if (sort != null) 'sort': sort,
       if (order != null) 'order': order,
     };
@@ -57,6 +60,7 @@ class PropertyFilterParams extends Equatable {
     String? maxPrice,
     int? bedrooms,
     String? q,
+    String? agentName,
     String? sort,
     String? order,
   }) {
@@ -71,6 +75,7 @@ class PropertyFilterParams extends Equatable {
       maxPrice: maxPrice ?? this.maxPrice,
       bedrooms: bedrooms ?? this.bedrooms,
       q: q ?? this.q,
+      agentName: agentName ?? this.agentName,
       sort: sort ?? this.sort,
       order: order ?? this.order,
     );
@@ -88,6 +93,7 @@ class PropertyFilterParams extends Equatable {
         maxPrice,
         bedrooms,
         q,
+        agentName,
         sort,
         order,
       ];

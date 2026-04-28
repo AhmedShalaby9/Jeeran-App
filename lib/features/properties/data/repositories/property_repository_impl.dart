@@ -28,4 +28,23 @@ class PropertyRepositoryImpl implements PropertyRepository {
       return Left(ServerFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, List<Property>>> getSimilarProperties(
+    int propertyId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final properties = await remoteDataSource.getSimilarProperties(
+        propertyId,
+        page: page,
+        limit: limit,
+      );
+      return Right(properties);
+    } on ServerException {
+      return Left(ServerFailure());
+    }
+  }
 }

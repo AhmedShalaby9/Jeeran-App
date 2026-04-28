@@ -1,15 +1,15 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../core/error/failures.dart';
-import '../../../../core/usecases/usecase.dart';
 import '../../../../core/utils/app_strings.dart';
-import '../../domain/usecases/get_plans.dart';
+import '../../domain/repositories/plan_repository.dart';
 import 'plans_event.dart';
 import 'plans_state.dart';
 
 class PlansBloc extends Bloc<PlansEvent, PlansState> {
-  final GetPlans getPlans;
+  final PlanRepository repository;
 
-  PlansBloc({required this.getPlans}) : super(PlansInitial()) {
+  PlansBloc({required this.repository}) : super(PlansInitial()) {
     on<FetchPlansEvent>(_onFetchPlans);
   }
 
@@ -18,7 +18,7 @@ class PlansBloc extends Bloc<PlansEvent, PlansState> {
     Emitter<PlansState> emit,
   ) async {
     emit(PlansLoading());
-    final result = await getPlans(NoParams());
+    final result = await repository.getPlans();
     result.fold(
       (failure) => emit(PlansError(_mapFailure(failure))),
       (plans) => emit(PlansLoaded(plans)),

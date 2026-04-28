@@ -29,21 +29,22 @@ class PropertyGallery extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        if (images.isNotEmpty)
-          PageView.builder(
-            controller: pageController,
-            itemCount: images.length,
-            onPageChanged: onPageChanged,
-            itemBuilder: (_, i) => CachedNetworkImage(
-              imageUrl: images[i],
-              fit: BoxFit.cover,
-              width: double.infinity,
-              placeholder: (_, _) => const PropertyPlaceholder(),
-              errorWidget: (_, _, _) => const PropertyPlaceholder(),
-            ),
-          )
-        else
-          const PropertyPlaceholder(),
+        Positioned.fill(
+          child: images.isNotEmpty
+              ? PageView.builder(
+                  controller: pageController,
+                  itemCount: images.length,
+                  onPageChanged: onPageChanged,
+                  itemBuilder: (_, i) => CachedNetworkImage(
+                    imageUrl: images[i],
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    placeholder: (_, _) => const PropertyPlaceholder(),
+                    errorWidget: (_, _, _) => const PropertyPlaceholder(),
+                  ),
+                )
+              : const PropertyPlaceholder(),
+        ),
         // Frosted top bar
         Positioned(
           top: 0,

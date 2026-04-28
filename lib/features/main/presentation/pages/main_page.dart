@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../home/presentation/pages/home_page.dart';
 import '../../../search/presentation/pages/search_page.dart';
@@ -79,12 +82,39 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: LazyIndexedStack(index: _selectedIndex, children: _pages),
-      bottomNavigationBar: _JeeranBottomNavBar(
+    return BlocProvider.value(
+      value: sl<FavoritesBloc>(),
+      child: _MainScaffold(
         selectedIndex: _selectedIndex,
-        items: _navItems,
+        pages: _pages,
+        navItems: _navItems,
         onTap: _onItemTapped,
+      ),
+    );
+  }
+}
+
+class _MainScaffold extends StatelessWidget {
+  final int selectedIndex;
+  final List<Widget> pages;
+  final List<_NavItem> navItems;
+  final ValueChanged<int> onTap;
+
+  const _MainScaffold({
+    required this.selectedIndex,
+    required this.pages,
+    required this.navItems,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: LazyIndexedStack(index: selectedIndex, children: pages),
+      bottomNavigationBar: _JeeranBottomNavBar(
+        selectedIndex: selectedIndex,
+        items: navItems,
+        onTap: onTap,
       ),
     );
   }

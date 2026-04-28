@@ -22,9 +22,14 @@
   static String propertyById(int id) => '/properties/$id';
   static const String featuredProperties = '/properties/featured';
   static const String searchProperties = '/properties/search';
+  static String similarProperties(int id) => '/properties/$id/similar';
 
   // News
   static const String news = '/news';
+
+  // Favorites
+  static const String favorites = '/favorites';
+  static String favoriteById(int id) => '/favorites/$id';
 
   // Subscription
   static const String packages = '/packages';

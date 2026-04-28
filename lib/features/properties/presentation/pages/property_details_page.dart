@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../features/favorites/presentation/bloc/favorites_bloc.dart';
 import '../../domain/entities/property.dart';
 import '../widgets/property_bottom_bar.dart';
 import '../widgets/property_gallery.dart';
 import '../widgets/property_price_card.dart';
-import '../widgets/property_similar_section.dart';
+
 import '../widgets/property_agent_tab.dart';
 import '../widgets/property_details_tab.dart';
 import '../widgets/property_overview_tab.dart';
@@ -18,7 +20,7 @@ class PropertyDetailsPage extends StatefulWidget {
 
 class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   int _photoIdx = 0;
-  bool _saved = false;
+  late bool _saved;
   int _tab = 0;
   late final PageController _pageController;
 
@@ -27,6 +29,9 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   @override
   void initState() {
     super.initState();
+    // Prefer the in-session cache; fall back to the server-returned value
+    _saved = sl<FavoritesBloc>().isFavorited(widget.property.id) ||
+        widget.property.isFavorited;
     _pageController = PageController();
   }
 
@@ -43,6 +48,15 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     if (n >= 1000000) return 'M';
     if (n >= 1000) return 'K';
     return raw;
+  }
+
+  void _toggleSave() {
+    setState(() => _saved = !_saved);
+    if (_saved) {
+      sl<FavoritesBloc>().add(AddFavoriteEvent(_p.id));
+    } else {
+      sl<FavoritesBloc>().add(RemoveFavoriteEvent(_p.id));
+    }
   }
 
   String _initials(String? name) {
@@ -70,9 +84,6 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 sliver: SliverToBoxAdapter(child: _buildTabContent()),
               ),
-              SliverToBoxAdapter(
-                child: PropertySimilarSection(property: _p),
-              ),
               const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
@@ -83,7 +94,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
             child: PropertyBottomBar(
               property: _p,
               saved: _saved,
-              onToggleSave: () => setState(() => _saved = !_saved),
+              onToggleSave: _toggleSave,
               onShare: () {},
             ),
           ),
@@ -113,7 +124,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 saved: _saved,
                 pageController: _pageController,
                 onPageChanged: (i) => setState(() => _photoIdx = i),
-                onToggleSave: () => setState(() => _saved = !_saved),
+                onToggleSave: _toggleSave,
                 onShare: () {},
                 onBack: () => Navigator.maybePop(context),
               ),
