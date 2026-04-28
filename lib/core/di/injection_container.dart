@@ -36,10 +36,10 @@ final sl = GetIt.instance;
 Future<void> init() async {
   // -- BLoC ----------------------------------------------
   sl.registerFactory(() => HomeBloc(repository: sl()));
-  sl.registerFactory(() => BannersBloc(repository: sl()));
-  sl.registerFactory(() => ProjectsBloc(repository: sl()));
+  sl.registerLazySingleton(() => BannersBloc(repository: sl()));
+  sl.registerLazySingleton(() => ProjectsBloc(repository: sl()));
   sl.registerFactory(() => PropertiesBloc(repository: sl()));
-  sl.registerFactory(() => NewsBloc(repository: sl()));
+  sl.registerLazySingleton(() => NewsBloc(repository: sl()));
   sl.registerFactory(() => PlansBloc(repository: sl()));
   sl.registerFactory(() => AuthBloc(repository: sl()));
 

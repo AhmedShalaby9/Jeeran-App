@@ -128,10 +128,19 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
+  static bool _projectsInitialized = false;
+
+  void _ensureProjectsLoaded() {
+    if (_projectsInitialized) return;
+    _projectsInitialized = true;
+    sl<ProjectsBloc>().add(const FetchProjectsEvent());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<ProjectsBloc>()..add(const FetchProjectsEvent()),
+    _ensureProjectsLoaded();
+    return BlocProvider.value(
+      value: sl<ProjectsBloc>(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: _buildAppBar(),

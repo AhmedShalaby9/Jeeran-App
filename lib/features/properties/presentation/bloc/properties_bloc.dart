@@ -20,7 +20,10 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
     FetchPropertiesEvent event,
     Emitter<PropertiesState> emit,
   ) async {
-    if (state is PropertiesLoading || state is PropertiesLoaded) return;
+    final currentState = state;
+    if (currentState is PropertiesLoaded && currentState.params == event.params) {
+      return;
+    }
     emit(PropertiesLoading());
     final result = await repository.getProperties(event.params);
     result.fold(
@@ -68,7 +71,6 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
     ResetFiltersEvent event,
     Emitter<PropertiesState> emit,
   ) async {
-    if (state is PropertiesLoading || state is PropertiesLoaded) return;
     emit(PropertiesLoading());
     final result = await repository.getProperties(const PropertyFilterParams());
     result.fold(

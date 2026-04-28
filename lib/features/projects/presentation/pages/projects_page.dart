@@ -14,10 +14,19 @@ import '../widgets/projects_shimmer.dart';
 class ProjectsPage extends StatelessWidget {
   const ProjectsPage({super.key});
 
+  static bool _initialized = false;
+
+  void _ensureLoaded() {
+    if (_initialized) return;
+    _initialized = true;
+    sl<ProjectsBloc>().add(const FetchProjectsEvent());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<ProjectsBloc>()..add(const FetchProjectsEvent()),
+    _ensureLoaded();
+    return BlocProvider.value(
+      value: sl<ProjectsBloc>(),
       child: const _ProjectsView(),
     );
   }

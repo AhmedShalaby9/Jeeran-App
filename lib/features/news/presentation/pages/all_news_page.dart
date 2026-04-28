@@ -13,10 +13,19 @@ import 'news_details_page.dart';
 class AllNewsPage extends StatelessWidget {
   const AllNewsPage({super.key});
 
+  static bool _initialized = false;
+
+  void _ensureLoaded() {
+    if (_initialized) return;
+    _initialized = true;
+    sl<NewsBloc>().add(const FetchNewsEvent());
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<NewsBloc>()..add(const FetchNewsEvent()),
+    _ensureLoaded();
+    return BlocProvider.value(
+      value: sl<NewsBloc>(),
       child: const _AllNewsView(),
     );
   }

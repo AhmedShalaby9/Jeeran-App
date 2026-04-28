@@ -26,27 +26,30 @@ class HomePage extends StatelessWidget {
   final VoidCallback? onSearchTap;
   const HomePage({super.key, this.onSearchTap});
 
+  static bool _initialized = false;
+
+  void _ensureEventsDispatched() {
+    if (_initialized) return;
+    _initialized = true;
+    sl<BannersBloc>().add(const FetchBannersEvent());
+    sl<ProjectsBloc>().add(const FetchProjectsEvent());
+    sl<NewsBloc>().add(const FetchNewsEvent());
+    sl<PropertiesBloc>().add(
+      const FetchPropertiesEvent(
+        PropertyFilterParams(isFeatured: true, perPage: 10),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    _ensureEventsDispatched();
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (_) => sl<BannersBloc>()..add(const FetchBannersEvent()),
-        ),
-        BlocProvider(
-          create: (_) => sl<ProjectsBloc>()..add(const FetchProjectsEvent()),
-        ),
-        BlocProvider(
-          create: (_) => sl<NewsBloc>()..add(const FetchNewsEvent()),
-        ),
-        BlocProvider(
-          create: (_) => sl<PropertiesBloc>()
-            ..add(
-              const FetchPropertiesEvent(
-                PropertyFilterParams(isFeatured: true, perPage: 10),
-              ),
-            ),
-        ),
+        BlocProvider.value(value: sl<BannersBloc>()),
+        BlocProvider.value(value: sl<ProjectsBloc>()),
+        BlocProvider.value(value: sl<NewsBloc>()),
+        BlocProvider.value(value: sl<PropertiesBloc>()),
       ],
       child: _HomeView(onSearchTap: onSearchTap),
     );
