@@ -251,5 +251,10 @@
     "referral_helper": "Have a friend's code? You both get a reward.",
     "skip": "Skip",
     "complete_setup": "Complete setup"
+  },
+  "profile": {
+    "title": "My Profile",
+    "save": "Save Changes",
+    "saved": "Profile updated successfully"
   }
 }

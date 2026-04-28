@@ -14,6 +14,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthCompleteProfileEvent>(_onCompleteProfile);
     on<AuthLogoutEvent>(_onLogout);
     on<AuthGetMeEvent>(_onGetMe);
+    on<AuthUpdateProfileEvent>(_onUpdateProfile);
   }
 
   Future<void> _onLogin(AuthLoginEvent event, Emitter<AuthState> emit) async {
@@ -57,6 +58,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(AuthError(_mapFailure(failure))),
       (user) => emit(AuthMeLoaded(user)),
+    );
+  }
+
+  Future<void> _onUpdateProfile(AuthUpdateProfileEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final result = await repository.completeProfile(event.params);
+    result.fold(
+      (failure) => emit(AuthError(_mapFailure(failure))),
+      (user) => emit(AuthProfileUpdated(user)),
     );
   }
 

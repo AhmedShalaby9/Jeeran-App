@@ -8,6 +8,7 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/pages/login_page.dart';
+import '../../../auth/presentation/pages/my_profile_page.dart';
 
 class MorePage extends StatelessWidget {
   const MorePage({super.key});
@@ -23,6 +24,68 @@ class MorePage extends StatelessWidget {
 
 class _MoreView extends StatelessWidget {
   const _MoreView();
+
+  void _showLanguageSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.grey.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'language.select'.tr(),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.onBackground,
+                ),
+              ),
+              const Divider(height: 20),
+              ListTile(
+                leading: const Icon(Icons.language, color: AppColors.primary),
+                title: Text('language.english'.tr()),
+                trailing: context.locale.languageCode == 'en'
+                    ? const Icon(Icons.check_circle, color: AppColors.primary)
+                    : null,
+                onTap: () async {
+                  await context.setLocale(const Locale('en'));
+                  await AppStorage.setLanguage('en');
+                  if (context.mounted) Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.language, color: AppColors.primary),
+                title: Text('language.arabic'.tr()),
+                trailing: context.locale.languageCode == 'ar'
+                    ? const Icon(Icons.check_circle, color: AppColors.primary)
+                    : null,
+                onTap: () async {
+                  await context.setLocale(const Locale('ar'));
+                  await AppStorage.setLanguage('ar');
+                  if (context.mounted) Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +174,10 @@ class _MoreView extends StatelessWidget {
           _MoreTile(
             icon: Icons.person_outline,
             label: 'more.my_profile'.tr(),
-            onTap: () {},
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const MyProfilePage()),
+            ),
           ),
           _MoreTile(
             icon: Icons.home_work_outlined,
@@ -135,7 +201,7 @@ class _MoreView extends StatelessWidget {
             icon: Icons.language_outlined,
             label: 'more.language'.tr(),
             trailing: context.locale.languageCode == 'ar' ? 'language.arabic'.tr() : 'language.english'.tr(),
-            onTap: () {},
+            onTap: () => _showLanguageSheet(context),
           ),
           _MoreTile(
             icon: Icons.notifications_outlined,

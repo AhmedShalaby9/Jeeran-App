@@ -30,3 +30,10 @@ class AuthLogoutEvent extends AuthEvent {
 class AuthGetMeEvent extends AuthEvent {
   const AuthGetMeEvent();
 }
+
+class AuthUpdateProfileEvent extends AuthEvent {
+  final CompleteProfileParams params;
+  const AuthUpdateProfileEvent(this.params);
+  @override
+  List<Object?> get props => [params];
+}
