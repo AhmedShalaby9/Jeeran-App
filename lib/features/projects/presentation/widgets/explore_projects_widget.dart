@@ -2,12 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_loading.dart';
 import '../../domain/entities/project.dart';
 import '../bloc/projects_bloc.dart';
-import '../bloc/projects_event.dart';
 import '../bloc/projects_state.dart';
 import 'project_card.dart';
 
@@ -17,10 +15,7 @@ class ExploreProjectsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<ProjectsBloc>()..add(const FetchProjectsEvent()),
-      child: _ExploreProjectsView(title: title),
-    );
+    return _ExploreProjectsView(title: title);
   }
 }
 

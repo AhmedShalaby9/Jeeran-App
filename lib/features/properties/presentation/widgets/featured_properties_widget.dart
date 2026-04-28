@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/di/injection_container.dart';
 import '../../../../core/widgets/app_loading.dart';
-import '../../domain/entities/property_filter_params.dart';
 import '../bloc/properties_bloc.dart';
-import '../bloc/properties_event.dart';
 import '../bloc/properties_state.dart';
 import 'property_card.dart';
 import '../pages/property_details_page.dart';
@@ -14,15 +11,7 @@ class FeaturedPropertiesWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<PropertiesBloc>()
-        ..add(
-          const FetchPropertiesEvent(
-            PropertyFilterParams(isFeatured: true, perPage: 10),
-          ),
-        ),
-      child: const _FeaturedPropertiesView(),
-    );
+    return const _FeaturedPropertiesView();
   }
 }
 

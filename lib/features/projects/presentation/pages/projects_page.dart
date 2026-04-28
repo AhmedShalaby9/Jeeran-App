@@ -41,8 +41,9 @@ class _ProjectsView extends StatelessWidget {
                   context.read<ProjectsBloc>().add(const FetchProjectsEvent()),
             );
           }
-          if (state is ProjectsLoaded)
+          if (state is ProjectsLoaded) {
             return _ProjectsGrid(projects: state.projects);
+          }
           return const SizedBox.shrink();
         },
       ),

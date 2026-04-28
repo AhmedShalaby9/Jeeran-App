@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_image.dart';
 import '../../../../core/widgets/app_loading.dart';
 import '../../domain/entities/news.dart';
 import '../bloc/news_bloc.dart';
-import '../bloc/news_event.dart';
 import '../bloc/news_state.dart';
 import '../pages/all_news_page.dart';
 import '../pages/news_details_page.dart';
@@ -17,10 +15,7 @@ class NewsCarouselWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<NewsBloc>()..add(const FetchNewsEvent()),
-      child: const _NewsCarouselView(),
-    );
+    return const _NewsCarouselView();
   }
 }
 

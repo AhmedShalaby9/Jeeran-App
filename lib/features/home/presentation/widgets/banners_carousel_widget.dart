@@ -5,12 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_image.dart';
 import '../../domain/entities/app_banner.dart';
 import '../bloc/banners_bloc.dart';
-import '../bloc/banners_event.dart';
 import '../bloc/banners_state.dart';
 
 class BannersCarouselWidget extends StatelessWidget {
@@ -18,10 +16,7 @@ class BannersCarouselWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<BannersBloc>()..add(const FetchBannersEvent()),
-      child: const _BannersCarouselView(),
-    );
+    return const _BannersCarouselView();
   }
 }
 
@@ -179,8 +174,8 @@ class _BannersCarouselViewState extends State<_BannersCarouselView> {
 
   Future<void> _openWhatsApp(String phone) async {
     String clean = phone.replaceAll(RegExp(r'[^\d+]'), '');
-    if (!clean.startsWith('+')) clean = '+$clean';
-    final uri = Uri.parse('https://wa.me/$clean');
+    if (!clean.startsWith('+')) clean = '+';
+    final uri = Uri.parse('https://wa.me/');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }

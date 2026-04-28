@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../home/presentation/pages/home_page.dart';
 import '../../../search/presentation/pages/search_page.dart';
 import '../../../projects/presentation/pages/projects_page.dart';
@@ -79,7 +80,7 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _pages),
+      body: LazyIndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: _JeeranBottomNavBar(
         selectedIndex: _selectedIndex,
         items: _navItems,
