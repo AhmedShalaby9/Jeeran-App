@@ -4,7 +4,7 @@ import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_image.dart';
 import '../../domain/entities/property.dart';
 
-enum _CardType { featured, horizontal, vertical }
+enum _CardType { featured, horizontal, vertical, similar }
 
 class PropertyCard extends StatelessWidget {
   final Property property;
@@ -17,6 +17,7 @@ class PropertyCard extends StatelessWidget {
     this.onTap,
   }) : _type = type;
 
+  /// Large hero card — used in horizontal featured carousels.
   factory PropertyCard.featured({
     required Property property,
     VoidCallback? onTap,
@@ -26,6 +27,7 @@ class PropertyCard extends StatelessWidget {
     onTap: onTap,
   );
 
+  /// Wide card with thumbnail on the left — used in list views.
   factory PropertyCard.horizontalCard({
     required Property property,
     VoidCallback? onTap,
@@ -35,6 +37,7 @@ class PropertyCard extends StatelessWidget {
     onTap: onTap,
   );
 
+  /// Tall card stacked vertically — used in grid views.
   factory PropertyCard.verticalCard({
     required Property property,
     VoidCallback? onTap,
@@ -44,12 +47,23 @@ class PropertyCard extends StatelessWidget {
     onTap: onTap,
   );
 
+  /// Compact card — used in the "Similar properties" horizontal strip.
+  factory PropertyCard.similar({
+    required Property property,
+    VoidCallback? onTap,
+  }) => PropertyCard._(
+    property: property,
+    type: _CardType.similar,
+    onTap: onTap,
+  );
+
   @override
   Widget build(BuildContext context) {
     return switch (_type) {
-      _CardType.featured => _FeaturedCard(property: property, onTap: onTap),
+      _CardType.featured  => _FeaturedCard(property: property, onTap: onTap),
       _CardType.horizontal => _HorizontalCard(property: property, onTap: onTap),
-      _CardType.vertical => _VerticalCard(property: property, onTap: onTap),
+      _CardType.vertical  => _VerticalCard(property: property, onTap: onTap),
+      _CardType.similar   => _SimilarCard(property: property, onTap: onTap),
     };
   }
 }
@@ -109,7 +123,6 @@ class _FeaturedCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    Positioned(top: 12, right: 12, child: _FavoriteButton()),
                   ],
                 ),
               ),
@@ -242,12 +255,6 @@ class _HorizontalCard extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(
-                            Icons.favorite_border,
-                            size: 18,
-                            color: AppColors.grey,
-                          ),
                         ],
                       ),
                       const SizedBox(height: 4),
@@ -370,7 +377,6 @@ class _VerticalCard extends StatelessWidget {
                       text: _statusLabel(property.propertyStatus),
                     ),
                   ),
-                  Positioned(top: 10, right: 10, child: _FavoriteButton()),
                 ],
               ),
             ),
@@ -580,25 +586,6 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-class _FavoriteButton extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(
-        Icons.favorite_border,
-        size: 16,
-        color: AppColors.primary,
-      ),
-    );
-  }
-}
-
 class _SpecsRow extends StatelessWidget {
   final Property property;
   final bool light;
@@ -660,4 +647,129 @@ class _SpecItem extends StatelessWidget {
       ],
     );
   }
+}
+
+// ───────────────────────── Similar Card ──────────────────────────
+
+class _SimilarCard extends StatelessWidget {
+  final Property property;
+  final VoidCallback? onTap;
+
+  const _SimilarCard({required this.property, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 192,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.hairline),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.07),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.hardEdge,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 118,
+              child: _buildImage(),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    property.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      if (property.bedrooms != null)
+                        _MiniSpec(
+                          icon: Icons.bed_rounded,
+                          value: '${property.bedrooms}',
+                        ),
+                      if (property.bathrooms != null) ...[
+                        const SizedBox(width: 8),
+                        _MiniSpec(
+                          icon: Icons.bathtub_rounded,
+                          value: '${property.bathrooms}',
+                        ),
+                      ],
+                      if (property.size?.isNotEmpty == true) ...[
+                        const SizedBox(width: 8),
+                        _MiniSpec(
+                          icon: Icons.crop_square_rounded,
+                          value: property.size!,
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    property.price ?? '',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    final url = property.coverImage;
+    if (url != null && url.isNotEmpty) {
+      return AppImage.network(url, fit: BoxFit.cover);
+    }
+    return Container(
+      color: AppColors.primary.withValues(alpha: 0.08),
+      child: const Center(
+        child: Icon(Icons.apartment, size: 40, color: AppColors.primary),
+      ),
+    );
+  }
+}
+
+class _MiniSpec extends StatelessWidget {
+  final IconData icon;
+  final String value;
+
+  const _MiniSpec({required this.icon, required this.value});
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(icon, size: 10, color: AppColors.inkSub),
+      const SizedBox(width: 3),
+      Text(
+        value,
+        style: const TextStyle(fontSize: 10, color: AppColors.inkSub),
+      ),
+    ],
+  );
 }

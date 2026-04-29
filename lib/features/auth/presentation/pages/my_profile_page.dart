@@ -32,7 +32,29 @@ class _MyProfilePageState extends State<MyProfilePage> {
   User? _user;
 
   static const _cities = {
-    'Egypt': ['Cairo', 'Giza', 'Alexandria', 'New Cairo', '6th of October', 'Sharm El Sheikh', 'Hurghada', 'Mansoura', 'Tanta', 'Port Said', 'Suez', 'Luxor', 'Aswan', 'Fayoum', 'Minya', 'Assiut', 'Sohag', 'Qena', 'Beni Suef', 'Damietta', 'Zagazig'],
+    'Egypt': [
+      'Cairo',
+      'Giza',
+      'Alexandria',
+      'New Cairo',
+      '6th of October',
+      'Sharm El Sheikh',
+      'Hurghada',
+      'Mansoura',
+      'Tanta',
+      'Port Said',
+      'Suez',
+      'Luxor',
+      'Aswan',
+      'Fayoum',
+      'Minya',
+      'Assiut',
+      'Sohag',
+      'Qena',
+      'Beni Suef',
+      'Damietta',
+      'Zagazig',
+    ],
   };
 
   bool get _canSave =>
@@ -67,9 +89,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
       firstDate: DateTime(1940),
       lastDate: DateTime.now().subtract(const Duration(days: 365 * 16)),
       builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.light(primary: AppColors.primary),
-        ),
+        data: Theme.of(
+          ctx,
+        ).copyWith(colorScheme: ColorScheme.light(primary: AppColors.primary)),
         child: child!,
       ),
     );
@@ -85,19 +107,35 @@ class _MyProfilePageState extends State<MyProfilePage> {
     await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (_) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 12),
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: AppColors.hairline, borderRadius: BorderRadius.circular(2))),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.hairline,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Align(
                 alignment: Alignment.centerLeft,
-                child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.ink,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -110,12 +148,30 @@ class _MyProfilePageState extends State<MyProfilePage> {
                   Navigator.pop(context);
                 },
                 child: Container(
-                  color: selected ? AppColors.primary.withValues(alpha: 0.06) : Colors.transparent,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  color: selected
+                      ? AppColors.primary.withValues(alpha: 0.06)
+                      : Colors.transparent,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 14,
+                  ),
                   child: Row(
                     children: [
-                      Expanded(child: Text(opt, style: const TextStyle(fontSize: 15, color: AppColors.ink))),
-                      if (selected) const Icon(Icons.check_rounded, size: 18, color: AppColors.primary),
+                      Expanded(
+                        child: Text(
+                          opt,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                      ),
+                      if (selected)
+                        const Icon(
+                          Icons.check_rounded,
+                          size: 18,
+                          color: AppColors.primary,
+                        ),
                     ],
                   ),
                 ),
@@ -140,7 +196,6 @@ class _MyProfilePageState extends State<MyProfilePage> {
           preferredLanguage: context.locale.languageCode,
           country: _country,
           city: _city.isEmpty ? null : _city,
-          referralCode: _referralCtrl.text.isEmpty ? null : _referralCtrl.text,
         ),
       ),
     );
@@ -156,13 +211,13 @@ class _MyProfilePageState extends State<MyProfilePage> {
             _populateFromUser(state.user);
           } else if (state is AuthProfileUpdated) {
             _populateFromUser(state.user);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('profile.saved'.tr())),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('profile.saved'.tr())));
           } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         builder: (context, state) {
@@ -206,7 +261,11 @@ class _MyProfilePageState extends State<MyProfilePage> {
                 color: AppColors.navButtonBg,
                 borderRadius: BorderRadius.circular(18),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: AppColors.ink),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 16,
+                color: AppColors.ink,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -267,7 +326,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
                 Expanded(
                   child: Text(
                     _user?.phone ?? AppStorage.userName ?? '',
-                    style: const TextStyle(fontSize: 16, color: AppColors.inkMute),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: AppColors.inkMute,
+                    ),
                   ),
                 ),
               ],
@@ -318,7 +380,11 @@ class _MyProfilePageState extends State<MyProfilePage> {
                       ),
                     ),
                   ),
-                  const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.inkSub),
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 16,
+                    color: AppColors.inkSub,
+                  ),
                 ],
               ),
             ),
@@ -360,16 +426,6 @@ class _MyProfilePageState extends State<MyProfilePage> {
             ),
           ),
         ),
-        ProfileFieldWrapper(
-          label: 'auth.referral_code'.tr(),
-          helper: 'auth.referral_helper'.tr(),
-          child: ProfileTextInput(
-            controller: _referralCtrl,
-            hint: 'auth.referral_hint'.tr(),
-            onChanged: (_) => setState(() {}),
-          ),
-        ),
-        const SizedBox(height: 8),
       ],
     );
   }
@@ -386,17 +442,25 @@ class _MyProfilePageState extends State<MyProfilePage> {
               backgroundColor: AppColors.primary,
               disabledBackgroundColor: AppColors.inkMute.withValues(alpha: 0.3),
               minimumSize: const Size.fromHeight(52),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: isLoading
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Colors.white,
+                    ),
                   )
                 : Text(
                     'profile.save'.tr(),
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
           ),
         ),

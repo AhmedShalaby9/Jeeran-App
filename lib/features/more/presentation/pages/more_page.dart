@@ -99,9 +99,9 @@ class _MoreView extends StatelessWidget {
           BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               final user = state is AuthMeLoaded ? state.user : null;
-              final displayName = user?.name ?? AppStorage.userName ?? 'more.guest_user'.tr();
+              final displayName =
+                  user?.name ?? AppStorage.userName ?? 'more.guest_user'.tr();
               final phone = user?.phone ?? '';
-
 
               return Container(
                 padding: const EdgeInsets.all(20),
@@ -200,7 +200,9 @@ class _MoreView extends StatelessWidget {
           _MoreTile(
             icon: Icons.language_outlined,
             label: 'more.language'.tr(),
-            trailing: context.locale.languageCode == 'ar' ? 'language.arabic'.tr() : 'language.english'.tr(),
+            trailing: context.locale.languageCode == 'ar'
+                ? 'language.arabic'.tr()
+                : 'language.english'.tr(),
             onTap: () => _showLanguageSheet(context),
           ),
           _MoreTile(

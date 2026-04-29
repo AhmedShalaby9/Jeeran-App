@@ -9,6 +9,7 @@ class PropertyGallery extends StatelessWidget {
   final bool saved;
   final PageController pageController;
   final ValueChanged<int> onPageChanged;
+  final ValueChanged<int> onImageTap;
   final VoidCallback onToggleSave;
   final VoidCallback onShare;
   final VoidCallback onBack;
@@ -20,6 +21,7 @@ class PropertyGallery extends StatelessWidget {
     required this.saved,
     required this.pageController,
     required this.onPageChanged,
+    required this.onImageTap,
     required this.onToggleSave,
     required this.onShare,
     required this.onBack,
@@ -35,12 +37,15 @@ class PropertyGallery extends StatelessWidget {
                   controller: pageController,
                   itemCount: images.length,
                   onPageChanged: onPageChanged,
-                  itemBuilder: (_, i) => CachedNetworkImage(
-                    imageUrl: images[i],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    placeholder: (_, _) => const PropertyPlaceholder(),
-                    errorWidget: (_, _, _) => const PropertyPlaceholder(),
+                  itemBuilder: (_, i) => GestureDetector(
+                    onTap: () => onImageTap(i),
+                    child: CachedNetworkImage(
+                      imageUrl: images[i],
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      placeholder: (_, __) => const PropertyPlaceholder(),
+                      errorWidget: (_, __, ___) => const PropertyPlaceholder(),
+                    ),
                   ),
                 )
               : const PropertyPlaceholder(),
@@ -58,7 +63,7 @@ class PropertyGallery extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.black.withValues(alpha: 0.4),
-                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.0),
                 ],
               ),
             ),

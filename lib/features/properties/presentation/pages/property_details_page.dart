@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_bloc.dart';
 import '../../domain/entities/property.dart';
 import '../widgets/property_bottom_bar.dart';
 import '../widgets/property_gallery.dart';
 import '../widgets/property_price_card.dart';
 
+import 'property_image_viewer_page.dart';
 import '../widgets/property_agent_tab.dart';
 import '../widgets/property_details_tab.dart';
 import '../widgets/property_overview_tab.dart';
@@ -54,8 +56,15 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     setState(() => _saved = !_saved);
     if (_saved) {
       sl<FavoritesBloc>().add(AddFavoriteEvent(_p.id));
+      // bottom bar height ≈ 72px + safe area; add a small buffer
+      final bottomOffset =
+          72 + MediaQuery.of(context).padding.bottom + 12.0;
+      AppSnackbar.favoriteAdded(context, bottomMargin: bottomOffset);
     } else {
       sl<FavoritesBloc>().add(RemoveFavoriteEvent(_p.id));
+      final bottomOffset =
+          72 + MediaQuery.of(context).padding.bottom + 12.0;
+      AppSnackbar.favoriteRemoved(context, bottomMargin: bottomOffset);
     }
   }
 
@@ -114,8 +123,6 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
             alignment: Alignment.topCenter,
             minHeight: 0,
             maxHeight: 260,
-            minWidth: 0,
-            maxWidth: double.infinity,
             child: SizedBox(
               height: 260,
               child: PropertyGallery(
@@ -124,6 +131,15 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 saved: _saved,
                 pageController: _pageController,
                 onPageChanged: (i) => setState(() => _photoIdx = i),
+                onImageTap: (i) => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => PropertyImageViewerPage(
+                      images: images,
+                      initialIndex: i,
+                    ),
+                  ),
+                ),
                 onToggleSave: _toggleSave,
                 onShare: () {},
                 onBack: () => Navigator.maybePop(context),

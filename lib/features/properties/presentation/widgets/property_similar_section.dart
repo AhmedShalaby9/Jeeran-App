@@ -8,7 +8,7 @@ import '../bloc/property_similar_bloc.dart';
 import '../bloc/property_similar_event.dart';
 import '../bloc/property_similar_state.dart';
 import '../pages/property_details_page.dart';
-import 'property_widgets.dart';
+import 'property_card.dart';
 
 class PropertySimilarSection extends StatefulWidget {
   final Property property;
@@ -117,7 +117,7 @@ class _PropertySimilarSectionState extends State<PropertySimilarSection> {
                           ),
                         ),
                       ),
-                      child: SimilarPropertyCard(
+                      child: PropertyCard.similar(
                         property: state.properties[index],
                       ),
                     ),

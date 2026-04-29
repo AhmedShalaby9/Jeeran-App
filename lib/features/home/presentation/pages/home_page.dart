@@ -27,6 +27,7 @@ class HomePage extends StatelessWidget {
   const HomePage({super.key, this.onSearchTap});
 
   static bool _initialized = false;
+  static late final PropertiesBloc _propertiesBloc;
 
   void _ensureEventsDispatched() {
     if (_initialized) return;
@@ -34,7 +35,8 @@ class HomePage extends StatelessWidget {
     sl<BannersBloc>().add(const FetchBannersEvent());
     sl<ProjectsBloc>().add(const FetchProjectsEvent());
     sl<NewsBloc>().add(const FetchNewsEvent());
-    sl<PropertiesBloc>().add(
+    _propertiesBloc = sl<PropertiesBloc>();
+    _propertiesBloc.add(
       const FetchPropertiesEvent(
         PropertyFilterParams(isFeatured: true, perPage: 10),
       ),
@@ -49,7 +51,7 @@ class HomePage extends StatelessWidget {
         BlocProvider.value(value: sl<BannersBloc>()),
         BlocProvider.value(value: sl<ProjectsBloc>()),
         BlocProvider.value(value: sl<NewsBloc>()),
-        BlocProvider.value(value: sl<PropertiesBloc>()),
+        BlocProvider.value(value: _propertiesBloc),
       ],
       child: _HomeView(onSearchTap: onSearchTap),
     );
