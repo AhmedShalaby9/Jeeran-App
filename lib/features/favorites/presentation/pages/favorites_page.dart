@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../widgets/favorites_shimmer.dart';
 import '../../../properties/domain/entities/property.dart';
 import '../../../properties/domain/entities/property_filter_params.dart';
 import '../../../properties/presentation/pages/properties_screen.dart';
@@ -36,7 +37,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
       body: BlocBuilder<FavoritesBloc, FavoritesState>(
         builder: (context, state) {
           if (state is FavoritesLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const FavoritesShimmer();
           }
           if (state is FavoritesLoaded) {
             if (state.properties.isEmpty) return const _EmptyFavorites();
