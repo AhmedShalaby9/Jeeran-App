@@ -21,9 +21,8 @@ class MorePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (_) => sl<AuthBloc>()..add(const AuthGetMeEvent()),
-        ),
+        // AuthBloc is provided by MainPage — share the same instance.
+        BlocProvider.value(value: context.read<AuthBloc>()),
         BlocProvider(create: (_) => sl<SellerRequestBloc>()),
       ],
       child: const _MoreView(),

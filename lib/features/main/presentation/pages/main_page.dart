@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../home/presentation/pages/home_page.dart';
@@ -84,8 +86,13 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: sl<FavoritesBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => sl<AuthBloc>()..add(const AuthGetMeEvent()),
+        ),
+        BlocProvider.value(value: sl<FavoritesBloc>()),
+      ],
       child: _MainScaffold(
         selectedIndex: _selectedIndex,
         pages: _pages,
@@ -98,6 +105,7 @@ class _MainPageState extends State<MainPage> {
     );
   }
 }
+
 
 class _MainScaffold extends StatelessWidget {
   final int selectedIndex;
