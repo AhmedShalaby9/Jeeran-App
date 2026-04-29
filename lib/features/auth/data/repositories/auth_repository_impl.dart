@@ -25,8 +25,8 @@ class AuthRepositoryImpl implements AuthRepository {
         final user = await remoteDataSource.login(phone);
         _saveToken(user);
         return Right(user);
-      } on ServerException {
-        return Left(ServerFailure());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
       }
     } else {
       return Left(NetworkFailure());
@@ -40,8 +40,8 @@ class AuthRepositoryImpl implements AuthRepository {
         final user = await remoteDataSource.completeProfile(params);
         _saveToken(user);
         return Right(user);
-      } on ServerException {
-        return Left(ServerFailure());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
       }
     } else {
       return Left(NetworkFailure());
@@ -53,9 +53,17 @@ class AuthRepositoryImpl implements AuthRepository {
     if (await networkInfo.isConnected) {
       try {
         final user = await remoteDataSource.getMe();
+        // Always overwrite local storage with the authoritative server values.
+        // This ensures changes made via the dashboard (e.g. buyer → seller)
+        // are picked up without requiring a fresh login.
+        await AppStorage.saveUserProfile(
+          userId: user.id,
+          userName: user.name,
+          userType: user.userType,
+        );
         return Right(user);
-      } on ServerException {
-        return Left(ServerFailure());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
       }
     } else {
       return Left(NetworkFailure());
@@ -68,6 +76,7 @@ class AuthRepositoryImpl implements AuthRepository {
         token: user.token!,
         userId: user.id,
         userName: user.name,
+        userType: user.userType,
       );
     }
   }

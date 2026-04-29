@@ -17,6 +17,7 @@ import '../../../properties/presentation/widgets/featured_properties_widget.dart
 import '../bloc/banners_bloc.dart';
 import '../bloc/banners_event.dart';
 import '../widgets/banners_carousel_widget.dart';
+import '../../../../core/storage/app_storage.dart';
 import '../widgets/home_greeting_widget.dart';
 import '../widgets/home_search_bar_widget.dart';
 import '../widgets/home_sliver_app_bar.dart';
@@ -81,9 +82,12 @@ class _HomeView extends StatelessWidget {
                 const BannersCarouselWidget(),
                 const SizedBox(height: 16),
 
-                const HomeSubscriptionCard(state: HomeSubscriptionState.unsubscribed),
-
-                const SizedBox(height: 8),
+                if (AppStorage.isSeller) ...[
+                  const HomeSubscriptionCard(
+                    state: HomeSubscriptionState.unsubscribed,
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 const ExploreProjectsWidget(),
                 const SizedBox(height: 8),
                 const NewsCarouselWidget(),

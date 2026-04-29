@@ -24,8 +24,8 @@ class PropertyRepositoryImpl implements PropertyRepository {
     try {
       final properties = await remoteDataSource.getProperties(params);
       return Right(properties);
-    } on ServerException {
-      return Left(ServerFailure());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
   }
 
@@ -43,8 +43,8 @@ class PropertyRepositoryImpl implements PropertyRepository {
         limit: limit,
       );
       return Right(properties);
-    } on ServerException {
-      return Left(ServerFailure());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
   }
 }

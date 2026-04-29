@@ -213,7 +213,7 @@ class _HorizontalCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 165,
+        height: 145,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -246,7 +246,7 @@ class _HorizontalCard extends StatelessWidget {
                           Expanded(
                             child: Text(
                               property.title,
-                              maxLines: 2,
+                              maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontWeight: FontWeight.w600,

@@ -33,4 +33,7 @@
 
   // Subscription
   static const String packages = '/packages';
+
+  // Seller Request
+  static const String sellerRequests = '/seller-requests';
 }

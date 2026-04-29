@@ -9,14 +9,23 @@ import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../auth/presentation/pages/my_profile_page.dart';
+import '../../../properties/presentation/pages/add_property_page.dart';
+import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
+import '../../../seller_request/presentation/bloc/seller_request_state.dart';
+import '../../../seller_request/presentation/widgets/seller_request_tile.dart';
 
 class MorePage extends StatelessWidget {
   const MorePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<AuthBloc>()..add(const AuthGetMeEvent()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => sl<AuthBloc>()..add(const AuthGetMeEvent()),
+        ),
+        BlocProvider(create: (_) => sl<SellerRequestBloc>()),
+      ],
       child: const _MoreView(),
     );
   }
@@ -87,166 +96,266 @@ class _MoreView extends StatelessWidget {
     );
   }
 
+  void _showSellerRequestSuccessSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.grey.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.check_circle,
+                  color: AppColors.primary,
+                  size: 36,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'seller_request.success_title'.tr(),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.onBackground,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'seller_request.success_message'.tr(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.inkSub,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text('actions.cancel'.tr()),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text('more.title'.tr())),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Profile card
-          BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              final user = state is AuthMeLoaded ? state.user : null;
-              final displayName =
-                  user?.name ?? AppStorage.userName ?? 'more.guest_user'.tr();
-              final phone = user?.phone ?? '';
+    return BlocListener<SellerRequestBloc, SellerRequestState>(
+      listener: (context, state) {
+        if (state is SellerRequestSuccess) {
+          _showSellerRequestSuccessSheet(context);
+        } else if (state is SellerRequestError) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        appBar: AppBar(title: Text('more.title'.tr())),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Profile card
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                final user = state is AuthMeLoaded ? state.user : null;
+                final displayName =
+                    user?.name ?? AppStorage.userName ?? 'more.guest_user'.tr();
+                final phone = user?.phone ?? '';
 
-              return Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [AppColors.primary, AppColors.secondary],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                return Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.primary, AppColors.secondary],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        shape: BoxShape.circle,
-                        image: user?.avatar != null
-                            ? DecorationImage(
-                                image: NetworkImage(user!.avatar!),
-                                fit: BoxFit.cover,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          shape: BoxShape.circle,
+                          image: user?.avatar != null
+                              ? DecorationImage(
+                                  image: NetworkImage(user!.avatar!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: user?.avatar == null
+                            ? const Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 32,
                               )
                             : null,
                       ),
-                      child: user?.avatar == null
-                          ? const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 32,
-                            )
-                          : null,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            displayName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (phone.isNotEmpty) ...[
-                            const SizedBox(height: 4),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Text(
-                              phone,
+                              displayName,
                               style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
+                            if (phone.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                phone,
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-
-          const SizedBox(height: 24),
-
-          _SectionHeader(title: 'more.account'.tr()),
-          _MoreTile(
-            icon: Icons.person_outline,
-            label: 'more.my_profile'.tr(),
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const MyProfilePage()),
+                    ],
+                  ),
+                );
+              },
             ),
-          ),
-          _MoreTile(
-            icon: Icons.home_work_outlined,
-            label: 'more.my_properties'.tr(),
-            onTap: () {},
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-          _SectionHeader(title: 'more.add_listing'.tr()),
-          _MoreTile(
-            icon: Icons.add_box_outlined,
-            label: 'more.add_property'.tr(),
-            onTap: () {},
-          ),
-
-          const SizedBox(height: 16),
-
-          _SectionHeader(title: 'more.settings'.tr()),
-          _MoreTile(
-            icon: Icons.language_outlined,
-            label: 'more.language'.tr(),
-            trailing: context.locale.languageCode == 'ar'
-                ? 'language.arabic'.tr()
-                : 'language.english'.tr(),
-            onTap: () => _showLanguageSheet(context),
-          ),
-          _MoreTile(
-            icon: Icons.notifications_outlined,
-            label: 'more.notifications'.tr(),
-            onTap: () {},
-          ),
-
-          const SizedBox(height: 16),
-
-          _SectionHeader(title: 'more.support'.tr()),
-          _MoreTile(
-            icon: Icons.info_outline,
-            label: 'more.about'.tr(),
-            onTap: () {},
-          ),
-          _MoreTile(
-            icon: Icons.headset_mic_outlined,
-            label: 'more.contact_us'.tr(),
-            onTap: () {},
-          ),
-          _MoreTile(
-            icon: Icons.policy_outlined,
-            label: 'more.privacy_policy'.tr(),
-            onTap: () {},
-          ),
-          _MoreTile(
-            icon: Icons.description_outlined,
-            label: 'more.terms_of_service'.tr(),
-            onTap: () {},
-          ),
-
-          const SizedBox(height: 16),
-
-          // Logout
-          if (AppStorage.isLoggedIn)
+            _SectionHeader(title: 'more.account'.tr()),
             _MoreTile(
-              icon: Icons.logout_outlined,
-              label: 'more.logout'.tr(),
-              onTap: () => _onLogout(context),
+              icon: Icons.person_outline,
+              label: 'more.my_profile'.tr(),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MyProfilePage()),
+              ),
             ),
 
-          const SizedBox(height: 24),
-        ],
+            const SellerRequestTile(),
+            // My Properties + Add Listing — sellers only
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                final user = authState is AuthMeLoaded ? authState.user : null;
+                final isSeller = user?.isSeller ?? AppStorage.isSeller;
+                if (!isSeller) return const SizedBox.shrink();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _MoreTile(
+                      icon: Icons.home_work_outlined,
+                      label: 'more.my_properties'.tr(),
+                      onTap: () {},
+                    ),
+                    const SizedBox(height: 16),
+                    _SectionHeader(title: 'more.add_listing'.tr()),
+                    _MoreTile(
+                      icon: Icons.add_box_outlined,
+                      label: 'more.add_property'.tr(),
+                      onTap: () => AddPropertyPage.push(context),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              },
+            ),
+
+            _SectionHeader(title: 'more.settings'.tr()),
+            _MoreTile(
+              icon: Icons.language_outlined,
+              label: 'more.language'.tr(),
+              trailing: context.locale.languageCode == 'ar'
+                  ? 'language.arabic'.tr()
+                  : 'language.english'.tr(),
+              onTap: () => _showLanguageSheet(context),
+            ),
+            _MoreTile(
+              icon: Icons.notifications_outlined,
+              label: 'more.notifications'.tr(),
+              onTap: () {},
+            ),
+
+            const SizedBox(height: 16),
+
+            _SectionHeader(title: 'more.support'.tr()),
+            _MoreTile(
+              icon: Icons.info_outline,
+              label: 'more.about'.tr(),
+              onTap: () {},
+            ),
+            _MoreTile(
+              icon: Icons.headset_mic_outlined,
+              label: 'more.contact_us'.tr(),
+              onTap: () {},
+            ),
+            _MoreTile(
+              icon: Icons.policy_outlined,
+              label: 'more.privacy_policy'.tr(),
+              onTap: () {},
+            ),
+            _MoreTile(
+              icon: Icons.description_outlined,
+              label: 'more.terms_of_service'.tr(),
+              onTap: () {},
+            ),
+
+            const SizedBox(height: 16),
+
+            // Logout
+            if (AppStorage.isLoggedIn)
+              _MoreTile(
+                icon: Icons.logout_outlined,
+                label: 'more.logout'.tr(),
+                onTap: () => _onLogout(context),
+              ),
+
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
@@ -308,12 +417,12 @@ class _MoreTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final String? trailing;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _MoreTile({
     required this.icon,
     required this.label,
-    required this.onTap,
+    this.onTap,
     this.trailing,
   });
 

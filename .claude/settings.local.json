@@ -17,7 +17,8 @@
       "Bash(tar -xf design.html)",
       "Bash(python -c \"import gzip, shutil; shutil.copyfileobj\\(gzip.open\\('webfetch-1777381486253-jlo093.bin'\\), open\\('design2.html', 'wb'\\)\\)\")",
       "Bash(tar -tf design2.html)",
-      "Bash(tar -xf design2.html)"
+      "Bash(tar -xf design2.html)",
+      "Bash(python -c ' *)"
     ]
   }
 }

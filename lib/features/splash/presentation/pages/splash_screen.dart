@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/app_strings.dart';
+import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../onboarding/presentation/pages/onboarding_screen.dart';
 import '../../../main/presentation/pages/main_page.dart';
@@ -24,6 +26,9 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _textSlideAnimation;
   late Animation<double> _textFadeAnimation;
   late Animation<double> _screenFadeAnimation;
+
+  /// Holds the in-flight /auth/me request so we can await it before routing.
+  Future<void>? _profileRefresh;
 
   @override
   void initState() {
@@ -70,6 +75,12 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _startAnimations() async {
+    // Fire the profile refresh immediately — it runs concurrently with the
+    // animations so the extra latency is hidden inside the splash duration.
+    if (AppStorage.isLoggedIn) {
+      _profileRefresh = _refreshProfile();
+    }
+
     _logoController.forward();
     await Future.delayed(const Duration(milliseconds: 600));
     _textController.forward();
@@ -77,7 +88,31 @@ class _SplashScreenState extends State<SplashScreen>
     _navigateToNextScreen();
   }
 
+  /// Calls /auth/me and overwrites local storage with the server values.
+  /// Fails silently — if offline or the server errors, we fall back to
+  /// whatever is already cached (user still gets into the app).
+  Future<void> _refreshProfile() async {
+    try {
+      await sl<AuthRepository>().getMe().timeout(
+        const Duration(seconds: 8),
+      );
+    } catch (_) {
+      // Network unavailable or timeout — cached values remain in storage.
+    }
+  }
+
   void _navigateToNextScreen() async {
+    // Wait for the profile refresh to finish before routing, so that
+    // AppStorage.isSeller (and any other user-type gate) reflects the
+    // latest server state. Cap the wait at 4 s so a slow network never
+    // blocks the user from entering the app.
+    if (_profileRefresh != null) {
+      await _profileRefresh!.timeout(
+        const Duration(seconds: 4),
+        onTimeout: () {}, // graceful fallback — use cached data
+      );
+    }
+
     await _fadeController.forward();
     if (!mounted) return;
 

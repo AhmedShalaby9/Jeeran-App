@@ -35,6 +35,10 @@ import '../../features/favorites/data/datasources/favorites_remote_data_source.d
 import '../../features/favorites/data/repositories/favorites_repository_impl.dart';
 import '../../features/favorites/domain/repositories/favorites_repository.dart';
 import '../../features/favorites/presentation/bloc/favorites_bloc.dart';
+import '../../features/seller_request/data/datasources/seller_request_remote_data_source.dart';
+import '../../features/seller_request/data/repositories/seller_request_repository_impl.dart';
+import '../../features/seller_request/domain/repositories/seller_request_repository.dart';
+import '../../features/seller_request/presentation/bloc/seller_request_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -49,6 +53,7 @@ Future<void> init() async {
   sl.registerFactory(() => PlansBloc(repository: sl()));
   sl.registerFactory(() => AuthBloc(repository: sl()));
   sl.registerLazySingleton(() => FavoritesBloc(repository: sl()));
+  sl.registerFactory(() => SellerRequestBloc(repository: sl()));
 
   // -- Repositories --------------------------------------
   sl.registerLazySingleton<HomeRepository>(
@@ -76,6 +81,9 @@ Future<void> init() async {
   sl.registerLazySingleton<FavoritesRepository>(
     () => FavoritesRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
+  sl.registerLazySingleton<SellerRequestRepository>(
+    () => SellerRequestRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
 
   // -- Data sources --------------------------------------
   sl.registerLazySingleton<ProjectRemoteDataSource>(
@@ -101,6 +109,9 @@ sl.registerLazySingleton<HomeLocalDataSource>(
   );
   sl.registerLazySingleton<FavoritesRemoteDataSource>(
     () => FavoritesRemoteDataSourceImpl(apiClient: sl()),
+  );
+  sl.registerLazySingleton<SellerRequestRemoteDataSource>(
+    () => SellerRequestRemoteDataSourceImpl(apiClient: sl()),
   );
 
 // -- Core ----------------------------------------------

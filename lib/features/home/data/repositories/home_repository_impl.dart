@@ -26,8 +26,8 @@ class HomeRepositoryImpl implements HomeRepository {
         final posts = await remoteDataSource.getPosts();
         await localDataSource.cachePosts(posts);
         return Right(posts);
-      } on ServerException {
-        return Left(ServerFailure());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
       }
     } else {
       try {
@@ -45,8 +45,8 @@ class HomeRepositoryImpl implements HomeRepository {
       try {
         final banners = await remoteDataSource.getBanners();
         return Right(banners);
-      } on ServerException {
-        return Left(ServerFailure());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
       }
     } else {
       return Left(NetworkFailure());

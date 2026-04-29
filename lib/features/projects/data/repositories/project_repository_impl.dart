@@ -21,8 +21,8 @@ class ProjectRepositoryImpl implements ProjectRepository {
     try {
       final projects = await remoteDataSource.getProjects();
       return Right(projects);
-    } on ServerException {
-      return Left(ServerFailure());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
   }
 }

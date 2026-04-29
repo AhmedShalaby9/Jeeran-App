@@ -28,7 +28,7 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
 
   String _mapFailure(Failure failure) => switch (failure) {
     NetworkFailure _ => AppStrings.networkError,
-    ServerFailure _ => AppStrings.serverError,
+    ServerFailure f => f.message ?? AppStrings.serverError,
     _ => AppStrings.unexpectedError,
   };
 }

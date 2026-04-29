@@ -21,9 +21,9 @@ class PlanRepositoryImpl implements PlanRepository {
     if (await networkInfo.isConnected) {
       try {
         final plans = await remoteDataSource.getPlans();
-        return Right(plans);
-      } on ServerException {
-        return Left(ServerFailure());
+        return Right(List<Plan>.from(plans));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
       }
     } else {
       return Left(NetworkFailure());

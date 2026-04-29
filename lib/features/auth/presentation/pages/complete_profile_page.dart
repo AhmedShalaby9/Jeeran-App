@@ -31,18 +31,12 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   String _gender = '';
   DateTime? _dob;
   final String _country = 'Egypt';
-  String _city = '';
   final _referralCtrl = TextEditingController();
-
-  static const _cities = {
-    'Egypt': ['Cairo', 'Giza', 'Alexandria', 'New Cairo', '6th of October', 'Sharm El Sheikh', 'Hurghada', 'Mansoura', 'Tanta', 'Port Said', 'Suez', 'Luxor', 'Aswan', 'Fayoum', 'Minya', 'Assiut', 'Sohag', 'Qena', 'Beni Suef', 'Damietta', 'Zagazig'],
-  };
 
   bool get _step1Valid =>
       _nameCtrl.text.trim().length >= 2 && _emailCtrl.text.contains('@');
 
-  bool get _step2Valid =>
-      _gender.isNotEmpty && _dob != null && _city.isNotEmpty;
+  bool get _step2Valid => _gender.isNotEmpty && _dob != null;
 
   @override
   void dispose() {
@@ -84,7 +78,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
           dob: _dob,
           preferredLanguage: context.locale.languageCode,
           country: _country,
-          city: _city.isEmpty ? null : _city,
           referralCode: _referralCtrl.text.isEmpty ? null : _referralCtrl.text,
         ),
         isStep1: false,
@@ -249,7 +242,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   }
 
   Widget _buildStep2() {
-    final cityList = _cities[_country] ?? ['Other'];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -288,7 +280,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                     child: Text(
                       _dob == null
                           ? 'auth.select_date'.tr()
-                          : '//',
+                          : '${_dob!.year}-${_dob!.month.toString().padLeft(2, '0')}-${_dob!.day.toString().padLeft(2, '0')}',
                       style: TextStyle(
                         fontSize: 16,
                         color: _dob == null ? AppColors.inkMute : AppColors.ink,
@@ -320,19 +312,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                   ),
                 ),
               ],
-            ),
-          ),
-        ),
-        ProfileFieldWrapper(
-          label: 'auth.city'.tr(),
-          child: ProfileSelectField(
-            value: _city.isEmpty ? null : _city,
-            placeholder: 'auth.select_city'.tr(),
-            onTap: () => _showPicker(
-              title: 'auth.city'.tr(),
-              options: cityList,
-              current: _city,
-              onSelect: (v) => setState(() => _city = v),
             ),
           ),
         ),

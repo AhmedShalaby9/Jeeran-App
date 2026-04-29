@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../home/presentation/pages/home_page.dart';
+import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../../search/presentation/pages/search_page.dart';
 import '../../../projects/presentation/pages/projects_page.dart';
 import '../../../favorites/presentation/pages/favorites_page.dart';
@@ -89,6 +91,9 @@ class _MainPageState extends State<MainPage> {
         pages: _pages,
         navItems: _navItems,
         onTap: _onItemTapped,
+        onAddListing: AppStorage.isSeller
+            ? () => AddPropertyPage.push(context)
+            : null,
       ),
     );
   }
@@ -99,12 +104,14 @@ class _MainScaffold extends StatelessWidget {
   final List<Widget> pages;
   final List<_NavItem> navItems;
   final ValueChanged<int> onTap;
+  final VoidCallback? onAddListing;
 
   const _MainScaffold({
     required this.selectedIndex,
     required this.pages,
     required this.navItems,
     required this.onTap,
+    this.onAddListing,
   });
 
   @override
@@ -115,6 +122,38 @@ class _MainScaffold extends StatelessWidget {
         selectedIndex: selectedIndex,
         items: navItems,
         onTap: onTap,
+      ),
+      floatingActionButton: onAddListing != null
+          ? _AddListingFab(onTap: onAddListing!)
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+}
+
+class _AddListingFab extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AddListingFab({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: const Icon(Icons.add_rounded, size: 28, color: Colors.white),
       ),
     );
   }

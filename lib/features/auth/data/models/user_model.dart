@@ -18,6 +18,10 @@ class UserModel extends User {
     super.referralCode,
     super.isProfileComplete,
     super.isActive,
+    super.fcmToken,
+    super.subscriptionId,
+    super.createdAt,
+    super.updatedAt,
     this.token,
   });
 
@@ -31,7 +35,7 @@ class UserModel extends User {
       phone: userData['phone'] as String?,
       avatar: userData['profile_picture'] as String?,
       gender: userData['gender'] as String?,
-      dob: DateTime.tryParse(userData['date_of_birth'] as String? ?? ''),
+      dob: _parseDate(userData['date_of_birth']),
       country: userData['country'] as String?,
       city: userData['city'] as String?,
       userType: userData['user_type'] as String?,
@@ -39,8 +43,17 @@ class UserModel extends User {
       referralCode: userData['referral_code'] as String?,
       isProfileComplete: userData['is_profile_complete'] as bool? ?? false,
       isActive: userData['is_active'] as bool? ?? true,
+      fcmToken: userData['fcm_token'] as String?,
+      subscriptionId: userData['subscription_id'] as int?,
+      createdAt: _parseDate(userData['created_at']),
+      updatedAt: _parseDate(userData['updated_at']),
       token: json['token'] as String?,
     );
+  }
+
+  static DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    return DateTime.tryParse(value as String);
   }
 
   Map<String, dynamic> toJson() {
@@ -49,7 +62,7 @@ class UserModel extends User {
       'name': name,
       'email': email,
       'phone': phone,
-      'avatar': avatar,
+      'profile_picture': avatar,
       'gender': gender,
       'date_of_birth': dob?.toIso8601String(),
       'country': country,
@@ -59,6 +72,10 @@ class UserModel extends User {
       'referral_code': referralCode,
       'is_profile_complete': isProfileComplete,
       'is_active': isActive,
+      'fcm_token': fcmToken,
+      'subscription_id': subscriptionId,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
       'token': token,
     };
   }

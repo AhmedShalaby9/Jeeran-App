@@ -21,8 +21,8 @@ class FavoritesRepositoryImpl implements FavoritesRepository {
     try {
       final result = await remoteDataSource.getFavorites();
       return Right(result);
-    } on ServerException {
-      return Left(ServerFailure());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
   }
 
@@ -32,8 +32,8 @@ class FavoritesRepositoryImpl implements FavoritesRepository {
     try {
       await remoteDataSource.addFavorite(propertyId);
       return const Right(null);
-    } on ServerException {
-      return Left(ServerFailure());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
   }
 
@@ -43,8 +43,8 @@ class FavoritesRepositoryImpl implements FavoritesRepository {
     try {
       await remoteDataSource.removeFavorite(propertyId);
       return const Right(null);
-    } on ServerException {
-      return Left(ServerFailure());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
   }
 }

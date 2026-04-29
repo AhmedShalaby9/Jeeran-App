@@ -78,13 +78,28 @@ class ApiClient {
       case DioExceptionType.connectionError:
         return NetworkException();
       case DioExceptionType.badResponse:
+        final message = _extractErrorMessage(e.response);
         return switch (e.response?.statusCode) {
           401 => UnauthorizedException(),
           404 => NotFoundException(),
-          _ => ServerException(),
+          _ => ServerException(message),
         };
       default:
         return ServerException();
     }
+  }
+
+  String? _extractErrorMessage(Response? response) {
+    final data = response?.data;
+    if (data == null) return null;
+    if (data is String && data.isNotEmpty) return data;
+    if (data is Map<String, dynamic>) {
+      final msg = data['message'] ?? data['error'] ?? data['msg'];
+      if (msg is String && msg.isNotEmpty) return msg;
+      if (msg is List && msg.isNotEmpty) {
+        return msg.whereType<String>().join('\n');
+      }
+    }
+    return null;
   }
 }

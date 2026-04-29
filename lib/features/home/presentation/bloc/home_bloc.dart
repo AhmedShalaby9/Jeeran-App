@@ -27,7 +27,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   String _mapFailureToMessage(Failure failure) {
     return switch (failure) {
-      ServerFailure _ => AppStrings.serverError,
+      ServerFailure f => f.message ?? AppStrings.serverError,
       CacheFailure _ => AppStrings.cacheError,
       NetworkFailure _ => AppStrings.networkError,
       _ => AppStrings.unexpectedError,

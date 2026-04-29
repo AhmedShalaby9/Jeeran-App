@@ -21,8 +21,8 @@ class NewsRepositoryImpl implements NewsRepository {
     try {
       final news = await remoteDataSource.getNews();
       return Right(news);
-    } on ServerException {
-      return Left(ServerFailure());
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     }
   }
 }

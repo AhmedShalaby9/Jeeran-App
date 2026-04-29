@@ -23,7 +23,7 @@ class PropertySimilarBloc extends Bloc<PropertySimilarEvent, PropertySimilarStat
 
   String _mapFailure(Failure failure) => switch (failure) {
     NetworkFailure _ => AppStrings.networkError,
-    ServerFailure _ => AppStrings.serverError,
+    ServerFailure f => f.message ?? AppStrings.serverError,
     _ => AppStrings.unexpectedError,
   };
 }

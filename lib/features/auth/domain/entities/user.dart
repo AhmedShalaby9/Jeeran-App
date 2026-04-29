@@ -15,6 +15,10 @@ class User extends Equatable {
   final String? referralCode;
   final bool isProfileComplete;
   final bool isActive;
+  final String? fcmToken;
+  final int? subscriptionId;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   const User({
     required this.id,
@@ -31,7 +35,20 @@ class User extends Equatable {
     this.referralCode,
     this.isProfileComplete = false,
     this.isActive = true,
+    this.fcmToken,
+    this.subscriptionId,
+    this.createdAt,
+    this.updatedAt,
   });
+
+  /// Returns true only when the user is a seller.
+  bool get isSeller => userType == 'seller';
+
+  /// Returns true for admin users.
+  bool get isAdmin => userType == 'admin';
+
+  /// Returns true for buyer users (or any non-seller, non-admin).
+  bool get isBuyer => !isSeller && !isAdmin;
 
   @override
   List<Object?> get props => [
@@ -49,5 +66,9 @@ class User extends Equatable {
     referralCode,
     isProfileComplete,
     isActive,
+    fcmToken,
+    subscriptionId,
+    createdAt,
+    updatedAt,
   ];
 }

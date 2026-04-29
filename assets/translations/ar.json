@@ -114,7 +114,14 @@
     "terms_of_service": "شروط الخدمة",
     "logout": "تسجيل الخروج",
     "logout_title": "تسجيل الخروج",
-    "logout_confirm": "هل أنت متأكد أنك تريد تسجيل الخروج؟"
+    "logout_confirm": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+    "join_as_seller_title": "انضم إلينا كبائع",
+    "join_as_seller_subtitle": "ابدأ بنشر عقاراتك على جيران",
+    "join_as_seller_button": "قدم الآن"
+  },
+  "seller_request": {
+    "success_title": "تم إرسال الطلب",
+    "success_message": "سيقوم المسؤول بمراجعة ملفك الشخصي والتواصل معك قريباً."
   },
   "onboarding": {
     "welcome_title": "مرحباً بك في جيران",
@@ -213,6 +220,7 @@
     "call": "اتصال"
   },
   "auth": {
+    "phone": "رقم الهاتف",
     "welcome_back": "مرحباً بك",
     "enter_phone": "سوقك العقاري. أدخل رقم هاتفك للمتابعة.",
     "phone_number": "رقم الهاتف",
@@ -256,6 +264,11 @@
   },
   "profile": {
     "title": "ملفي الشخصي",
+    "edit": "تعديل",
+    "edit_title": "تعديل الملف الشخصي",
+    "personal_info": "المعلومات الشخصية",
+    "details": "التفاصيل",
+    "complete_hint": "أكمل ملفك الشخصي للحصول على تجربة أفضل",
     "save": "حفظ التغييرات",
     "saved": "تم تحديث الملف الشخصي بنجاح"
   }
