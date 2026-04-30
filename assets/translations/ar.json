@@ -6,9 +6,11 @@
     "search": "بحث",
     "projects": "مشاريع",
     "favorites": "المفضلة",
+    "packages": "الباقات",
     "more": "المزيد"
   },
   "home": {
+    "subscribe": "اشترك",
     "hello": "مرحباً",
     "hello_user": "مرحباً، {userName}",
     "search_hint": "بحث",
@@ -97,6 +99,7 @@
     "sign_in": "تسجيل الدخول",
     "account": "الحساب",
     "my_profile": "ملفي الشخصي",
+    "my_favorites": "المفضلة",
     "my_properties": "عقاراتي",
     "saved_searches": "عمليات البحث المحفوظة",
     "messages": "الرسائل",

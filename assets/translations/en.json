@@ -6,9 +6,11 @@
     "search": "Search",
     "projects": "Projects",
     "favorites": "Favorites",
+    "packages": "Packages",
     "more": "More"
   },
   "home": {
+    "subscribe": "Subscribe",
     "hello": "Hello",
     "hello_user": "Hello, {userName}",
     "search_hint": "Search",
@@ -97,6 +99,7 @@
     "sign_in": "Sign In",
     "account": "Account",
     "my_profile": "My Profile",
+    "my_favorites": "My Favorites",
     "my_properties": "My Properties",
     "saved_searches": "Saved Searches",
     "messages": "Messages",

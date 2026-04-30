@@ -5,10 +5,10 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../auth/presentation/pages/my_profile_page.dart';
+import '../../../favorites/presentation/pages/favorites_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
 import '../../../seller_request/presentation/bloc/seller_request_state.dart';
@@ -21,9 +21,9 @@ class MorePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (_) => sl<AuthBloc>()..add(const AuthGetMeEvent()),
-        ),
+        // AuthBloc is owned by MainPage — re-expose the same instance here
+        // so _MoreView can read it without triggering a second /auth/me call.
+        BlocProvider.value(value: context.read<AuthBloc>()),
         BlocProvider(create: (_) => sl<SellerRequestBloc>()),
       ],
       child: const _MoreView(),
@@ -286,6 +286,17 @@ class _MoreView extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Favorites moved here for sellers (tab is replaced by Packages)
+                    _MoreTile(
+                      icon: Icons.favorite_border,
+                      label: 'more.my_favorites'.tr(),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const FavoritesPage(),
+                        ),
+                      ),
+                    ),
                     _MoreTile(
                       icon: Icons.home_work_outlined,
                       label: 'more.my_properties'.tr(),
@@ -383,7 +394,7 @@ class _MoreView extends StatelessWidget {
             },
             child: Text(
               'actions.logout'.tr(),
-              style: const TextStyle(color: Colors.red),
+              style: const TextStyle(color: AppColors.danger),
             ),
           ),
         ],

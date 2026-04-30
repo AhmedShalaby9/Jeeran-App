@@ -55,7 +55,7 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: Colors.grey.shade200,
+                  backgroundColor: AppColors.navButtonBg,
                   child: Icon(
                     Icons.notifications_outlined,
                     color: AppColors.onBackground,
@@ -69,7 +69,7 @@ class _HomeSliverAppBarState extends State<HomeSliverAppBar> {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.red,
+                        color: AppColors.danger,
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.white, width: 1.5),
                       ),

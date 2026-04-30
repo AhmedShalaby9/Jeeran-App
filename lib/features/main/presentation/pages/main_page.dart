@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../home/presentation/pages/home_page.dart';
@@ -12,6 +14,7 @@ import '../../../search/presentation/pages/search_page.dart';
 import '../../../projects/presentation/pages/projects_page.dart';
 import '../../../favorites/presentation/pages/favorites_page.dart';
 import '../../../more/presentation/pages/more_page.dart';
+import '../../../packages/presentation/pages/packages_destination.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -23,35 +26,8 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
   late final List<Widget> _pages;
+  late final List<_NavItem> _navItems;
   final _searchResetNotifier = ValueNotifier<bool>(false);
-
-  static final List<_NavItem> _navItems = [
-    _NavItem(
-      icon: Icons.home_rounded,
-      activeIcon: Icons.home_rounded,
-      label: 'bottom_nav.home'.tr(),
-    ),
-    _NavItem(
-      icon: Icons.search_outlined,
-      activeIcon: Icons.search,
-      label: 'bottom_nav.search'.tr(),
-    ),
-    _NavItem(
-      icon: Icons.business_outlined,
-      activeIcon: Icons.business,
-      label: 'bottom_nav.projects'.tr(),
-    ),
-    _NavItem(
-      icon: Icons.favorite_border,
-      activeIcon: Icons.favorite,
-      label: 'bottom_nav.favorites'.tr(),
-    ),
-    _NavItem(
-      icon: Icons.more_horiz,
-      activeIcon: Icons.more_horiz,
-      label: 'bottom_nav.more'.tr(),
-    ),
-  ];
 
   void _goToProjects() {
     if (_selectedIndex == 2) return;
@@ -61,12 +37,52 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    final isSeller = AppStorage.isSeller;
+
+    // Tab 3 differs by user type:
+    //   Buyer  → Favorites
+    //   Seller → Packages / Subscription (PackagesDestination factory)
     _pages = [
       HomePage(onSearchTap: _goToProjects),
       SearchPage(resetNotifier: _searchResetNotifier),
       const ProjectsPage(),
-      const FavoritesPage(),
+      if (isSeller) const PackagesDestination() else const FavoritesPage(),
       const MorePage(),
+    ];
+
+    _navItems = [
+      _NavItem(
+        icon: Icons.home_rounded,
+        activeIcon: Icons.home_rounded,
+        label: 'bottom_nav.home'.tr(),
+      ),
+      _NavItem(
+        icon: Icons.search_outlined,
+        activeIcon: Icons.search,
+        label: 'bottom_nav.search'.tr(),
+      ),
+      _NavItem(
+        icon: Icons.business_outlined,
+        activeIcon: Icons.business,
+        label: 'bottom_nav.projects'.tr(),
+      ),
+      if (isSeller)
+        _NavItem(
+          icon: Icons.workspace_premium_outlined,
+          activeIcon: Icons.workspace_premium,
+          label: 'bottom_nav.packages'.tr(),
+        )
+      else
+        _NavItem(
+          icon: Icons.favorite_border,
+          activeIcon: Icons.favorite,
+          label: 'bottom_nav.favorites'.tr(),
+        ),
+      _NavItem(
+        icon: Icons.more_horiz,
+        activeIcon: Icons.more_horiz,
+        label: 'bottom_nav.more'.tr(),
+      ),
     ];
   }
 
@@ -84,8 +100,15 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: sl<FavoritesBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        // Single AuthBloc for the whole shell — shared by MorePage,
+        // HomeSliverAppBar, and PackagesDestination via BlocProvider.value.
+        BlocProvider(
+          create: (_) => sl<AuthBloc>()..add(const AuthGetMeEvent()),
+        ),
+        BlocProvider.value(value: sl<FavoritesBloc>()),
+      ],
       child: _MainScaffold(
         selectedIndex: _selectedIndex,
         pages: _pages,
@@ -99,6 +122,7 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
+// ── Scaffold shell ───────────────────────────────────────────────────
 class _MainScaffold extends StatelessWidget {
   final int selectedIndex;
   final List<Widget> pages;
@@ -131,6 +155,7 @@ class _MainScaffold extends StatelessWidget {
   }
 }
 
+// ── FAB ──────────────────────────────────────────────────────────────
 class _AddListingFab extends StatelessWidget {
   final VoidCallback onTap;
   const _AddListingFab({required this.onTap});
@@ -159,6 +184,7 @@ class _AddListingFab extends StatelessWidget {
   }
 }
 
+// ── Bottom nav bar ───────────────────────────────────────────────────
 class _JeeranBottomNavBar extends StatelessWidget {
   final int selectedIndex;
   final List<_NavItem> items;
@@ -177,7 +203,7 @@ class _JeeranBottomNavBar extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: AppColors.ink.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, -4),
           ),
@@ -202,7 +228,7 @@ class _JeeranBottomNavBar extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: selected
-                        ? AppColors.primary.withValues(alpha: 0.1)
+                        ? AppColors.primary.withValues(alpha: 0.10)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -237,6 +263,7 @@ class _JeeranBottomNavBar extends StatelessWidget {
   }
 }
 
+// ── Nav item model ───────────────────────────────────────────────────
 class _NavItem {
   final IconData icon;
   final IconData activeIcon;
