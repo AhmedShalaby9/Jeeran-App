@@ -9,6 +9,7 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../auth/presentation/pages/my_profile_page.dart';
 import '../../../favorites/presentation/pages/favorites_page.dart';
+import 'contact_us_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
 import '../../../seller_request/presentation/bloc/seller_request_state.dart';
@@ -341,7 +342,10 @@ class _MoreView extends StatelessWidget {
             _MoreTile(
               icon: Icons.headset_mic_outlined,
               label: 'more.contact_us'.tr(),
-              onTap: () {},
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ContactUsPage()),
+              ),
             ),
             _MoreTile(
               icon: Icons.policy_outlined,

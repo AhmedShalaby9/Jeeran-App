@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_image.dart';
 import '../../../../core/widgets/app_loading.dart';
@@ -19,8 +20,21 @@ class NewsCarouselWidget extends StatelessWidget {
   }
 }
 
-class _NewsCarouselView extends StatelessWidget {
+class _NewsCarouselView extends StatefulWidget {
   const _NewsCarouselView();
+
+  @override
+  State<_NewsCarouselView> createState() => _NewsCarouselViewState();
+}
+
+class _NewsCarouselViewState extends State<_NewsCarouselView> {
+  final _pageController = PageController(viewportFraction: 0.88);
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,12 +85,29 @@ class _NewsCarouselView extends StatelessWidget {
         const SizedBox(height: 12),
         SizedBox(
           height: 200,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            separatorBuilder: (_, _) => const SizedBox(width: 12),
+          child: PageView.builder(
+            controller: _pageController,
             itemCount: displayNews.length,
-            itemBuilder: (_, i) => _NewsCard(news: displayNews[i]),
+            onPageChanged: (index) => setState(() {}),
+            itemBuilder: (_, i) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: _NewsCard(news: displayNews[i]),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Center(
+          child: SmoothPageIndicator(
+            controller: _pageController,
+            count: displayNews.length,
+            effect: ExpandingDotsEffect(
+              dotHeight: 6,
+              dotWidth: 6,
+              expansionFactor: 4,
+              spacing: 6,
+              activeDotColor: AppColors.primary,
+              dotColor: AppColors.grey.withValues(alpha: 0.3),
+            ),
           ),
         ),
       ],
@@ -96,7 +127,6 @@ class _NewsCard extends StatelessWidget {
         MaterialPageRoute(builder: (_) => NewsDetailsPage(news: news)),
       ),
       child: Container(
-        width: 260,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
