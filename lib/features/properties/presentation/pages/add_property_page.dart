@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_snackbar.dart';
+import '../bloc/add_property_bloc.dart';
+import '../bloc/add_property_event.dart';
+import '../bloc/add_property_state.dart';
 import '../widgets/add_property_form.dart';
 import '../widgets/add_property_step1.dart';
 import '../widgets/add_property_step2.dart';
@@ -10,7 +15,7 @@ import '../widgets/add_property_step3.dart';
 import '../widgets/add_property_step4.dart';
 import '../widgets/add_property_step5.dart';
 
-class AddPropertyPage extends StatefulWidget {
+class AddPropertyPage extends StatelessWidget {
   const AddPropertyPage({super.key});
 
   /// Push the wizard as a full-screen modal.
@@ -29,82 +34,101 @@ class AddPropertyPage extends StatefulWidget {
       context,
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => const AddPropertyPage(),
+        builder: (_) => BlocProvider(
+          create: (_) => sl<AddPropertyBloc>(),
+          child: const AddPropertyPage(),
+        ),
       ),
     );
   }
 
   @override
-  State<AddPropertyPage> createState() => _AddPropertyPageState();
+  Widget build(BuildContext context) {
+    return BlocListener<AddPropertyBloc, AddPropertyState>(
+      listener: (context, state) {
+        if (state is AddPropertySuccess) {
+          AppSnackbar.show(
+            context,
+            message: 'Listing published successfully!',
+            icon: Icons.check_circle_rounded,
+            iconColor: AppColors.success,
+          );
+          Navigator.pop(context);
+        } else if (state is AddPropertyFailure) {
+          AppSnackbar.show(
+            context,
+            message: state.message,
+            icon: Icons.error_outline_rounded,
+            iconColor: AppColors.danger,
+          );
+        }
+      },
+      child: const _AddPropertyView(),
+    );
+  }
 }
 
-class _AddPropertyPageState extends State<AddPropertyPage> {
+class _AddPropertyView extends StatefulWidget {
+  const _AddPropertyView();
+
+  @override
+  State<_AddPropertyView> createState() => _AddPropertyViewState();
+}
+
+class _AddPropertyViewState extends State<_AddPropertyView> {
   static const int _totalSteps = 5;
 
   int _step = 1;
   final _form = AddPropertyForm();
-  bool _validationError = false;
-  bool _publishing = false;
 
   // ── Navigation ─────────────────────────────────────────────
 
   void _next() {
     if (!_form.isStepValid(_step)) {
-      setState(() => _validationError = true);
-      _shakeError();
+      HapticFeedback.lightImpact();
+      AppSnackbar.show(
+        context,
+        message: _validationErrorMessage(_step),
+        icon: Icons.info_outline_rounded,
+        iconColor: AppColors.danger,
+      );
       return;
     }
     setState(() {
-      _validationError = false;
       if (_step < _totalSteps) _step++;
     });
   }
 
   void _back() {
     if (_step > 1) {
-      setState(() {
-        _step--;
-        _validationError = false;
-      });
+      setState(() => _step--);
     } else {
       Navigator.maybePop(context);
     }
   }
 
-  void _shakeError() {
-    HapticFeedback.lightImpact();
-    AppSnackbar.show(
-      context,
-      message: _validationErrorMessage(_step),
-      icon: Icons.info_outline_rounded,
-      iconColor: AppColors.danger,
-    );
-  }
-
   String _validationErrorMessage(int step) => switch (step) {
-        2 => 'City and area are required',
-        3 => 'Please enter a valid price',
-        4 => 'Add at least 1 photo, a title, and a description',
-        _ => 'Please complete this step to continue',
+        1 => 'Please select a property type and listing status',
+        2 => 'Please select a location and project',
+        3 => 'Please enter a valid price and area',
+        4 => 'Add at least 1 photo and fill in all titles and descriptions',
+        _ => 'Please enter agent name and mobile number',
       };
 
-  Future<void> _publish() async {
-    if (_publishing) return;
-    setState(() => _publishing = true);
-
-    // TODO: dispatch AddPropertyEvent to a BLoC / call repository
-    await Future.delayed(const Duration(seconds: 1)); // simulate API call
-
-    if (!mounted) return;
-    setState(() => _publishing = false);
-
-    AppSnackbar.show(
-      context,
-      message: 'Listing published successfully!',
-      icon: Icons.check_circle_rounded,
-      iconColor: AppColors.success,
-    );
-    Navigator.pop(context);
+  void _publish() {
+    final state = context.read<AddPropertyBloc>().state;
+    if (state is AddPropertyUploading || state is AddPropertySubmitting) return;
+    if (!_form.isStepValid(_step)) {
+      HapticFeedback.lightImpact();
+      AppSnackbar.show(
+        context,
+        message: _validationErrorMessage(_step),
+        icon: Icons.info_outline_rounded,
+        iconColor: AppColors.danger,
+      );
+      return;
+    }
+    context.read<AddPropertyBloc>().add(SubmitAddProperty(form: _form));
   }
 
   // ── Build ──────────────────────────────────────────────────
@@ -144,13 +168,26 @@ class _AddPropertyPageState extends State<AddPropertyPage> {
                 ),
               ),
             ),
-            _WizardBottomBar(
-              step: _step,
-              total: _totalSteps,
-              publishing: _publishing,
-              onBack: _back,
-              onContinue: _next,
-              onPublish: _publish,
+            BlocBuilder<AddPropertyBloc, AddPropertyState>(
+              builder: (context, state) {
+                final busy =
+                    state is AddPropertyUploading || state is AddPropertySubmitting;
+                String? progressLabel;
+                if (state is AddPropertyUploading) {
+                  progressLabel = 'Uploading ${state.current}/${state.total}…';
+                } else if (state is AddPropertySubmitting) {
+                  progressLabel = 'Publishing…';
+                }
+                return _WizardBottomBar(
+                  step: _step,
+                  total: _totalSteps,
+                  busy: busy,
+                  progressLabel: progressLabel,
+                  onBack: _back,
+                  onContinue: _next,
+                  onPublish: _publish,
+                );
+              },
             ),
           ],
         ),
@@ -159,23 +196,11 @@ class _AddPropertyPageState extends State<AddPropertyPage> {
   }
 
   Widget _buildStep() => switch (_step) {
-    1 => AddPropertyStep1(
-        form: _form,
-        onChanged: () => setState(() {}),
-      ),
-    2 => AddPropertyStep2(
-        form: _form,
-        onChanged: () => setState(() {}),
-      ),
-    3 => AddPropertyStep3(
-        form: _form,
-        onChanged: () => setState(() {}),
-      ),
-    4 => AddPropertyStep4(
-        form: _form,
-        onChanged: () => setState(() {}),
-      ),
-    _ => AddPropertyStep5(form: _form),
+    1 => AddPropertyStep1(form: _form, onChanged: () => setState(() {})),
+    2 => AddPropertyStep2(form: _form, onChanged: () => setState(() {})),
+    3 => AddPropertyStep3(form: _form, onChanged: () => setState(() {})),
+    4 => AddPropertyStep4(form: _form, onChanged: () => setState(() {})),
+    _ => AddPropertyStep5(form: _form, onChanged: () => setState(() {})),
   };
 }
 
@@ -210,7 +235,6 @@ class _WizardHeader extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
             child: Row(
               children: [
-                // Back / close button
                 _HeaderBtn(
                   icon: step > 1
                       ? Icons.arrow_back_ios_new_rounded
@@ -229,14 +253,12 @@ class _WizardHeader extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Close button (only show separately when on step > 1)
                 step > 1
                     ? _HeaderBtn(icon: Icons.close_rounded, onTap: onClose)
                     : const SizedBox(width: 36),
               ],
             ),
           ),
-          // Progress bar
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
             child: ClipRRect(
@@ -245,9 +267,7 @@ class _WizardHeader extends StatelessWidget {
                 value: progress,
                 minHeight: 3,
                 backgroundColor: const Color(0xFFEEF0F4),
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppColors.primary,
-                ),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
               ),
             ),
           ),
@@ -270,8 +290,8 @@ class _HeaderBtn extends StatelessWidget {
     child: Container(
       width: 36,
       height: 36,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2F4F7),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF2F4F7),
         shape: BoxShape.circle,
       ),
       child: Icon(icon, size: 16, color: AppColors.ink),
@@ -286,7 +306,8 @@ class _HeaderBtn extends StatelessWidget {
 class _WizardBottomBar extends StatelessWidget {
   final int step;
   final int total;
-  final bool publishing;
+  final bool busy;
+  final String? progressLabel;
   final VoidCallback onBack;
   final VoidCallback onContinue;
   final VoidCallback onPublish;
@@ -294,10 +315,11 @@ class _WizardBottomBar extends StatelessWidget {
   const _WizardBottomBar({
     required this.step,
     required this.total,
-    required this.publishing,
+    required this.busy,
     required this.onBack,
     required this.onContinue,
     required this.onPublish,
+    this.progressLabel,
   });
 
   @override
@@ -313,10 +335,9 @@ class _WizardBottomBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Back button — hidden on step 1
           if (step > 1) ...[
             GestureDetector(
-              onTap: onBack,
+              onTap: busy ? null : onBack,
               child: Container(
                 width: 96,
                 height: 52,
@@ -338,10 +359,9 @@ class _WizardBottomBar extends StatelessWidget {
             ),
             const SizedBox(width: 10),
           ],
-          // Continue / Publish button
           Expanded(
             child: GestureDetector(
-              onTap: isLast ? onPublish : onContinue,
+              onTap: busy ? null : (isLast ? onPublish : onContinue),
               child: Container(
                 height: 52,
                 decoration: BoxDecoration(
@@ -356,14 +376,30 @@ class _WizardBottomBar extends StatelessWidget {
                   ],
                 ),
                 child: Center(
-                  child: publishing
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.5,
-                          ),
+                  child: busy
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            if (progressLabel != null) ...[
+                              const SizedBox(width: 10),
+                              Text(
+                                progressLabel!,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ],
                         )
                       : Text(
                           isLast ? 'Publish listing' : 'Continue',

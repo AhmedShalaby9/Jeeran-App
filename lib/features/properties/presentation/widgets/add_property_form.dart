@@ -1,38 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../domain/enums/property_enums.dart';
 
 // ─────────────────────────────────────────────────────────────
 //  Mutable form data — passed by reference to every step widget
 // ─────────────────────────────────────────────────────────────
 
 class AddPropertyForm {
-  String purpose = 'For Sale'; // 'For Sale' | 'For Rent'
-  String propertyType = 'apartment';
-  String city = '';
-  String area = '';
-  String street = '';
+  PropertyType? propertyType;
+  PropertyStatus? propertyStatus;
+  PropertyState? location; // which state/city (avoids name clash with Flutter State)
+  int? projectId;
+  String projectTitle = '';
+
   String price = '';
   String size = '';
   int bedrooms = 1;
   int bathrooms = 1;
-  int parkingSpots = 0;
-  String? furnishing; // 'Unfurnished' | 'Semi-furnished' | 'Furnished'
-  /// Placeholder photo count — replace with List<XFile> once
-  /// image_picker is added to pubspec.yaml.
-  int photoCount = 0;
-  String title = '';
-  String description = '';
+
+  String titleAr = '';
+  String titleEn = '';
+  String contentAr = '';
+  String contentEn = '';
+  List<XFile> selectedImages = [];
+
+  String? videoUrl;
+
+  String agentName = '';
+  String agentMobile = '';
+  String agentWhatsapp = '';
+  String agentEmail = '';
 
   // ── Per-step validation ──────────────────────────────────────
-  bool get step1Valid => propertyType.isNotEmpty;
-  bool get step2Valid => city.trim().isNotEmpty && area.trim().isNotEmpty;
+  bool get step1Valid => propertyType != null && propertyStatus != null;
+  bool get step2Valid => location != null && projectId != null;
   bool get step3Valid =>
-      price.trim().isNotEmpty && double.tryParse(price) != null;
+      price.trim().isNotEmpty &&
+      double.tryParse(price.replaceAll(',', '')) != null &&
+      size.trim().isNotEmpty &&
+      double.tryParse(size) != null;
   bool get step4Valid =>
-      photoCount > 0 &&
-      title.trim().isNotEmpty &&
-      description.trim().isNotEmpty;
-  bool get step5Valid => true;
+      selectedImages.isNotEmpty &&
+      titleAr.trim().isNotEmpty &&
+      titleEn.trim().isNotEmpty &&
+      contentAr.trim().isNotEmpty &&
+      contentEn.trim().isNotEmpty;
+  bool get step5Valid =>
+      agentName.trim().isNotEmpty && agentMobile.trim().isNotEmpty;
 
   bool isStepValid(int step) => switch (step) {
         1 => step1Valid,
@@ -40,6 +55,31 @@ class AddPropertyForm {
         3 => step3Valid,
         4 => step4Valid,
         _ => step5Valid,
+      };
+
+  Map<String, dynamic> toBody(List<String> imageUrls) => {
+        'title_ar': titleAr.trim(),
+        'title_en': titleEn.trim(),
+        'content_ar': contentAr.trim(),
+        'content_en': contentEn.trim(),
+        'property_type': propertyType!.apiKey,
+        'property_status': propertyStatus!.apiKey,
+        'price': double.parse(price.replaceAll(',', '')),
+        'size': double.parse(size),
+        'bedrooms': bedrooms,
+        'bathrooms': bathrooms,
+        'country': 'egypt',
+        'state': location!.apiKey,
+        'project_id': projectId,
+        'images': imageUrls,
+        'agent_name': agentName.trim(),
+        'agent_mobile': agentMobile.trim(),
+        'agent_whatsapp': agentWhatsapp.trim().isNotEmpty
+            ? agentWhatsapp.trim()
+            : agentMobile.trim(),
+        'agent_email': agentEmail.trim(),
+        if (videoUrl != null && videoUrl!.trim().isNotEmpty)
+          'video_url': videoUrl!.trim(),
       };
 }
 
@@ -85,6 +125,7 @@ class WizardInput extends StatelessWidget {
   final String? suffix;
   final TextInputType keyboardType;
   final ValueChanged<String> onChanged;
+  final TextDirection? textDirection;
 
   const WizardInput({
     super.key,
@@ -93,6 +134,7 @@ class WizardInput extends StatelessWidget {
     required this.onChanged,
     this.suffix,
     this.keyboardType = TextInputType.text,
+    this.textDirection,
   });
 
   @override
@@ -112,16 +154,11 @@ class WizardInput extends StatelessWidget {
               initialValue: value,
               onChanged: onChanged,
               keyboardType: keyboardType,
-              style: const TextStyle(
-                fontSize: 15,
-                color: AppColors.ink,
-              ),
+              textDirection: textDirection,
+              style: const TextStyle(fontSize: 15, color: AppColors.ink),
               decoration: InputDecoration(
                 hintText: placeholder,
-                hintStyle: const TextStyle(
-                  fontSize: 15,
-                  color: AppColors.inkMute,
-                ),
+                hintStyle: const TextStyle(fontSize: 15, color: AppColors.inkMute),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
@@ -132,10 +169,7 @@ class WizardInput extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               suffix!,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.inkSub,
-              ),
+              style: const TextStyle(fontSize: 14, color: AppColors.inkSub),
             ),
           ],
         ],
@@ -150,6 +184,7 @@ class WizardTextArea extends StatelessWidget {
   final String value;
   final int rows;
   final ValueChanged<String> onChanged;
+  final TextDirection? textDirection;
 
   const WizardTextArea({
     super.key,
@@ -157,6 +192,7 @@ class WizardTextArea extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.rows = 5,
+    this.textDirection,
   });
 
   @override
@@ -172,6 +208,7 @@ class WizardTextArea extends StatelessWidget {
         initialValue: value,
         onChanged: onChanged,
         maxLines: rows,
+        textDirection: textDirection,
         style: const TextStyle(fontSize: 15, color: AppColors.ink),
         decoration: InputDecoration(
           hintText: placeholder,
@@ -302,4 +339,93 @@ class _CounterBtn extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Section heading used across all steps.
+class WizardStepTitle extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  const WizardStepTitle(this.title, {super.key, this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: AppColors.ink,
+          ),
+        ),
+        if (subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle!,
+            style: const TextStyle(fontSize: 14, color: AppColors.inkSub),
+          ),
+        ],
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+}
+
+/// Row divider for counter fields.
+class WizardCounterRow extends StatelessWidget {
+  final String label;
+  final String? hint;
+  final int value;
+  final int min;
+  final ValueChanged<int> onChanged;
+
+  const WizardCounterRow({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+    this.hint,
+    this.min = 0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F6F8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.hairline),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.ink,
+                  ),
+                ),
+                if (hint != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    hint!,
+                    style: const TextStyle(fontSize: 12, color: AppColors.inkMute),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          WizardCounter(value: value, min: min, onChanged: onChanged),
+        ],
+      ),
+    );
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/property.dart';
@@ -14,11 +15,11 @@ class PropertyOverviewTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (property.content?.isNotEmpty == true)
+        if (property.localContent(context.locale.languageCode)?.isNotEmpty == true)
           Padding(
             padding: const EdgeInsets.only(bottom: 18),
             child: Text(
-              property.content!,
+              property.localContent(context.locale.languageCode)!,
               style: const TextStyle(
                 fontSize: 14,
                 color: AppColors.inkSub,

@@ -15,4 +15,6 @@ abstract class PropertyRepository {
     int page = 1,
     int limit = 20,
   });
+  Future<Either<Failure, String>> uploadImage(String filePath);
+  Future<Either<Failure, void>> createProperty(Map<String, dynamic> data);
 }

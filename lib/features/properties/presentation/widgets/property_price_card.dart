@@ -58,7 +58,7 @@ class PropertyPriceCard extends StatelessWidget {
                         ),
                       ),
                     Text(
-                      property.title,
+                      property.localTitle(context.locale.languageCode),
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.w800,

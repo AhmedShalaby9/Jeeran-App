@@ -8,6 +8,8 @@ abstract class PropertyRemoteDataSource {
   Future<List<PropertyModel>> getProperties(PropertyFilterParams params);
   Future<List<PropertyModel>> getMyProperties(PropertyFilterParams params);
   Future<List<PropertyModel>> getSimilarProperties(int propertyId, {int page = 1, int limit = 20});
+  Future<String> uploadImage(String filePath);
+  Future<void> createProperty(Map<String, dynamic> data);
 }
 
 class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
@@ -76,6 +78,53 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
             .map(PropertyModel.fromJson)
             .toList();
       }
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<String> uploadImage(String filePath) async {
+    try {
+      final response = await apiClient.postMultipart(
+        ApiEndpoints.uploadSingle,
+        filePath: filePath,
+        queryParams: {'folder': 'properties'},
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final body = response.data;
+        String? url;
+        if (body is Map<String, dynamic>) {
+          final data = body['data'];
+          if (data is String) {
+            url = data;
+          } else if (data is Map<String, dynamic>) {
+            url = data['url'] as String?;
+          } else {
+            url = body['url'] as String?;
+          }
+        }
+        if (url != null) return url;
+      }
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> createProperty(Map<String, dynamic> data) async {
+    try {
+      final response = await apiClient.post(
+        ApiEndpoints.properties,
+        data: data,
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) return;
       throw ServerException();
     } on ServerException {
       rethrow;

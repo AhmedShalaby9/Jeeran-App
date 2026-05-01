@@ -60,4 +60,26 @@ class PropertyRepositoryImpl implements PropertyRepository {
       return Left(ServerFailure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, String>> uploadImage(String filePath) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final url = await remoteDataSource.uploadImage(filePath);
+      return Right(url);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> createProperty(Map<String, dynamic> data) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      await remoteDataSource.createProperty(data);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 }

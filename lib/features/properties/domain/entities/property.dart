@@ -5,9 +5,11 @@ class Property extends Equatable {
   final int id;
   final int? legacyId;
   final String? legacyCode;
-  final String title;
+  final String titleAr;
+  final String titleEn;
   final String? slug;
-  final String? content;
+  final String? contentAr;
+  final String? contentEn;
   final String? contentHtml;
   final String? propertyType;
   final String? propertyStatus;
@@ -39,9 +41,11 @@ class Property extends Equatable {
     required this.id,
     this.legacyId,
     this.legacyCode,
-    required this.title,
+    this.titleAr = '',
+    this.titleEn = '',
     this.slug,
-    this.content,
+    this.contentAr,
+    this.contentEn,
     this.contentHtml,
     this.propertyType,
     this.propertyStatus,
@@ -72,14 +76,35 @@ class Property extends Equatable {
 
   String? get coverImage => images.isNotEmpty ? images.first : null;
 
+  /// Returns the title in [lang] (e.g. 'ar' or 'en').
+  /// Falls back to the other language if the requested one is empty.
+  String localTitle(String lang) {
+    if (lang == 'ar') {
+      return titleAr.isNotEmpty ? titleAr : titleEn;
+    }
+    return titleEn.isNotEmpty ? titleEn : titleAr;
+  }
+
+  /// Returns the content in [lang], falling back to the other language.
+  String? localContent(String lang) {
+    if (lang == 'ar') {
+      final ar = contentAr;
+      return (ar != null && ar.isNotEmpty) ? ar : contentEn;
+    }
+    final en = contentEn;
+    return (en != null && en.isNotEmpty) ? en : contentAr;
+  }
+
   @override
   List<Object?> get props => [
         id,
         legacyId,
         legacyCode,
-        title,
+        titleAr,
+        titleEn,
         slug,
-        content,
+        contentAr,
+        contentEn,
         contentHtml,
         propertyType,
         propertyStatus,

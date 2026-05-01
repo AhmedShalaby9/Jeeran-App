@@ -22,6 +22,7 @@ import '../../features/projects/presentation/bloc/projects_bloc.dart';
 import '../../features/properties/data/datasources/property_remote_data_source.dart';
 import '../../features/properties/data/repositories/property_repository_impl.dart';
 import '../../features/properties/domain/repositories/property_repository.dart';
+import '../../features/properties/presentation/bloc/add_property_bloc.dart';
 import '../../features/properties/presentation/bloc/my_properties_bloc.dart';
 import '../../features/properties/presentation/bloc/properties_bloc.dart';
 import '../../features/properties/presentation/bloc/property_similar_bloc.dart';
@@ -58,6 +59,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => BannersBloc(repository: sl()));
   sl.registerLazySingleton(() => ProjectsBloc(repository: sl()));
   sl.registerFactory(() => PropertiesBloc(repository: sl()));
+  sl.registerFactory(() => AddPropertyBloc(repository: sl()));
   sl.registerFactory(() => MyPropertiesBloc(repository: sl()));
   sl.registerFactory(() => PropertySimilarBloc(repository: sl()));
   sl.registerLazySingleton(() => NewsBloc(repository: sl()));

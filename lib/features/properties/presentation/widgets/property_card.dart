@@ -143,7 +143,7 @@ class _FeaturedCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    property.title,
+                    property.localTitle(context.locale.languageCode),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -245,7 +245,7 @@ class _HorizontalCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              property.title,
+                              property.localTitle(context.locale.languageCode),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -395,7 +395,7 @@ class _VerticalCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    property.title,
+                    property.localTitle(context.locale.languageCode),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -689,7 +689,7 @@ class _SimilarCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    property.title,
+                    property.localTitle(context.locale.languageCode),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

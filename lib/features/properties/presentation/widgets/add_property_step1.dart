@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../domain/enums/property_enums.dart';
 import 'add_property_form.dart';
 
 class AddPropertyStep1 extends StatefulWidget {
@@ -17,73 +18,58 @@ class AddPropertyStep1 extends StatefulWidget {
 }
 
 class _AddPropertyStep1State extends State<AddPropertyStep1> {
-  static const _purposes = ['For Sale', 'For Rent'];
+  static const _typeIcons = <PropertyType, IconData>{
+    PropertyType.villa: Icons.house_rounded,
+    PropertyType.apartment: Icons.apartment_rounded,
+    PropertyType.chalet: Icons.cabin_rounded,
+    PropertyType.marinaApartment: Icons.water_rounded,
+    PropertyType.clinic: Icons.local_hospital_rounded,
+    PropertyType.office: Icons.business_center_rounded,
+    PropertyType.shop: Icons.storefront_rounded,
+    PropertyType.land: Icons.landscape_rounded,
+    PropertyType.studio: Icons.meeting_room_rounded,
+    PropertyType.duplex: Icons.layers_rounded,
+  };
 
-  static const _types = [
-    _PropertyType('apartment', 'Apartment', 'Flats, studios, penthouses', Icons.apartment_rounded),
-    _PropertyType('villa', 'Villa', 'Standalone & townhouses', Icons.house_rounded),
-    _PropertyType('office', 'Office', 'Commercial spaces', Icons.business_center_rounded),
-    _PropertyType('land', 'Land', 'Plots & agricultural', Icons.landscape_rounded),
-    _PropertyType('retail', 'Retail', 'Shops & showrooms', Icons.storefront_rounded),
-  ];
+  static const _typeSubtitles = <PropertyType, String>{
+    PropertyType.villa: 'Standalone & townhouses',
+    PropertyType.apartment: 'Flats, penthouses',
+    PropertyType.chalet: 'Holiday & coastal',
+    PropertyType.marinaApartment: 'Waterfront units',
+    PropertyType.clinic: 'Medical spaces',
+    PropertyType.office: 'Commercial offices',
+    PropertyType.shop: 'Shops & showrooms',
+    PropertyType.land: 'Plots & agricultural',
+    PropertyType.studio: 'Open-plan units',
+    PropertyType.duplex: 'Two-floor units',
+  };
+
+  void _update(VoidCallback fn) {
+    fn();
+    widget.onChanged();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        const WizardStepTitle(
           'What are you listing?',
-          style: TextStyle(
-            fontSize: 26,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.4,
-            color: AppColors.ink,
-          ),
+          subtitle: 'Choose the type and status of the property.',
         ),
-        const SizedBox(height: 6),
-        const Text(
-          'Choose the property type and purpose.',
-          style: TextStyle(fontSize: 15, color: AppColors.inkSub, height: 1.4),
-        ),
-        const SizedBox(height: 24),
 
-        // ── Purpose toggle ───────────────────────────────────────
-        const WizardLabel('Purpose', required: true),
-        Row(
-          children: _purposes.map((p) {
-            final active = widget.form.purpose == p;
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  right: p == _purposes.first ? 8 : 0,
-                ),
-                child: GestureDetector(
-                  onTap: () {
-                    widget.form.purpose = p;
-                    widget.onChanged();
-                    setState(() {});
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: active ? AppColors.primary : const Color(0xFFF5F6F8),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Center(
-                      child: Text(
-                        p,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: active ? Colors.white : AppColors.ink,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+        // ── Property status ──────────────────────────────────────
+        const WizardLabel('Listing status', required: true),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: PropertyStatus.options.map((s) {
+            return WizardChip(
+              label: s.label(),
+              active: widget.form.propertyStatus == s,
+              onTap: () => _update(() => widget.form.propertyStatus = s),
             );
           }).toList(),
         ),
@@ -91,23 +77,16 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
 
         // ── Property type list ───────────────────────────────────
         const WizardLabel('Property type', required: true),
-        ...List.generate(_types.length, (i) {
-          final t = _types[i];
-          final active = widget.form.propertyType == t.id;
+        ...PropertyType.options.map((t) {
+          final active = widget.form.propertyType == t;
+          final isLast = t == PropertyType.options.last;
           return Padding(
-            padding: EdgeInsets.only(bottom: i < _types.length - 1 ? 10 : 0),
+            padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
             child: GestureDetector(
-              onTap: () {
-                widget.form.propertyType = t.id;
-                widget.onChanged();
-                setState(() {});
-              },
+              onTap: () => _update(() => widget.form.propertyType = t),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -118,7 +97,6 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
                 ),
                 child: Row(
                   children: [
-                    // Icon badge
                     Container(
                       width: 42,
                       height: 42,
@@ -129,19 +107,18 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
-                        t.icon,
+                        _typeIcons[t] ?? Icons.home_rounded,
                         size: 20,
                         color: active ? Colors.white : AppColors.primary,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // Label + sub
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            t.label,
+                            t.label(),
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -150,7 +127,7 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            t.subtitle,
+                            _typeSubtitles[t] ?? '',
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.inkSub,
@@ -159,7 +136,6 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
                         ],
                       ),
                     ),
-                    // Radio circle
                     Container(
                       width: 22,
                       height: 22,
@@ -172,11 +148,7 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
                         ),
                       ),
                       child: active
-                          ? const Icon(
-                              Icons.check_rounded,
-                              size: 12,
-                              color: Colors.white,
-                            )
+                          ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
                           : null,
                     ),
                   ],
@@ -188,12 +160,4 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
       ],
     );
   }
-}
-
-class _PropertyType {
-  final String id;
-  final String label;
-  final String subtitle;
-  final IconData icon;
-  const _PropertyType(this.id, this.label, this.subtitle, this.icon);
 }
