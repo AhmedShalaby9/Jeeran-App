@@ -41,5 +41,12 @@ class AppColors {
   static const Color dangerLight = Color(0xFFFF8066);
   static const Color dangerRed = Color(0xFFFF4A2A);
   static const Color divider = Color(0xFFE5E7EB);
+
+  // AI Chat
+  static const Color chatBackground   = Color(0xFFF0F4F8);
+  static const Color headerGradientEnd = Color(0xFF1A2E4A);
+  static const Color secondaryDark    = Color(0xFF1D8FC0);
+  static const Color userBubbleEnd    = Color(0xFF1A3060);
+  static const Color onlineGreen      = Color(0xFF4ADE80);
 }
 

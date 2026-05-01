@@ -179,7 +179,7 @@ class _AiChatFabState extends State<_AiChatFab>
             transitionDuration: const Duration(milliseconds: 400),
           ),
         ),
-        backgroundColor: AppColors.secondary,
+        backgroundColor: AppColors.primary,
         elevation: 0,
         tooltip: 'Jeeran AI',
         shape: const CircleBorder(),

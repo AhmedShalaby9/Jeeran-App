@@ -31,7 +31,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           : event.content;
 
       // 1. Create session via API
-      final sessionResult = await repository.createSession(title);
+      final sessionResult = await repository.createSession(title: title);
       if (sessionResult.isLeft()) {
         String errMsg = 'Failed to create session.';
         sessionResult.fold((f) => errMsg = _mapFailure(f), (_) {});

@@ -41,7 +41,7 @@
   static const String sellerRequests = '/seller-requests';
 
   // AI Chat
-  static const String chatSessions = '/chat/session';
-  static String chatSessionById(int id) => '/chat/session/$id';
-  static String chatMessages(int sessionId) => '/chat/session/$sessionId/messages';
+  static const String chatSessions = '/chat/sessions';
+  static String chatSessionById(int id) => '/chat/sessions/$id';
+  static String chatMessages(int sessionId) => '/chat/sessions/$sessionId/messages';
 }

@@ -53,7 +53,21 @@
     "land": "Land",
     "studio": "Studio",
     "chalet": "Chalet",
-    "duplex": "Duplex"
+    "duplex": "Duplex",
+    "marina_apartment": "Marina Apartment",
+    "clinic": "Clinic",
+    "office": "Office",
+    "shop": "Shop"
+  },
+  "location": {
+    "country": {
+      "egypt": "Egypt"
+    },
+    "state": {
+      "cairo": "Cairo",
+      "north_coast": "North Coast",
+      "sharm_el_sheikh": "Sharm El-Sheikh"
+    }
   },
   "sort": {
     "price": "Price",
@@ -147,6 +161,7 @@
   "actions": {
     "retry": "Retry",
     "cancel": "Cancel",
+    "delete": "Delete",
     "logout": "Logout"
   },
   "plans": {
@@ -277,6 +292,28 @@
     "referral_helper": "Have a friend's code? You both get a reward.",
     "skip": "Skip",
     "complete_setup": "Complete setup"
+  },
+  "ai_chat": {
+    "jeeran_ai": "Jeeran AI",
+    "chat_history": "Chat History",
+    "new_chat": "New Chat",
+    "new_session": "New Session",
+    "history": "History",
+    "online_status": "Online — Real-estate Assistant",
+    "tap_to_continue": "Tap to continue conversation",
+    "no_conversations": "No conversations yet",
+    "no_conversations_subtitle": "Start a new chat and let Jeeran AI\nhelp you find your perfect property.",
+    "start_new_chat": "Start New Chat",
+    "delete_conversation": "Delete Conversation",
+    "delete_confirm": "\"{title}\" will be permanently deleted.",
+    "new_conversation": "New Conversation",
+    "ask_hint": "Ask Jeeran AI…",
+    "go_back": "Go Back",
+    "just_now": "Just now",
+    "minutes_ago": "{count}m ago",
+    "hours_ago": "{count}h ago",
+    "yesterday": "Yesterday",
+    "days_ago": "{count}d ago"
   },
   "profile": {
     "title": "My Profile",

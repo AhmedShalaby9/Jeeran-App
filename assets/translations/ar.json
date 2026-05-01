@@ -53,7 +53,21 @@
     "land": "أرض",
     "studio": "ستوديو",
     "chalet": "شاليه",
-    "duplex": "دوبلكس"
+    "duplex": "دوبلكس",
+    "marina_apartment": "شقة مارينا",
+    "clinic": "عيادة",
+    "office": "مكتب",
+    "shop": "محل تجاري"
+  },
+  "location": {
+    "country": {
+      "egypt": "مصر"
+    },
+    "state": {
+      "cairo": "القاهرة",
+      "north_coast": "الساحل الشمالي",
+      "sharm_el_sheikh": "شرم الشيخ"
+    }
   },
   "sort": {
     "price": "السعر",
@@ -147,6 +161,7 @@
   "actions": {
     "retry": "إعادة المحاولة",
     "cancel": "إلغاء",
+    "delete": "حذف",
     "logout": "تسجيل الخروج"
   },
   "plans": {
@@ -277,6 +292,28 @@
     "referral_helper": "لديك رمز صديق؟ تحصلان معاً على مكافأة.",
     "skip": "تخطي",
     "complete_setup": "إكمال الإعداد"
+  },
+  "ai_chat": {
+    "jeeran_ai": "جيران AI",
+    "chat_history": "سجل المحادثات",
+    "new_chat": "محادثة جديدة",
+    "new_session": "جلسة جديدة",
+    "history": "السجل",
+    "online_status": "متصل — مساعد عقاري",
+    "tap_to_continue": "اضغط لمتابعة المحادثة",
+    "no_conversations": "لا توجد محادثات بعد",
+    "no_conversations_subtitle": "ابدأ محادثة جديدة ودع جيران AI\nيساعدك في إيجاد عقارك المثالي.",
+    "start_new_chat": "ابدأ محادثة جديدة",
+    "delete_conversation": "حذف المحادثة",
+    "delete_confirm": "سيتم حذف \"{title}\" نهائياً.",
+    "new_conversation": "محادثة جديدة",
+    "ask_hint": "اسأل جيران AI…",
+    "go_back": "رجوع",
+    "just_now": "الآن",
+    "minutes_ago": "منذ {count} د",
+    "hours_ago": "منذ {count} س",
+    "yesterday": "أمس",
+    "days_ago": "منذ {count} أيام"
   },
   "profile": {
     "title": "ملفي الشخصي",

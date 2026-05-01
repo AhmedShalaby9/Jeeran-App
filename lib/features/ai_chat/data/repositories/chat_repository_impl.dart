@@ -17,10 +17,10 @@ class ChatRepositoryImpl implements ChatRepository {
   });
 
   @override
-  Future<Either<Failure, ChatSession>> createSession(String title) async {
+  Future<Either<Failure, ChatSession>> createSession({String? title}) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      return Right(await remoteDataSource.createSession(title));
+      return Right(await remoteDataSource.createSession(title: title));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
@@ -33,17 +33,33 @@ class ChatRepositoryImpl implements ChatRepository {
   }) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      return Right(await remoteDataSource.getSessions(page: page, limit: limit));
+      return Right(
+          await remoteDataSource.getSessions(page: page, limit: limit));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
   }
 
   @override
-  Future<Either<Failure, List<ChatMessage>>> getMessages(int sessionId) async {
+  Future<Either<Failure, ChatSession>> getSession(int sessionId) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      return Right(await remoteDataSource.getMessages(sessionId));
+      return Right(await remoteDataSource.getSession(sessionId));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<ChatMessage>>> getMessages(
+    int sessionId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      return Right(await remoteDataSource.getMessages(sessionId,
+          page: page, limit: limit));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
