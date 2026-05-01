@@ -22,6 +22,7 @@ import '../../features/projects/presentation/bloc/projects_bloc.dart';
 import '../../features/properties/data/datasources/property_remote_data_source.dart';
 import '../../features/properties/data/repositories/property_repository_impl.dart';
 import '../../features/properties/domain/repositories/property_repository.dart';
+import '../../features/properties/presentation/bloc/my_properties_bloc.dart';
 import '../../features/properties/presentation/bloc/properties_bloc.dart';
 import '../../features/properties/presentation/bloc/property_similar_bloc.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
@@ -39,6 +40,10 @@ import '../../features/seller_request/data/datasources/seller_request_remote_dat
 import '../../features/seller_request/data/repositories/seller_request_repository_impl.dart';
 import '../../features/seller_request/domain/repositories/seller_request_repository.dart';
 import '../../features/seller_request/presentation/bloc/seller_request_bloc.dart';
+import '../../features/subscription/data/datasources/subscription_remote_data_source.dart';
+import '../../features/subscription/data/repositories/subscription_repository_impl.dart';
+import '../../features/subscription/domain/repositories/subscription_repository.dart';
+import '../../features/subscription/presentation/bloc/subscription_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -48,12 +53,14 @@ Future<void> init() async {
   sl.registerLazySingleton(() => BannersBloc(repository: sl()));
   sl.registerLazySingleton(() => ProjectsBloc(repository: sl()));
   sl.registerFactory(() => PropertiesBloc(repository: sl()));
+  sl.registerFactory(() => MyPropertiesBloc(repository: sl()));
   sl.registerFactory(() => PropertySimilarBloc(repository: sl()));
   sl.registerLazySingleton(() => NewsBloc(repository: sl()));
   sl.registerFactory(() => PlansBloc(repository: sl()));
   sl.registerFactory(() => AuthBloc(repository: sl()));
   sl.registerLazySingleton(() => FavoritesBloc(repository: sl()));
   sl.registerFactory(() => SellerRequestBloc(repository: sl()));
+  sl.registerFactory(() => SubscriptionBloc(repository: sl()));
 
   // -- Repositories --------------------------------------
   sl.registerLazySingleton<HomeRepository>(
@@ -84,6 +91,9 @@ Future<void> init() async {
   sl.registerLazySingleton<SellerRequestRepository>(
     () => SellerRequestRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
+  sl.registerLazySingleton<SubscriptionRepository>(
+    () => SubscriptionRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
 
   // -- Data sources --------------------------------------
   sl.registerLazySingleton<ProjectRemoteDataSource>(
@@ -112,6 +122,9 @@ sl.registerLazySingleton<HomeLocalDataSource>(
   );
   sl.registerLazySingleton<SellerRequestRemoteDataSource>(
     () => SellerRequestRemoteDataSourceImpl(apiClient: sl()),
+  );
+  sl.registerLazySingleton<SubscriptionRemoteDataSource>(
+    () => SubscriptionRemoteDataSourceImpl(apiClient: sl()),
   );
 
 // -- Core ----------------------------------------------

@@ -6,14 +6,6 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../plans/presentation/pages/plans_page.dart';
 import '../../../subscription/presentation/pages/subscription_details_page.dart';
 
-/// Factory widget: decides which screen to show on the Packages tab.
-///
-/// Builder pattern — a single entry point that inspects [AuthBloc] state
-/// and delegates rendering to the correct destination:
-///
-///   • Seller + no subscription  →  [PlansPage]
-///   • Seller + has subscription →  [SubscriptionDetailsPage]
-///   • Loading                   →  spinner
 class PackagesDestination extends StatelessWidget {
   const PackagesDestination({super.key});
 
@@ -21,8 +13,6 @@ class PackagesDestination extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
-        // While waiting for the first /auth/me response, show a neutral
-        // loading screen so we don't flash the wrong destination.
         if (state is AuthLoading || state is AuthInitial) {
           return const Scaffold(
             backgroundColor: AppColors.background,

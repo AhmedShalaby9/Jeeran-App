@@ -6,15 +6,15 @@ import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
+import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../home/presentation/pages/home_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../../search/presentation/pages/search_page.dart';
 import '../../../projects/presentation/pages/projects_page.dart';
-import '../../../favorites/presentation/pages/favorites_page.dart';
 import '../../../more/presentation/pages/more_page.dart';
-import '../../../packages/presentation/pages/packages_destination.dart';
+import 'tab4_destination.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -25,8 +25,10 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-  late final List<Widget> _pages;
-  late final List<_NavItem> _navItems;
+  bool _isSeller = AppStorage.isSeller;
+  bool _hasSubscription = false;
+  late List<Widget> _pages;
+  late List<_NavItem> _navItems;
   final _searchResetNotifier = ValueNotifier<bool>(false);
 
   void _goToProjects() {
@@ -34,19 +36,12 @@ class _MainPageState extends State<MainPage> {
     setState(() => _selectedIndex = 2);
   }
 
-  @override
-  void initState() {
-    super.initState();
-    final isSeller = AppStorage.isSeller;
-
-    // Tab 3 differs by user type:
-    //   Buyer  → Favorites
-    //   Seller → Packages / Subscription (PackagesDestination factory)
+  void _buildNav() {
     _pages = [
       HomePage(onSearchTap: _goToProjects),
       SearchPage(resetNotifier: _searchResetNotifier),
       const ProjectsPage(),
-      if (isSeller) const PackagesDestination() else const FavoritesPage(),
+      Tab4Destination.create(isSeller: _isSeller),
       const MorePage(),
     ];
 
@@ -66,11 +61,13 @@ class _MainPageState extends State<MainPage> {
         activeIcon: Icons.business,
         label: 'bottom_nav.projects'.tr(),
       ),
-      if (isSeller)
+      if (_isSeller)
         _NavItem(
           icon: Icons.workspace_premium_outlined,
           activeIcon: Icons.workspace_premium,
-          label: 'bottom_nav.packages'.tr(),
+          label: _hasSubscription
+              ? 'subscription.title'.tr()
+              : 'bottom_nav.packages'.tr(),
         )
       else
         _NavItem(
@@ -84,6 +81,23 @@ class _MainPageState extends State<MainPage> {
         label: 'bottom_nav.more'.tr(),
       ),
     ];
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _buildNav();
+  }
+
+  void _onAuthUpdated(bool isSeller, bool hasSubscription) {
+    if (_isSeller == isSeller && _hasSubscription == hasSubscription) return;
+    setState(() {
+      final roleChanged = _isSeller != isSeller;
+      _isSeller = isSeller;
+      _hasSubscription = hasSubscription;
+      if (roleChanged) _selectedIndex = 0;
+      _buildNav();
+    });
   }
 
   @override
@@ -102,27 +116,29 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        // Single AuthBloc for the whole shell — shared by MorePage,
-        // HomeSliverAppBar, and PackagesDestination via BlocProvider.value.
         BlocProvider(
           create: (_) => sl<AuthBloc>()..add(const AuthGetMeEvent()),
         ),
         BlocProvider.value(value: sl<FavoritesBloc>()),
       ],
-      child: _MainScaffold(
-        selectedIndex: _selectedIndex,
-        pages: _pages,
-        navItems: _navItems,
-        onTap: _onItemTapped,
-        onAddListing: AppStorage.isSeller
-            ? () => AddPropertyPage.push(context)
-            : null,
+      child: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state is AuthMeLoaded) {
+            _onAuthUpdated(state.user.isSeller, state.user.subscriptionId != null);
+          }
+        },
+        child: _MainScaffold(
+          selectedIndex: _selectedIndex,
+          pages: _pages,
+          navItems: _navItems,
+          onTap: _onItemTapped,
+          onAddListing: _isSeller ? () => AddPropertyPage.push(context) : null,
+        ),
       ),
     );
   }
 }
 
-// ── Scaffold shell ───────────────────────────────────────────────────
 class _MainScaffold extends StatelessWidget {
   final int selectedIndex;
   final List<Widget> pages;
@@ -155,7 +171,6 @@ class _MainScaffold extends StatelessWidget {
   }
 }
 
-// ── FAB ──────────────────────────────────────────────────────────────
 class _AddListingFab extends StatelessWidget {
   final VoidCallback onTap;
   const _AddListingFab({required this.onTap});
@@ -184,7 +199,6 @@ class _AddListingFab extends StatelessWidget {
   }
 }
 
-// ── Bottom nav bar ───────────────────────────────────────────────────
 class _JeeranBottomNavBar extends StatelessWidget {
   final int selectedIndex;
   final List<_NavItem> items;
@@ -263,7 +277,6 @@ class _JeeranBottomNavBar extends StatelessWidget {
   }
 }
 
-// ── Nav item model ───────────────────────────────────────────────────
 class _NavItem {
   final IconData icon;
   final IconData activeIcon;

@@ -17,11 +17,10 @@ import '../../../properties/presentation/widgets/featured_properties_widget.dart
 import '../bloc/banners_bloc.dart';
 import '../bloc/banners_event.dart';
 import '../widgets/banners_carousel_widget.dart';
-import '../../../../core/storage/app_storage.dart';
 import '../widgets/home_greeting_widget.dart';
 import '../widgets/home_search_bar_widget.dart';
 import '../widgets/home_sliver_app_bar.dart';
-import '../widgets/home_subscription_card.dart';
+import '../widgets/navigation_cards_grid.dart';
 
 class HomePage extends StatelessWidget {
   final VoidCallback? onSearchTap;
@@ -37,11 +36,7 @@ class HomePage extends StatelessWidget {
     sl<ProjectsBloc>().add(const FetchProjectsEvent());
     sl<NewsBloc>().add(const FetchNewsEvent());
     _propertiesBloc = sl<PropertiesBloc>();
-    _propertiesBloc.add(
-      const FetchPropertiesEvent(
-        PropertyFilterParams(isFeatured: true, perPage: 10),
-      ),
-    );
+    _propertiesBloc.add(const FetchPropertiesEvent(PropertyFilterParams(isFeatured: true, perPage: 10)));
   }
 
   @override
@@ -78,16 +73,18 @@ class _HomeView extends StatelessWidget {
                 const SizedBox(height: 12),
                 HomeSearchBarWidget(onTap: onSearchTap),
                 const SizedBox(height: 16),
-
                 const BannersCarouselWidget(),
                 const SizedBox(height: 16),
+                const NavigationCardsGrid(),
 
-                if (AppStorage.isSeller) ...[
-                  const HomeSubscriptionCard(
-                    state: HomeSubscriptionState.unsubscribed,
-                  ),
-                  const SizedBox(height: 8),
-                ],
+                const SizedBox(height: 16),
+
+                // if (AppStorage.isSeller) ...[
+                //   const HomeSubscriptionCard(
+                //     state: HomeSubscriptionState.unsubscribed,
+                //   ),
+                //   const SizedBox(height: 8),
+                // ],
                 const ExploreProjectsWidget(),
                 const SizedBox(height: 8),
                 const NewsCarouselWidget(),
@@ -98,9 +95,7 @@ class _HomeView extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const PropertiesScreen(
-                          params: PropertyFilterParams(isFeatured: true),
-                        ),
+                        builder: (_) => const PropertiesScreen(params: PropertyFilterParams(isFeatured: true)),
                       ),
                     );
                   },
@@ -129,18 +124,11 @@ class _SectionTitle extends StatelessWidget {
       children: [
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: AppColors.onBackground,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onBackground),
         ),
         TextButton(
           onPressed: onTap,
-          child: Text(
-            'home.see_all'.tr(),
-            style: TextStyle(color: AppColors.primary),
-          ),
+          child: Text('home.see_all'.tr(), style: TextStyle(color: AppColors.primary)),
         ),
       ],
     );

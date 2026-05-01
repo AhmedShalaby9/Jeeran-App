@@ -160,9 +160,9 @@ class _PaygSectionState extends State<PaygSection> {
                           fontWeight: FontWeight.w700,
                           color: AppColors.ink,
                         ),
-                        children: const [
+                        children: [
                           TextSpan(
-                            text: 'JOD',
+                            text: 'currency'.tr(),
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w500,

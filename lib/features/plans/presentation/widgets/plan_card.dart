@@ -136,8 +136,8 @@ class PlanCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Text(
-                      'JOD / mo',
+                    Text(
+                      '${'currency'.tr()} / mo',
                       style: TextStyle(
                         fontSize: 14,
                         color: AppColors.inkSub,

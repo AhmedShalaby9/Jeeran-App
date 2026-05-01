@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 
 enum SubscriptionStatus { active, lowQuota }
@@ -161,7 +162,7 @@ class _ActiveCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '49 JOD/mo',
+                      '49 ${'currency'.tr()}/mo',
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.white.withValues(alpha: 0.55),

@@ -14,6 +14,7 @@ class PropertyFilterParams extends Equatable {
   final String? agentName;
   final String? sort;
   final String? order;
+  final bool? isApproved;
 
   const PropertyFilterParams({
     this.page = 1,
@@ -29,6 +30,7 @@ class PropertyFilterParams extends Equatable {
     this.agentName,
     this.sort,
     this.order,
+    this.isApproved,
   });
 
   Map<String, dynamic> toJson() {
@@ -46,6 +48,7 @@ class PropertyFilterParams extends Equatable {
       if (agentName != null) 'agent_name': agentName,
       if (sort != null) 'sort': sort,
       if (order != null) 'order': order,
+      if (isApproved != null) 'is_approved': isApproved.toString(),
     };
   }
 
@@ -63,6 +66,7 @@ class PropertyFilterParams extends Equatable {
     String? agentName,
     String? sort,
     String? order,
+    bool? isApproved,
   }) {
     return PropertyFilterParams(
       page: page ?? this.page,
@@ -78,6 +82,7 @@ class PropertyFilterParams extends Equatable {
       agentName: agentName ?? this.agentName,
       sort: sort ?? this.sort,
       order: order ?? this.order,
+      isApproved: isApproved ?? this.isApproved,
     );
   }
 
@@ -96,5 +101,6 @@ class PropertyFilterParams extends Equatable {
         agentName,
         sort,
         order,
+        isApproved,
       ];
 }

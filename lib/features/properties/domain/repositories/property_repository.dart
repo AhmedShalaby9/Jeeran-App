@@ -7,6 +7,9 @@ abstract class PropertyRepository {
   Future<Either<Failure, List<Property>>> getProperties(
     PropertyFilterParams params,
   );
+  Future<Either<Failure, List<Property>>> getMyProperties(
+    PropertyFilterParams params,
+  );
   Future<Either<Failure, List<Property>>> getSimilarProperties(
     int propertyId, {
     int page = 1,

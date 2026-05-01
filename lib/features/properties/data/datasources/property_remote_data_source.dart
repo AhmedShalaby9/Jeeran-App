@@ -6,6 +6,7 @@ import '../models/property_model.dart';
 
 abstract class PropertyRemoteDataSource {
   Future<List<PropertyModel>> getProperties(PropertyFilterParams params);
+  Future<List<PropertyModel>> getMyProperties(PropertyFilterParams params);
   Future<List<PropertyModel>> getSimilarProperties(int propertyId, {int page = 1, int limit = 20});
 }
 
@@ -19,6 +20,29 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
     try {
       final response = await apiClient.get(
         ApiEndpoints.properties,
+        queryParams: params.toJson(),
+      );
+      if (response.statusCode == 200) {
+        final body = response.data as Map<String, dynamic>;
+        final data = body['data'] as List;
+        return data
+            .whereType<Map<String, dynamic>>()
+            .map(PropertyModel.fromJson)
+            .toList();
+      }
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<List<PropertyModel>> getMyProperties(PropertyFilterParams params) async {
+    try {
+      final response = await apiClient.get(
+        ApiEndpoints.myProperties,
         queryParams: params.toJson(),
       );
       if (response.statusCode == 200) {

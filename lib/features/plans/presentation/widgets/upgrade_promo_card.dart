@@ -208,8 +208,8 @@ class _PlanPill extends StatelessWidget {
                     letterSpacing: -0.3,
                   ),
                 ),
-                const Text(
-                  'JOD/mo',
+                Text(
+                  '${'currency'.tr()}/mo',
                   style: TextStyle(
                     fontSize: 9,
                     color: Colors.white70,

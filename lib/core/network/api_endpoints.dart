@@ -23,6 +23,7 @@
   static const String featuredProperties = '/properties/featured';
   static const String searchProperties = '/properties/search';
   static String similarProperties(int id) => '/properties/$id/similar';
+  static const String myProperties = '/properties/my';
 
   // News
   static const String news = '/news';
@@ -33,6 +34,8 @@
 
   // Subscription
   static const String packages = '/packages';
+  static const String subscriptions = '/subscriptions';
+  static const String mySubscription = '/subscriptions/my';
 
   // Seller Request
   static const String sellerRequests = '/seller-requests';

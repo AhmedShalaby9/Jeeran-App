@@ -1,5 +1,6 @@
 {
   "app_name": "Jeeran",
+  "currency": "EGP",
   "splash_tagline": "Find Your Dream Home",
   "bottom_nav": {
     "home": "Home",
@@ -26,7 +27,7 @@
       "status": "Status",
       "property_type": "Property Type",
       "project": "Project",
-      "price_range": "Price Range (JOD)",
+      "price_range": "Price Range (EGP)",
       "min": "Min",
       "max": "Max",
       "bedrooms": "Bedrooms",
@@ -158,9 +159,9 @@
     "payg_desc": "Buy ad credits, use within 6 months.",
     "ad": "ad",
     "ads": "ads",
-    "jod_per_ad": "JOD per ad",
+    "jod_per_ad": "EGP per ad",
     "save_percent": "save {percent}",
-    "subscribe_price": "Subscribe — {price} JOD/mo",
+    "subscribe_price": "Subscribe — {price} EGP/mo",
     "top_up_wallet": "Top up wallet",
     "billing_note": "Billed monthly via Fawry or wallet. Cancel anytime from settings.",
     "recommended": "Recommended",
@@ -175,8 +176,19 @@
     "arabic": "العربية",
     "select": "Select Language"
   },
+  "my_properties": {
+    "title": "My Properties",
+    "all": "All",
+    "approved": "Approved",
+    "pending": "Pending",
+    "empty_title": "No properties yet",
+    "empty_subtitle": "Your listed properties will appear here.",
+    "retry": "Retry"
+  },
   "subscription": {
     "title": "Subscription",
+    "success_title": "You're all set!",
+    "success_subtitle": "Your subscription is active. Start adding your properties now.",
     "plan": "PLAN",
     "tier": "Tier",
     "monthly_listings": "Monthly listings",
@@ -196,7 +208,8 @@
     "cancel_note": "Cancel anytime. Already-published listings stay visible until your cycle ends.",
     "new_listing": "New listing",
     "upgrade": "Upgrade",
-    "invoices": "Invoices"
+    "invoices": "Invoices",
+    "retry": "Retry"
   },
   "property_details": {
     "overview": "Overview",

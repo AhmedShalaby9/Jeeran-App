@@ -5,11 +5,13 @@ import '../../../../core/utils/app_colors.dart';
 class PlansStickyButton extends StatelessWidget {
   final String billing;
   final String? price;
+  final VoidCallback? onPressed;
 
   const PlansStickyButton({
     super.key,
     required this.billing,
     this.price,
+    this.onPressed,
   });
 
   @override
@@ -39,7 +41,7 @@ class PlansStickyButton extends StatelessWidget {
             width: double.infinity,
             height: 54,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: onPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,

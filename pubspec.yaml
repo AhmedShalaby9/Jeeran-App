@@ -48,6 +48,10 @@ dependencies:
   url_launcher: ^6.3.1
   easy_localization: ^3.0.7
   google_fonts: ^8.1.0
+  lottie: ^3.3.1
+
+dependency_overrides:
+  connectivity_plus: ">=5.0.0 <7.0.0"
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +78,7 @@ flutter:
   assets:
     - assets/icon/
     - assets/translations/
+    - assets/animations/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

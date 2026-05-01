@@ -1,20 +1,30 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../domain/entities/user_subscription.dart';
 import 'subscription_widgets.dart';
 
 class SubscriptionHeroCard extends StatelessWidget {
-  final int used;
-  final int total;
+  final UserSubscription subscription;
 
-  const SubscriptionHeroCard({
-    super.key,
-    required this.used,
-    required this.total,
-  });
+  const SubscriptionHeroCard({super.key, required this.subscription});
+
+  String _formatDate(String raw) {
+    final dt = DateTime.tryParse(raw);
+    if (dt == null) return raw;
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
+  }
 
   @override
   Widget build(BuildContext context) {
-    final pct = used / total;
+    final plan = subscription.package;
+    final total = plan.availableListings;
+    final daysLeft = subscription.daysRemaining;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
       child: Container(
@@ -64,7 +74,7 @@ class SubscriptionHeroCard extends StatelessWidget {
                       const ActiveTag(),
                       const SizedBox(width: 8),
                       Text(
-                        'Renews May 18, 2026',
+                        'Renews ${_formatDate(subscription.endDate)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.white.withValues(alpha: 0.7),
@@ -74,7 +84,7 @@ class SubscriptionHeroCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'Growth plan',
+                    '${plan.name} plan',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -86,9 +96,9 @@ class SubscriptionHeroCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      const Text(
-                        '49',
-                        style: TextStyle(
+                      Text(
+                        plan.price.replaceAll('.00', '').replaceAll(RegExp(r'\.0$'), ''),
+                        style: const TextStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,
@@ -98,7 +108,7 @@ class SubscriptionHeroCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'JOD / month',
+                        '${'currency'.tr()} / month',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withValues(alpha: 0.75),
@@ -111,14 +121,14 @@ class SubscriptionHeroCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Listings used this cycle',
+                        'Listings included',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.white.withValues(alpha: 0.8),
                         ),
                       ),
                       Text(
-                        '$used of $total',
+                        '$total / month',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -131,7 +141,7 @@ class SubscriptionHeroCard extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
-                      value: pct,
+                      value: 1.0,
                       minHeight: 8,
                       backgroundColor: Colors.white.withValues(alpha: 0.15),
                       valueColor: const AlwaysStoppedAnimation(AppColors.gold),
@@ -139,7 +149,7 @@ class SubscriptionHeroCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    '${total - used} remaining · resets in 12 days',
+                    '$daysLeft days remaining',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.white.withValues(alpha: 0.7),

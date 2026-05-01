@@ -1,8 +1,9 @@
-﻿ import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/app_snackbar.dart';
 import '../../domain/entities/plan.dart';
 import '../bloc/plans_bloc.dart';
 import '../bloc/plans_event.dart';
@@ -12,6 +13,12 @@ import '../widgets/nav_icon_button.dart';
 import '../widgets/payg_section.dart';
 import '../widgets/plan_card.dart';
 import '../widgets/plans_sticky_button.dart';
+import '../../../subscription/presentation/bloc/subscription_bloc.dart';
+import '../../../subscription/presentation/bloc/subscription_event.dart';
+import '../../../subscription/presentation/bloc/subscription_state.dart';
+import '../../../subscription/presentation/widgets/subscription_success_sheet.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
 
 class PlansPage extends StatefulWidget {
   const PlansPage({super.key});
@@ -35,9 +42,26 @@ class _PlansPageState extends State<PlansPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<PlansBloc>()..add(const FetchPlansEvent()),
-      child: Scaffold(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<PlansBloc>()..add(const FetchPlansEvent())),
+        BlocProvider(create: (_) => sl<SubscriptionBloc>()),
+      ],
+      child: BlocListener<SubscriptionBloc, SubscriptionState>(
+        listener: (context, state) {
+          if (state is SubscriptionSuccess) {
+            context.read<AuthBloc>().add(const AuthGetMeEvent());
+            SubscriptionSuccessSheet.show(context);
+          } else if (state is SubscriptionError) {
+            AppSnackbar.show(
+              context,
+              message: state.message,
+              icon: Icons.error_outline_rounded,
+              iconColor: AppColors.danger,
+            );
+          }
+        },
+        child: Scaffold(
         backgroundColor: AppColors.background,
         body: BlocBuilder<PlansBloc, PlansState>(
           builder: (context, state) {
@@ -110,18 +134,29 @@ class _PlansPageState extends State<PlansPage> {
                   ),
                 ),
                 if (state is PlansLoaded && _billing == 'monthly')
-                  PlansStickyButton(
-                    billing: _billing,
-                    price: _activePrice(state.plans),
+                  BlocBuilder<SubscriptionBloc, SubscriptionState>(
+                    builder: (context, subState) => PlansStickyButton(
+                      billing: _billing,
+                      price: _activePrice(state.plans),
+                      onPressed: subState is SubscriptionLoading
+                          ? null
+                          : () {
+                              final planId = _selectedPlanId ??
+                                  _selectDefault(state.plans)?.id;
+                              if (planId == null) return;
+                              context.read<SubscriptionBloc>().add(
+                                    CreateSubscriptionEvent(packageId: planId),
+                                  );
+                            },
+                    ),
                   )
                 else if (_billing == 'payg')
-                  PlansStickyButton(
-                    billing: _billing,
-                  ),
+                  PlansStickyButton(billing: _billing),
               ],
             );
           },
         ),
+      ),
       ),
     );
   }

@@ -11,6 +11,7 @@ import '../../../auth/presentation/pages/my_profile_page.dart';
 import '../../../favorites/presentation/pages/favorites_page.dart';
 import 'contact_us_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
+import '../../../properties/presentation/pages/my_properties_page.dart';
 import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
 import '../../../seller_request/presentation/bloc/seller_request_state.dart';
 import '../../../seller_request/presentation/widgets/seller_request_tile.dart';
@@ -291,17 +292,12 @@ class _MoreView extends StatelessWidget {
                     _MoreTile(
                       icon: Icons.favorite_border,
                       label: 'more.my_favorites'.tr(),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const FavoritesPage(),
-                        ),
-                      ),
+                      onTap: () => FavoritesPage.push(context),
                     ),
                     _MoreTile(
                       icon: Icons.home_work_outlined,
                       label: 'more.my_properties'.tr(),
-                      onTap: () {},
+                      onTap: () => MyPropertiesPage.push(context),
                     ),
                     const SizedBox(height: 16),
                     _SectionHeader(title: 'more.add_listing'.tr()),

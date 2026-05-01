@@ -30,6 +30,19 @@ class PropertyRepositoryImpl implements PropertyRepository {
   }
 
   @override
+  Future<Either<Failure, List<Property>>> getMyProperties(
+    PropertyFilterParams params,
+  ) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final properties = await remoteDataSource.getMyProperties(params);
+      return Right(properties);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<Property>>> getSimilarProperties(
     int propertyId, {
     int page = 1,

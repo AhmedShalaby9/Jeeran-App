@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,9 +30,22 @@ class _NewsCarouselView extends StatefulWidget {
 
 class _NewsCarouselViewState extends State<_NewsCarouselView> {
   final _pageController = PageController(viewportFraction: 0.88);
+  Timer? _autoSwipeTimer;
+  int _itemCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _autoSwipeTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!_pageController.hasClients || _itemCount == 0) return;
+      final next = (_pageController.page!.round() + 1) % _itemCount;
+      _pageController.animateToPage(next, duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+    });
+  }
 
   @override
   void dispose() {
+    _autoSwipeTimer?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -41,10 +55,7 @@ class _NewsCarouselViewState extends State<_NewsCarouselView> {
     return BlocBuilder<NewsBloc, NewsState>(
       builder: (context, state) {
         if (state is NewsLoading) {
-          return SizedBox(
-            height: 200,
-            child: Center(child: AppLoading.cupertino()),
-          );
+          return SizedBox(height: 200, child: Center(child: AppLoading.cupertino()));
         }
         if (state is NewsLoaded && state.news.isNotEmpty) {
           return _buildContent(context, state.news);
@@ -56,6 +67,7 @@ class _NewsCarouselViewState extends State<_NewsCarouselView> {
 
   Widget _buildContent(BuildContext context, List<News> news) {
     final displayNews = news.take(5).toList();
+    _itemCount = displayNews.length;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -64,21 +76,11 @@ class _NewsCarouselViewState extends State<_NewsCarouselView> {
           children: [
             Text(
               'news.title'.tr(),
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: AppColors.onBackground,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.onBackground),
             ),
             TextButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AllNewsPage()),
-              ),
-              child: Text(
-                'news.show_all'.tr(),
-                style: TextStyle(color: AppColors.primary),
-              ),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AllNewsPage())),
+              child: Text('news.show_all'.tr(), style: TextStyle(color: AppColors.primary)),
             ),
           ],
         ),
@@ -87,6 +89,7 @@ class _NewsCarouselViewState extends State<_NewsCarouselView> {
           height: 200,
           child: PageView.builder(
             controller: _pageController,
+            padEnds: false,
             itemCount: displayNews.length,
             onPageChanged: (index) => setState(() {}),
             itemBuilder: (_, i) => Padding(
@@ -122,19 +125,12 @@ class _NewsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => NewsDetailsPage(news: news)),
-      ),
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => NewsDetailsPage(news: news))),
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4)),
           ],
         ),
         child: ClipRRect(
@@ -148,10 +144,7 @@ class _NewsCard extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.7),
-                    ],
+                    colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
                     stops: const [0.5, 1.0],
                   ),
                 ),
@@ -174,28 +167,17 @@ class _NewsCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                           color: Colors.white,
-                          shadows: [
-                            Shadow(blurRadius: 4, color: Colors.black45),
-                          ],
+                          shadows: [Shadow(blurRadius: 4, color: Colors.black45)],
                         ),
                       ),
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(
-                            Icons.access_time,
-                            size: 12,
-                            color: Colors.white70,
-                          ),
+                          const Icon(Icons.access_time, size: 12, color: Colors.white70),
                           const SizedBox(width: 4),
                           Text(
-                            news.publishedAt.isNotEmpty
-                                ? news.publishedAt.substring(0, 10)
-                                : '',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.white70,
-                            ),
+                            news.publishedAt.isNotEmpty ? news.publishedAt.substring(0, 10) : '',
+                            style: const TextStyle(fontSize: 11, color: Colors.white70),
                           ),
                         ],
                       ),
@@ -215,9 +197,7 @@ class _NewsCard extends StatelessWidget {
     if (firstMedia == null || !_isValidUrl(firstMedia)) {
       return Container(
         color: AppColors.primary.withValues(alpha: 0.1),
-        child: const Center(
-          child: Icon(Icons.article, color: AppColors.primary, size: 40),
-        ),
+        child: const Center(child: Icon(Icons.article, color: AppColors.primary, size: 40)),
       );
     }
     if (_isVideoUrl(firstMedia)) {
@@ -226,15 +206,9 @@ class _NewsCard extends StatelessWidget {
         children: [
           Container(
             color: AppColors.primary.withValues(alpha: 0.1),
-            child: const Icon(
-              Icons.videocam,
-              color: AppColors.primary,
-              size: 40,
-            ),
+            child: const Icon(Icons.videocam, color: AppColors.primary, size: 40),
           ),
-          const Center(
-            child: Icon(Icons.play_circle_fill, color: Colors.white, size: 48),
-          ),
+          const Center(child: Icon(Icons.play_circle_fill, color: Colors.white, size: 48)),
         ],
       );
     }
@@ -251,7 +225,6 @@ class _NewsCard extends StatelessWidget {
   }
 
   static bool _isValidUrl(String url) {
-    return url.isNotEmpty &&
-        (url.startsWith('http://') || url.startsWith('https://'));
+    return url.isNotEmpty && (url.startsWith('http://') || url.startsWith('https://'));
   }
 }

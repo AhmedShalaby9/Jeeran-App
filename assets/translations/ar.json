@@ -1,5 +1,6 @@
 {
   "app_name": "جيران",
+  "currency": "ج.م",
   "splash_tagline": "جد منزل أحلامك",
   "bottom_nav": {
     "home": "الرئيسية",
@@ -26,7 +27,7 @@
       "status": "الحالة",
       "property_type": "نوع العقار",
       "project": "المشروع",
-      "price_range": "نطاق السعر (د.أ)",
+      "price_range": "نطاق السعر (ج.م)",
       "min": "الحد الأدنى",
       "max": "الحد الأقصى",
       "bedrooms": "غرف النوم",
@@ -158,9 +159,9 @@
     "payg_desc": "اشترِ رصيد إعلانات، استخدم خلال 6 أشهر.",
     "ad": "إعلان",
     "ads": "إعلانات",
-    "jod_per_ad": "د.أ للإعلان",
+    "jod_per_ad": "ج.م للإعلان",
     "save_percent": "وفر {percent}",
-    "subscribe_price": "اشتراك — {price} د.أ/شهر",
+    "subscribe_price": "اشتراك — {price} ج.م/شهر",
     "top_up_wallet": "شحن المحفظة",
     "billing_note": "تُدفع شهرياً عبر فوري أو المحفظة. يمكنك الإلغاء في أي وقت من الإعدادات.",
     "recommended": "موصى به",
@@ -175,8 +176,19 @@
     "arabic": "العربية",
     "select": "اختيار اللغة"
   },
+  "my_properties": {
+    "title": "عقاراتي",
+    "all": "الكل",
+    "approved": "معتمدة",
+    "pending": "قيد المراجعة",
+    "empty_title": "لا توجد عقارات بعد",
+    "empty_subtitle": "ستظهر عقاراتك المدرجة هنا.",
+    "retry": "إعادة المحاولة"
+  },
   "subscription": {
     "title": "الاشتراك",
+    "success_title": "تم الاشتراك بنجاح!",
+    "success_subtitle": "اشتراكك الآن نشط. ابدأ بإضافة عقاراتك الآن.",
     "plan": "الخطة",
     "tier": "المستوى",
     "monthly_listings": "القوائم الشهرية",
@@ -196,7 +208,8 @@
     "cancel_note": "يمكنك الإلغاء في أي وقت. القوائم المنشورة تبقى مرئية حتى نهاية الدورة.",
     "new_listing": "إعلان جديد",
     "upgrade": "ترقية",
-    "invoices": "الفواتير"
+    "invoices": "الفواتير",
+    "retry": "إعادة المحاولة"
   },
   "property_details": {
     "overview": "نظرة عامة",

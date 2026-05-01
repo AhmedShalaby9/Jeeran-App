@@ -1,82 +1,149 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../properties/presentation/pages/add_property_page.dart';
+import '../../domain/entities/user_subscription.dart';
+import '../bloc/subscription_bloc.dart';
+import '../bloc/subscription_event.dart';
+import '../bloc/subscription_state.dart';
 import '../widgets/subscription_hero_card.dart';
 import '../widgets/subscription_widgets.dart';
 
 class SubscriptionDetailsPage extends StatelessWidget {
   const SubscriptionDetailsPage({super.key});
 
-  static const _used = 6;
-  static const _total = 20;
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => sl<SubscriptionBloc>()..add(const FetchMySubscriptionEvent()),
+      child: const _SubscriptionDetailsView(),
+    );
+  }
+}
+
+class _SubscriptionDetailsView extends StatelessWidget {
+  const _SubscriptionDetailsView();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _buildHeader(context)),
-          const SliverToBoxAdapter(
-            child: SubscriptionHeroCard(used: _used, total: _total),
-          ),
-          SliverToBoxAdapter(child: _buildQuickActions()),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverList.list(
-              children: [
-                SubscriptionSection(
-                  title: 'subscription.plan'.tr(),
+      body: BlocBuilder<SubscriptionBloc, SubscriptionState>(
+        builder: (context, state) {
+          if (state is MySubscriptionLoading) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            );
+          }
+          if (state is MySubscriptionError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    DetailRow(label: 'subscription.tier'.tr(), value: 'Growth'),
-                    DetailRow(label: 'subscription.monthly_listings'.tr(), value: '20', chevron: false),
-                    DetailRow(label: 'subscription.next_renewal'.tr(), value: 'May 18, 2026', chevron: false, last: true),
+                    const Icon(Icons.error_outline, size: 48, color: AppColors.inkMute),
+                    const SizedBox(height: 12),
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: AppColors.inkSub),
+                    ),
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: () => context.read<SubscriptionBloc>().add(const FetchMySubscriptionEvent()),
+                      child: Text('subscription.retry'.tr()),
+                    ),
                   ],
                 ),
-                SubscriptionSection(
-                  title: 'subscription.add_ons'.tr(),
-                  action: 'subscription.add'.tr(),
-                  children: [
-                    DetailRow(label: 'subscription.payg_wallet'.tr(), value: '15 JOD', valueColor: AppColors.primary),
-                    DetailRow(label: 'subscription.featured_placements'.tr(), value: '2 remaining', last: true),
-                  ],
-                ),
-                SubscriptionSection(
-                  title: 'subscription.payment_method'.tr(),
-                  action: 'subscription.change'.tr(),
-                  children: const [FawryRow()],
-                ),
-                SubscriptionSection(
-                  title: 'subscription.billing_history'.tr(),
-                  action: 'subscription.see_all'.tr(),
-                  children: [
-                    BillingRow(date: 'Apr 18, 2026', amount: '49.00 JOD'),
-                    BillingRow(date: 'Mar 18, 2026', amount: '49.00 JOD'),
-                    BillingRow(date: 'Feb 18, 2026', amount: '19.00 JOD', last: true),
-                  ],
-                ),
-                SubscriptionSection(
-                  title: 'subscription.manage'.tr(),
-                  children: [
-                    DetailRow(label: 'subscription.switch_plan'.tr(), value: ''),
-                    DetailRow(label: 'subscription.pause_renewal'.tr(), value: ''),
-                    ManageRow(label: 'subscription.cancel'.tr(), danger: true),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
-                  child: Text(
-                    'subscription.cancel_note'.tr(),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 11, color: AppColors.inkMute, height: 1.5),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+              ),
+            );
+          }
+          if (state is MySubscriptionLoaded) {
+            return _buildContent(context, state.subscription);
+          }
+          return const SizedBox.shrink();
+        },
       ),
     );
+  }
+
+  Widget _buildContent(BuildContext context, UserSubscription subscription) {
+    final plan = subscription.package;
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _buildHeader(context)),
+        SliverToBoxAdapter(
+          child: SubscriptionHeroCard(subscription: subscription),
+        ),
+        SliverToBoxAdapter(child: _buildQuickActions(context)),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverList.list(
+            children: [
+              SubscriptionSection(
+                title: 'subscription.plan'.tr(),
+                children: [
+                  DetailRow(label: 'subscription.tier'.tr(), value: plan.name),
+                  DetailRow(label: 'subscription.monthly_listings'.tr(), value: '${plan.availableListings}', chevron: false),
+                  DetailRow(label: 'subscription.next_renewal'.tr(), value: _formatDate(subscription.endDate), chevron: false, last: true),
+                ],
+              ),
+              SubscriptionSection(
+                title: 'subscription.add_ons'.tr(),
+                action: 'subscription.add'.tr(),
+                children: [
+                  DetailRow(label: 'subscription.payg_wallet'.tr(), value: '15 ${'currency'.tr()}', valueColor: AppColors.primary),
+                  DetailRow(label: 'subscription.featured_placements'.tr(), value: '2 remaining', last: true),
+                ],
+              ),
+              SubscriptionSection(
+                title: 'subscription.payment_method'.tr(),
+                action: 'subscription.change'.tr(),
+                children: const [FawryRow()],
+              ),
+              SubscriptionSection(
+                title: 'subscription.billing_history'.tr(),
+                action: 'subscription.see_all'.tr(),
+                children: [
+                  BillingRow(date: 'Apr 18, 2026', amount: '49.00 ${'currency'.tr()}'),
+                  BillingRow(date: 'Mar 18, 2026', amount: '49.00 ${'currency'.tr()}'),
+                  BillingRow(date: 'Feb 18, 2026', amount: '19.00 ${'currency'.tr()}', last: true),
+                ],
+              ),
+              SubscriptionSection(
+                title: 'subscription.manage'.tr(),
+                children: [
+                  DetailRow(label: 'subscription.switch_plan'.tr(), value: ''),
+                  DetailRow(label: 'subscription.pause_renewal'.tr(), value: ''),
+                  ManageRow(label: 'subscription.cancel'.tr(), danger: true),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
+                child: Text(
+                  'subscription.cancel_note'.tr(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 11, color: AppColors.inkMute, height: 1.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDate(String raw) {
+    final dt = DateTime.tryParse(raw);
+    if (dt == null) return raw;
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    ];
+    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -120,7 +187,7 @@ class SubscriptionDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions() {
+  Widget _buildQuickActions(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
       child: Row(
@@ -130,7 +197,7 @@ class SubscriptionDetailsPage extends StatelessWidget {
             iconBg: AppColors.primary.withValues(alpha: 0.08),
             icon: Icons.add_rounded,
             iconColor: AppColors.primary,
-            onTap: () {},
+            onTap: () => AddPropertyPage.push(context),
           ),
           const SizedBox(width: 10),
           QuickAction(

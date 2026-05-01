@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../widgets/favorites_shimmer.dart';
 import '../../../properties/domain/entities/property.dart';
@@ -10,23 +11,35 @@ import '../../../properties/presentation/widgets/property_card.dart';
 import '../../../properties/presentation/pages/property_details_page.dart';
 import '../bloc/favorites_bloc.dart';
 
-class FavoritesPage extends StatefulWidget {
+class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});
 
+  static Future<void> push(BuildContext context) => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const FavoritesPage()),
+      );
+
   @override
-  State<FavoritesPage> createState() => _FavoritesPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider.value(
+      value: sl<FavoritesBloc>(),
+      child: const _FavoritesView(),
+    );
+  }
 }
 
-class _FavoritesPageState extends State<FavoritesPage> {
+class _FavoritesView extends StatefulWidget {
+  const _FavoritesView();
+
+  @override
+  State<_FavoritesView> createState() => _FavoritesViewState();
+}
+
+class _FavoritesViewState extends State<_FavoritesView> {
   @override
   void initState() {
     super.initState();
-    // Defer until after the first frame so the BlocProvider is in context
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<FavoritesBloc>().add(const FetchFavoritesEvent());
-      }
-    });
+    context.read<FavoritesBloc>().add(const FetchFavoritesEvent());
   }
 
   @override

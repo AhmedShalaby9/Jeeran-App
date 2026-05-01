@@ -86,6 +86,7 @@ class _BannersCarouselViewState extends State<_BannersCarouselView> {
             height: 160,
             child: PageView.builder(
               controller: _pageController,
+              padEnds: false,
               itemCount: banners.length,
               onPageChanged: (i) => setState(() => _currentPage = i),
               itemBuilder: (_, i) => _BannerItem(
