@@ -7,7 +7,7 @@ import '../utils/app_colors.dart';
 /// ```dart
 /// AppSnackbar.favoriteAdded(context);
 /// AppSnackbar.favoriteRemoved(context);
-/// AppSnackbar.show(context, message: '...', icon: Icons.check, iconColor: AppColors.success);
+/// AppSnackbar.show(context, chat: '...', icon: Icons.check, iconColor: AppColors.success);
 /// ```
 class AppSnackbar {
   AppSnackbar._();

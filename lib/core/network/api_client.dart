@@ -94,7 +94,7 @@ class ApiClient {
     if (data == null) return null;
     if (data is String && data.isNotEmpty) return data;
     if (data is Map<String, dynamic>) {
-      final msg = data['message'] ?? data['error'] ?? data['msg'];
+      final msg = data['chat'] ?? data['error'] ?? data['msg'];
       if (msg is String && msg.isNotEmpty) return msg;
       if (msg is List && msg.isNotEmpty) {
         return msg.whereType<String>().join('\n');

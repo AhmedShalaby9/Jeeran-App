@@ -40,8 +40,7 @@ class _HomeSliverAppBarViewState extends State<_HomeSliverAppBarView> {
   @override
   Widget build(BuildContext context) {
     final isSeller = widget.user?.isSeller ?? false;
-    final hasSubscription =
-        isSeller && (widget.user?.subscriptionId != null);
+    final hasSubscription = isSeller && (widget.user?.subscriptionId != null);
     final showSubscribeBtn = isSeller && !hasSubscription;
     final showPremiumBadge = isSeller && hasSubscription;
 
@@ -124,10 +123,7 @@ class _HomeSliverAppBarViewState extends State<_HomeSliverAppBarView> {
                       decoration: BoxDecoration(
                         color: AppColors.danger,
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 1.5,
-                        ),
+                        border: Border.all(color: Colors.white, width: 1.5),
                       ),
                       constraints: const BoxConstraints(
                         minWidth: 18,

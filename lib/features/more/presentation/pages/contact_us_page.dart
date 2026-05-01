@@ -126,14 +126,14 @@ class _ContactUsPageState extends State<ContactUsPage> {
                   if (value == null || value.trim().isEmpty) {
                     return isRtl
                         ? 'الرجاء كتابة رسالتك'
-                        : 'Please write your message';
+                        : 'Please write your chat';
                   }
                   return null;
                 },
                 decoration: InputDecoration(
                   hintText: isRtl
                       ? 'اكتب رسالتك هنا...'
-                      : 'Write your message here...',
+                      : 'Write your chat here...',
                   filled: true,
                   fillColor: Colors.white,
                   contentPadding: const EdgeInsets.all(16),

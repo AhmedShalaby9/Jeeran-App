@@ -19,7 +19,7 @@ class ApiResponse<T> {
     return ApiResponse(
       success: json['success'] as bool? ?? true,
       statusCode: json['status_code'] as int? ?? 200,
-      message: json['message'] as String?,
+      message: json['chat'] as String?,
       data: (fromData != null && rawData != null) ? fromData(rawData) : null,
     );
   }

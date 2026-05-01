@@ -21,6 +21,7 @@ import '../widgets/home_greeting_widget.dart';
 import '../widgets/home_search_bar_widget.dart';
 import '../widgets/home_sliver_app_bar.dart';
 import '../widgets/navigation_cards_grid.dart';
+import '../../../ai_chat/presentation/session/pages/ai_chat_history_page.dart';
 
 class HomePage extends StatelessWidget {
   final VoidCallback? onSearchTap;
@@ -62,6 +63,7 @@ class _HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
+      floatingActionButton: _AiChatFab(),
       body: CustomScrollView(
         slivers: [
           const HomeSliverAppBar(),
@@ -112,6 +114,86 @@ class _HomeView extends StatelessWidget {
   }
 }
 
+// ── AI Chat FAB ───────────────────────────────────────────────────────────────
+class _AiChatFab extends StatefulWidget {
+  @override
+  State<_AiChatFab> createState() => _AiChatFabState();
+}
+
+class _AiChatFabState extends State<_AiChatFab>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulse;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulse.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (_, child) {
+        return Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.secondary
+                    .withValues(alpha: 0.25 + 0.25 * _pulse.value),
+                blurRadius: 18 + 10 * _pulse.value,
+                spreadRadius: 2 + 2 * _pulse.value,
+              ),
+            ],
+          ),
+          child: child,
+        );
+      },
+      child: FloatingActionButton(
+        onPressed: () => Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, animation, __) => const AiChatHistoryPage(),
+            transitionsBuilder: (_, animation, __, child) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 1),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                )),
+                child: child,
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 400),
+          ),
+        ),
+        backgroundColor: AppColors.secondary,
+        elevation: 0,
+        tooltip: 'Jeeran AI',
+        shape: const CircleBorder(),
+        child: const Icon(
+          Icons.auto_awesome_rounded,
+          color: Colors.white,
+          size: 26,
+        ),
+      ),
+    );
+  }
+}
+
+// ── Section Title ─────────────────────────────────────────────────────────────
 class _SectionTitle extends StatelessWidget {
   final String title;
   final VoidCallback? onTap;
