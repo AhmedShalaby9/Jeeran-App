@@ -18,7 +18,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     final result = await repository.getMessages(event.session.id);
     result.fold(
       (failure) => emit(ChatError(_mapFailure(failure))),
-      (messages) => emit(ChatReady(session: event.session, messages: messages)),
+      (messages) => emit(ChatReady(
+        session: event.session,
+        messages: messages.reversed.toList(),
+      )),
     );
   }
 

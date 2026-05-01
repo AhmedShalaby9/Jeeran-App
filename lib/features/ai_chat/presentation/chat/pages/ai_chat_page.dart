@@ -12,6 +12,7 @@ import '../widgets/ai_chat_header.dart';
 import '../widgets/chat_error_widgets.dart';
 import '../widgets/chat_input_bar.dart';
 import '../widgets/chat_message_bubble.dart';
+import '../widgets/chat_message_shimmer.dart';
 import '../widgets/chat_typing_indicator.dart';
 import '../../session/pages/ai_chat_history_page.dart';
 
@@ -154,12 +155,7 @@ class _ChatViewState extends State<_ChatView>
                 onMenuSelected: _onMenuSelected,
               ),
               if (isLoading)
-                const Expanded(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                        color: AppColors.secondary, strokeWidth: 2.5),
-                  ),
-                )
+                const Expanded(child: ChatMessageShimmerList())
               else if (loadError != null)
                 Expanded(child: ChatLoadError(message: loadError))
               else

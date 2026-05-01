@@ -40,6 +40,9 @@
   // Seller Request
   static const String sellerRequests = '/seller-requests';
 
+  // Upload
+  static const String uploadSingle = '/upload/single';
+
   // AI Chat
   static const String chatSessions = '/chat/sessions';
   static String chatSessionById(int id) => '/chat/sessions/$id';

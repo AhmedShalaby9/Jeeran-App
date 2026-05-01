@@ -11,6 +11,7 @@ import '../widgets/chat_error_state.dart';
 import '../widgets/chat_history_header.dart';
 import '../widgets/chat_new_fab.dart';
 import '../widgets/chat_session_card.dart';
+import '../widgets/chat_session_shimmer.dart';
 import '../widgets/delete_confirm_dialog.dart';
 import '../../chat/pages/ai_chat_page.dart';
 
@@ -99,12 +100,7 @@ class _HistoryViewState extends State<_HistoryView> {
     return BlocBuilder<ChatSessionsBloc, ChatSessionsState>(
       builder: (context, state) {
         if (state is ChatSessionsLoading) {
-          return const Center(
-            child: CircularProgressIndicator(
-              color: AppColors.secondary,
-              strokeWidth: 2.5,
-            ),
-          );
+          return const ChatSessionShimmerList();
         }
 
         if (state is ChatSessionsError) {

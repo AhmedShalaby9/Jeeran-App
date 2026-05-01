@@ -61,6 +61,26 @@ class ApiClient {
     }
   }
 
+  Future<Response> postMultipart(
+    String path, {
+    required String filePath,
+    String fileField = 'file',
+    Map<String, dynamic>? queryParams,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        fileField: await MultipartFile.fromFile(filePath),
+      });
+      return await _dio.post(
+        path,
+        data: formData,
+        queryParameters: queryParams,
+      );
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
   Future<Response> delete(String path) async {
     try {
       return await _dio.delete(path);
