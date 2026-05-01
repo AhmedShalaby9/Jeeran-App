@@ -21,7 +21,14 @@
       "Bash(python -c ' *)",
       "Bash(git merge *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(mkdir -p /Users/ahmedgamal/projects/Jeeran-App/assets/animations)",
+      "Bash(mkdir -p /Users/ahmedgamal/projects/Jeeran-App/lib/features/subscription/domain/repositories)",
+      "Bash(mkdir -p /Users/ahmedgamal/projects/Jeeran-App/lib/features/subscription/data/datasources)",
+      "Bash(mkdir -p /Users/ahmedgamal/projects/Jeeran-App/lib/features/subscription/data/repositories)",
+      "Bash(mkdir -p /Users/ahmedgamal/projects/Jeeran-App/lib/features/subscription/presentation/bloc)",
+      "Bash(mkdir -p /Users/ahmedgamal/projects/Jeeran-App/lib/features/subscription/domain/entities)",
+      "Bash(mkdir -p /Users/ahmedgamal/projects/Jeeran-App/lib/features/subscription/data/models)"
     ]
   }
 }
