@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'core/config/app_config.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/observers/app_bloc_observer.dart';
+import 'core/services/notification_service.dart';
 import 'core/storage/app_storage.dart';
 import 'core/utils/app_colors.dart';
 import 'core/utils/app_strings.dart';
@@ -14,6 +15,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.setEnvironment(AppEnvironment.staging);
   await AppStorage.init();
+  await NotificationService.instance.init();
   await EasyLocalization.ensureInitialized();
   await di.init();
   Bloc.observer = AppBlocObserver();

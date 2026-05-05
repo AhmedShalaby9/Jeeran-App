@@ -15,6 +15,7 @@ class AuthLoginEvent extends AuthEvent {
   List<Object?> get props => [phone];
 }
 
+
 class AuthCompleteProfileEvent extends AuthEvent {
   final CompleteProfileParams params;
   final bool isStep1;

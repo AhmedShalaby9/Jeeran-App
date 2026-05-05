@@ -4,7 +4,7 @@ import '../../../../core/error/failures.dart';
 import '../entities/user.dart';
 
 abstract class AuthRepository {
-  Future<Either<Failure, User>> login(String phone);
+  Future<Either<Failure, User>> login(String phone, {String? fcmToken});
   Future<Either<Failure, User>> completeProfile(CompleteProfileParams params);
   Future<Either<Failure, User>> getMe();
 }

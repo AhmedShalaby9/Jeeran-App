@@ -24,6 +24,14 @@ class AddPropertyStep2 extends StatefulWidget {
 }
 
 class _AddPropertyStep2State extends State<AddPropertyStep2> {
+  late final ProjectsBloc _projectsBloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _projectsBloc = sl<ProjectsBloc>()..add(const FetchProjectsEvent());
+  }
+
   void _update(VoidCallback fn) {
     fn();
     widget.onChanged();
@@ -32,8 +40,8 @@ class _AddPropertyStep2State extends State<AddPropertyStep2> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<ProjectsBloc>()..add(const FetchProjectsEvent()),
+    return BlocProvider.value(
+      value: _projectsBloc,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

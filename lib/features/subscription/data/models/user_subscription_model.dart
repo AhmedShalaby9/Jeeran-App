@@ -10,6 +10,7 @@ class UserSubscriptionModel extends UserSubscription {
     required super.endDate,
     required super.status,
     required super.package,
+    required super.remainingListings,
   });
 
   factory UserSubscriptionModel.fromJson(Map<String, dynamic> json) {
@@ -21,6 +22,7 @@ class UserSubscriptionModel extends UserSubscription {
       endDate: json['end_date'] as String? ?? '',
       status: json['status'] as String? ?? '',
       package: PlanModel.fromJson(json['package'] as Map<String, dynamic>),
+      remainingListings: json['remaining_listings'] as int? ?? 0,
     );
   }
 }

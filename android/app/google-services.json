@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "844365789676",
+    "project_id": "studio-6503153993-be5d6",
+    "storage_bucket": "studio-6503153993-be5d6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:844365789676:android:dc96acb038bcd9474e28c9",
+        "android_client_info": {
+          "package_name": "com.jeeran.realestate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA2wFEmMGKxs82LHlFUwa4bztB5HHYFKx0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

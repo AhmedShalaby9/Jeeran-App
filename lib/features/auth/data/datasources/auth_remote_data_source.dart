@@ -5,7 +5,7 @@ import '../../domain/repositories/auth_repository.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> login(String phone);
+  Future<UserModel> login(String phone, {String? fcmToken});
   Future<UserModel> completeProfile(CompleteProfileParams params);
   Future<UserModel> getMe();
 }
@@ -16,11 +16,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<UserModel> login(String phone) async {
+  Future<UserModel> login(String phone, {String? fcmToken}) async {
     try {
       final response = await apiClient.post(
         ApiEndpoints.login,
-        data: {'phone': phone},
+        data: {
+          'phone': phone,
+          if (fcmToken != null) 'fcm_token': fcmToken,
+        },
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return UserModel.fromJson(response.data as Map<String, dynamic>);

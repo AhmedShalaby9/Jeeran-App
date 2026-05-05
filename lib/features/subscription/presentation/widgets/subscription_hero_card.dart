@@ -23,6 +23,8 @@ class SubscriptionHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final plan = subscription.package;
     final total = plan.availableListings;
+    final remaining = subscription.remainingListings;
+    final progress = total > 0 ? (remaining / total).clamp(0.0, 1.0) : 0.0;
     final daysLeft = subscription.daysRemaining;
 
     return Padding(
@@ -121,14 +123,14 @@ class SubscriptionHeroCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Listings included',
+                        'Listings remaining',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.white.withValues(alpha: 0.8),
                         ),
                       ),
                       Text(
-                        '$total / month',
+                        '$remaining / $total',
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -141,7 +143,7 @@ class SubscriptionHeroCard extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(
-                      value: 1.0,
+                      value: progress,
                       minHeight: 8,
                       backgroundColor: Colors.white.withValues(alpha: 0.15),
                       valueColor: const AlwaysStoppedAnimation(AppColors.gold),

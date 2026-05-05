@@ -139,40 +139,32 @@ class WizardInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F6F8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.hairline),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextFormField(
-              initialValue: value,
-              onChanged: onChanged,
-              keyboardType: keyboardType,
-              textDirection: textDirection,
-              style: const TextStyle(fontSize: 15, color: AppColors.ink),
-              decoration: InputDecoration(
-                hintText: placeholder,
-                hintStyle: const TextStyle(fontSize: 15, color: AppColors.inkMute),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ),
-          if (suffix != null) ...[
-            const SizedBox(width: 8),
-            Text(
-              suffix!,
-              style: const TextStyle(fontSize: 14, color: AppColors.inkSub),
-            ),
-          ],
-        ],
+    return TextFormField(
+      initialValue: value,
+      onChanged: onChanged,
+      keyboardType: keyboardType,
+      textDirection: textDirection,
+      style: const TextStyle(fontSize: 15, color: AppColors.ink),
+      decoration: InputDecoration(
+        hintText: placeholder,
+        hintStyle: const TextStyle(fontSize: 15, color: AppColors.inkMute),
+        suffixText: suffix,
+        suffixStyle: const TextStyle(fontSize: 14, color: AppColors.inkSub),
+        filled: true,
+        fillColor: const Color(0xFFF5F6F8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.hairline),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.hairline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+        ),
       ),
     );
   }
@@ -197,24 +189,29 @@ class WizardTextArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F6F8),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.hairline),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      child: TextFormField(
-        initialValue: value,
-        onChanged: onChanged,
-        maxLines: rows,
-        textDirection: textDirection,
-        style: const TextStyle(fontSize: 15, color: AppColors.ink),
-        decoration: InputDecoration(
-          hintText: placeholder,
-          hintStyle: const TextStyle(fontSize: 15, color: AppColors.inkMute),
-          border: InputBorder.none,
-          isDense: true,
+    return TextFormField(
+      initialValue: value,
+      onChanged: onChanged,
+      maxLines: rows,
+      textDirection: textDirection,
+      style: const TextStyle(fontSize: 15, color: AppColors.ink),
+      decoration: InputDecoration(
+        hintText: placeholder,
+        hintStyle: const TextStyle(fontSize: 15, color: AppColors.inkMute),
+        filled: true,
+        fillColor: const Color(0xFFF5F6F8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.hairline),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.hairline),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
     );

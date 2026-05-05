@@ -9,6 +9,7 @@ class UserSubscription extends Equatable {
   final String endDate;
   final String status;
   final Plan package;
+  final int remainingListings;
 
   const UserSubscription({
     required this.id,
@@ -18,6 +19,7 @@ class UserSubscription extends Equatable {
     required this.endDate,
     required this.status,
     required this.package,
+    required this.remainingListings,
   });
 
   bool get isActive => status == 'active';
@@ -29,5 +31,5 @@ class UserSubscription extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, userId, packageId, startDate, endDate, status, package];
+  List<Object?> get props => [id, userId, packageId, startDate, endDate, status, package, remainingListings];
 }

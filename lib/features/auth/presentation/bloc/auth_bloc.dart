@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failures.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/app_strings.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'auth_event.dart';
@@ -19,7 +20,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLogin(AuthLoginEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    final result = await repository.login(event.phone);
+    final fcmToken = await NotificationService.instance.getToken();
+    final result = await repository.login(event.phone, fcmToken: fcmToken);
     result.fold((failure) => emit(AuthError(_mapFailure(failure))), (user) {
       emit(
         AuthPhoneChecked(
