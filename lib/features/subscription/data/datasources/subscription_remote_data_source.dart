@@ -6,6 +6,7 @@ import '../models/user_subscription_model.dart';
 abstract class SubscriptionRemoteDataSource {
   Future<void> createSubscription({required int packageId});
   Future<UserSubscriptionModel> getMySubscription();
+  Future<void> upgradeSubscription({required int packageId});
 }
 
 class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
@@ -18,6 +19,23 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
     try {
       final response = await apiClient.post(
         ApiEndpoints.subscriptions,
+        data: {'package_id': packageId},
+      );
+      if (response.statusCode == null || response.statusCode! >= 300) {
+        throw ServerException();
+      }
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> upgradeSubscription({required int packageId}) async {
+    try {
+      final response = await apiClient.post(
+        ApiEndpoints.upgradeSubscription,
         data: {'package_id': packageId},
       );
       if (response.statusCode == null || response.statusCode! >= 300) {

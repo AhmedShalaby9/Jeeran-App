@@ -11,6 +11,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
   SubscriptionBloc({required this.repository}) : super(SubscriptionInitial()) {
     on<CreateSubscriptionEvent>(_onCreate);
     on<FetchMySubscriptionEvent>(_onFetch);
+    on<UpgradeSubscriptionEvent>(_onUpgrade);
   }
 
   Future<void> _onCreate(
@@ -26,6 +27,22 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
             : 'errors.network'.tr(),
       )),
       (_) => emit(SubscriptionSuccess()),
+    );
+  }
+
+  Future<void> _onUpgrade(
+    UpgradeSubscriptionEvent event,
+    Emitter<SubscriptionState> emit,
+  ) async {
+    emit(SubscriptionLoading());
+    final result = await repository.upgradeSubscription(packageId: event.packageId);
+    result.fold(
+      (failure) => emit(SubscriptionError(
+        failure is ServerFailure
+            ? (failure.message ?? 'errors.server'.tr())
+            : 'errors.network'.tr(),
+      )),
+      (_) => emit(UpgradeSubscriptionSuccess()),
     );
   }
 

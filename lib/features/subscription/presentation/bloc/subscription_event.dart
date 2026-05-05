@@ -16,3 +16,10 @@ class CreateSubscriptionEvent extends SubscriptionEvent {
 class FetchMySubscriptionEvent extends SubscriptionEvent {
   const FetchMySubscriptionEvent();
 }
+
+class UpgradeSubscriptionEvent extends SubscriptionEvent {
+  final int packageId;
+  const UpgradeSubscriptionEvent({required this.packageId});
+  @override
+  List<Object?> get props => [packageId];
+}

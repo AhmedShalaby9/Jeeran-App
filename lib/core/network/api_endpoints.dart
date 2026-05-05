@@ -39,6 +39,7 @@
   static const String packages = '/packages';
   static const String subscriptions = '/subscriptions';
   static const String mySubscription = '/subscriptions/my';
+  static const String upgradeSubscription = '/subscriptions/upgrade';
 
   // Seller Request
   static const String sellerRequests = '/seller-requests';

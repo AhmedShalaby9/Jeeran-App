@@ -21,7 +21,10 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 
 class PlansPage extends StatefulWidget {
-  const PlansPage({super.key});
+  /// When provided, pre-selects this plan and uses the upgrade endpoint.
+  final int? currentPlanId;
+
+  const PlansPage({super.key, this.currentPlanId});
 
   @override
   State<PlansPage> createState() => _PlansPageState();
@@ -31,13 +34,21 @@ class _PlansPageState extends State<PlansPage> {
   String _billing = 'monthly';
   int? _selectedPlanId;
 
+  bool get _isUpgrade => widget.currentPlanId != null;
+
   Plan? _selectDefault(List<Plan> plans) {
     if (plans.isEmpty) return null;
-    final growth = plans.firstWhere(
+    // When upgrading, pre-select the current plan; otherwise default to 'growth'
+    if (_isUpgrade) {
+      return plans.firstWhere(
+        (p) => p.id == widget.currentPlanId,
+        orElse: () => plans.first,
+      );
+    }
+    return plans.firstWhere(
       (p) => p.name.toLowerCase() == 'growth',
       orElse: () => plans.first,
     );
-    return growth;
   }
 
   @override
@@ -48,10 +59,14 @@ class _PlansPageState extends State<PlansPage> {
         BlocProvider(create: (_) => sl<SubscriptionBloc>()),
       ],
       child: BlocListener<SubscriptionBloc, SubscriptionState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is SubscriptionSuccess) {
             context.read<AuthBloc>().add(const AuthGetMeEvent());
-            SubscriptionSuccessSheet.show(context);
+            await SubscriptionSuccessSheet.show(context);
+          } else if (state is UpgradeSubscriptionSuccess) {
+            context.read<AuthBloc>().add(const AuthGetMeEvent());
+            await SubscriptionSuccessSheet.show(context);
+            if (context.mounted) Navigator.pop(context, true);
           } else if (state is SubscriptionError) {
             AppSnackbar.show(
               context,
@@ -138,15 +153,22 @@ class _PlansPageState extends State<PlansPage> {
                     builder: (context, subState) => PlansStickyButton(
                       billing: _billing,
                       price: _activePrice(state.plans),
+                      isUpgrade: _isUpgrade,
                       onPressed: subState is SubscriptionLoading
                           ? null
                           : () {
                               final planId = _selectedPlanId ??
                                   _selectDefault(state.plans)?.id;
                               if (planId == null) return;
-                              context.read<SubscriptionBloc>().add(
-                                    CreateSubscriptionEvent(packageId: planId),
-                                  );
+                              if (_isUpgrade) {
+                                context.read<SubscriptionBloc>().add(
+                                      UpgradeSubscriptionEvent(packageId: planId),
+                                    );
+                              } else {
+                                context.read<SubscriptionBloc>().add(
+                                      CreateSubscriptionEvent(packageId: planId),
+                                    );
+                              }
                             },
                     ),
                   )

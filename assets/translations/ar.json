@@ -179,6 +179,7 @@
     "jod_per_ad": "ج.م للإعلان",
     "save_percent": "وفر {percent}",
     "subscribe_price": "اشتراك — {price} ج.م/شهر",
+    "upgrade_price": "ترقية — {price} ج.م/شهر",
     "top_up_wallet": "شحن المحفظة",
     "billing_note": "تُدفع شهرياً عبر فوري أو المحفظة. يمكنك الإلغاء في أي وقت من الإعدادات.",
     "recommended": "موصى به",

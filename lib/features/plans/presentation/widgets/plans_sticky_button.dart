@@ -6,12 +6,14 @@ class PlansStickyButton extends StatelessWidget {
   final String billing;
   final String? price;
   final VoidCallback? onPressed;
+  final bool isUpgrade;
 
   const PlansStickyButton({
     super.key,
     required this.billing,
     this.price,
     this.onPressed,
+    this.isUpgrade = false,
   });
 
   @override
@@ -53,7 +55,9 @@ class PlansStickyButton extends StatelessWidget {
               ),
               child: Text(
                 billing == 'monthly'
-                    ? 'plans.subscribe_price'.tr(namedArgs: {'price': price ?? ''})
+                    ? (isUpgrade
+                        ? 'plans.upgrade_price'.tr(namedArgs: {'price': price ?? ''})
+                        : 'plans.subscribe_price'.tr(namedArgs: {'price': price ?? ''}))
                     : 'plans.top_up_wallet'.tr(),
                 style: const TextStyle(
                   fontSize: 16,

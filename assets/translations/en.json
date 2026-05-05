@@ -179,6 +179,7 @@
     "jod_per_ad": "EGP per ad",
     "save_percent": "save {percent}",
     "subscribe_price": "Subscribe — {price} EGP/mo",
+    "upgrade_price": "Upgrade — {price} EGP/mo",
     "top_up_wallet": "Top up wallet",
     "billing_note": "Billed monthly via Fawry or wallet. Cancel anytime from settings.",
     "recommended": "Recommended",

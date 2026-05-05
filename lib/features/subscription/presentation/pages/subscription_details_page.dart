@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../plans/presentation/pages/plans_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../domain/entities/user_subscription.dart';
 import '../bloc/subscription_bloc.dart';
@@ -70,6 +71,19 @@ class _SubscriptionDetailsView extends StatelessWidget {
     );
   }
 
+  Future<void> _openUpgradePage(BuildContext context, int currentPlanId) async {
+    final bloc = context.read<SubscriptionBloc>();
+    final upgraded = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PlansPage(currentPlanId: currentPlanId),
+      ),
+    );
+    if (upgraded == true) {
+      bloc.add(const FetchMySubscriptionEvent());
+    }
+  }
+
   Widget _buildContent(BuildContext context, UserSubscription subscription) {
     final plan = subscription.package;
     return CustomScrollView(
@@ -78,7 +92,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
         SliverToBoxAdapter(
           child: SubscriptionHeroCard(subscription: subscription),
         ),
-        SliverToBoxAdapter(child: _buildQuickActions(context)),
+        SliverToBoxAdapter(child: _buildQuickActions(context, subscription)),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList.list(
@@ -187,7 +201,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
+  Widget _buildQuickActions(BuildContext context, UserSubscription subscription) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 22),
       child: Row(
@@ -205,7 +219,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
             iconBg: AppColors.goldSoft,
             icon: Icons.auto_awesome_rounded,
             iconColor: AppColors.gold,
-            onTap: () {},
+            onTap: () => _openUpgradePage(context, subscription.packageId),
           ),
           const SizedBox(width: 10),
           QuickAction(
