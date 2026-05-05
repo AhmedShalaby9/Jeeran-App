@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/property.dart';
@@ -29,6 +31,23 @@ class PropertyAgentTab extends StatefulWidget {
 
 class _PropertyAgentTabState extends State<PropertyAgentTab> {
   late final PropertiesBloc _bloc;
+
+  Future<void> _call() async {
+    final number = widget.property.agentMobile;
+    if (number == null || number.isEmpty) return;
+    final uri = Uri.parse('tel:$number');
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+
+  Future<void> _whatsapp() async {
+    final number = widget.property.agentWhatsapp;
+    if (number == null || number.isEmpty) return;
+    final clean = number.replaceAll(RegExp(r'\D'), '');
+    final uri = Uri.parse('https://wa.me/$clean');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   void initState() {
@@ -130,15 +149,15 @@ class _PropertyAgentTabState extends State<PropertyAgentTab> {
                     if (widget.property.agentMobile?.isNotEmpty == true)
                       ContactCircle(
                         color: AppColors.primary,
-                        icon: Icons.phone_rounded,
-                        onTap: () {},
+                        icon: const Icon(Icons.phone_rounded, size: 16, color: Colors.white),
+                        onTap: _call,
                       ),
                     if (widget.property.agentWhatsapp?.isNotEmpty == true) ...[
                       const SizedBox(width: 8),
                       ContactCircle(
                         color: AppColors.whatsapp,
-                        icon: Icons.chat_rounded,
-                        onTap: () {},
+                        icon: const FaIcon(FontAwesomeIcons.whatsapp, size: 16, color: Colors.white),
+                        onTap: _whatsapp,
                       ),
                     ],
                   ],

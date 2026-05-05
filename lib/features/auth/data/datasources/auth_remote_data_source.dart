@@ -1,3 +1,4 @@
+// ignore_for_file: use_null_aware_elements
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
@@ -5,7 +6,7 @@ import '../../domain/repositories/auth_repository.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> login(String phone, {String? fcmToken});
+  Future<UserModel> login(String phone, {String? fcmToken, String? platform, String? deviceId});
   Future<UserModel> completeProfile(CompleteProfileParams params);
   Future<UserModel> getMe();
 }
@@ -16,13 +17,15 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<UserModel> login(String phone, {String? fcmToken}) async {
+  Future<UserModel> login(String phone, {String? fcmToken, String? platform, String? deviceId}) async {
     try {
       final response = await apiClient.post(
         ApiEndpoints.login,
-        data: {
+        data: <String, dynamic>{
           'phone': phone,
           if (fcmToken != null) 'fcm_token': fcmToken,
+          if (platform != null) 'platform': platform,
+          if (deviceId != null) 'device_id': deviceId,
         },
       );
       if (response.statusCode == 200 || response.statusCode == 201) {

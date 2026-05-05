@@ -6,6 +6,8 @@ class PropertyFilterParams extends Equatable {
   final String? type;
   final String? status;
   final int? projectId;
+  // Display-only — shown in filter chips, not sent to the API.
+  final String? projectName;
   final bool? isFeatured;
   final String? minPrice;
   final String? maxPrice;
@@ -22,6 +24,7 @@ class PropertyFilterParams extends Equatable {
     this.type,
     this.status,
     this.projectId,
+    this.projectName,
     this.isFeatured,
     this.minPrice,
     this.maxPrice,
@@ -52,37 +55,42 @@ class PropertyFilterParams extends Equatable {
     };
   }
 
+  // Sentinel allows callers to pass null explicitly (unlike the ?? pattern).
+  static const _nil = Object();
+
   PropertyFilterParams copyWith({
-    int? page,
-    int? perPage,
-    String? type,
-    String? status,
-    int? projectId,
-    bool? isFeatured,
-    String? minPrice,
-    String? maxPrice,
-    int? bedrooms,
-    String? q,
-    String? agentName,
-    String? sort,
-    String? order,
-    bool? isApproved,
+    Object? page = _nil,
+    Object? perPage = _nil,
+    Object? type = _nil,
+    Object? status = _nil,
+    Object? projectId = _nil,
+    Object? projectName = _nil,
+    Object? isFeatured = _nil,
+    Object? minPrice = _nil,
+    Object? maxPrice = _nil,
+    Object? bedrooms = _nil,
+    Object? q = _nil,
+    Object? agentName = _nil,
+    Object? sort = _nil,
+    Object? order = _nil,
+    Object? isApproved = _nil,
   }) {
     return PropertyFilterParams(
-      page: page ?? this.page,
-      perPage: perPage ?? this.perPage,
-      type: type ?? this.type,
-      status: status ?? this.status,
-      projectId: projectId ?? this.projectId,
-      isFeatured: isFeatured ?? this.isFeatured,
-      minPrice: minPrice ?? this.minPrice,
-      maxPrice: maxPrice ?? this.maxPrice,
-      bedrooms: bedrooms ?? this.bedrooms,
-      q: q ?? this.q,
-      agentName: agentName ?? this.agentName,
-      sort: sort ?? this.sort,
-      order: order ?? this.order,
-      isApproved: isApproved ?? this.isApproved,
+      page: page == _nil ? this.page : page as int?,
+      perPage: perPage == _nil ? this.perPage : perPage as int?,
+      type: type == _nil ? this.type : type as String?,
+      status: status == _nil ? this.status : status as String?,
+      projectId: projectId == _nil ? this.projectId : projectId as int?,
+      projectName: projectName == _nil ? this.projectName : projectName as String?,
+      isFeatured: isFeatured == _nil ? this.isFeatured : isFeatured as bool?,
+      minPrice: minPrice == _nil ? this.minPrice : minPrice as String?,
+      maxPrice: maxPrice == _nil ? this.maxPrice : maxPrice as String?,
+      bedrooms: bedrooms == _nil ? this.bedrooms : bedrooms as int?,
+      q: q == _nil ? this.q : q as String?,
+      agentName: agentName == _nil ? this.agentName : agentName as String?,
+      sort: sort == _nil ? this.sort : sort as String?,
+      order: order == _nil ? this.order : order as String?,
+      isApproved: isApproved == _nil ? this.isApproved : isApproved as bool?,
     );
   }
 
@@ -93,6 +101,7 @@ class PropertyFilterParams extends Equatable {
         type,
         status,
         projectId,
+        projectName,
         isFeatured,
         minPrice,
         maxPrice,

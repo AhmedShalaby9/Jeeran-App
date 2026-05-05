@@ -11,6 +11,7 @@ import '../bloc/properties_state.dart';
 import '../widgets/properties_shimmer.dart';
 import '../widgets/property_card.dart';
 import 'property_details_page.dart';
+import '../../../search/presentation/pages/search_page.dart';
 
 class PropertiesScreen extends StatefulWidget {
   final PropertyFilterParams params;
@@ -54,12 +55,32 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: Text('properties.title'.tr()),
+          title: Text('properties.title'.tr() ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.filter_alt_off),
-              tooltip: 'properties.reset_filters'.tr(),
-              onPressed: () => _bloc.add(const ResetFiltersEvent()),
+            BlocBuilder<PropertiesBloc, PropertiesState>(
+            builder: (context, state) {
+                final params = state is PropertiesLoaded
+                    ? state.params
+                    : state is PropertiesLoadingMore
+                        ? state.params
+                        : null;
+                return IconButton(
+                  icon: const Icon(Icons.filter_alt_rounded),
+                  tooltip: 'properties.reset_filters'.tr(),
+                  onPressed: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => SearchPage(
+                        initialParams: params,
+                        onSearch: (newParams) {
+                          Navigator.pop(context);
+                          _applyParams(newParams);
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -196,8 +217,10 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
     if (params.projectId != null) {
       chips.add(
         _FilterChip(
-          label: '${'search.filters.project'.tr()} #${params.projectId}',
-          onRemove: () => _applyParams(params.copyWith(projectId: null)),
+          label: params.projectName ?? 'search.filters.project'.tr(),
+          onRemove: () => _applyParams(
+            params.copyWith(projectId: null, projectName: null),
+          ),
         ),
       );
     }

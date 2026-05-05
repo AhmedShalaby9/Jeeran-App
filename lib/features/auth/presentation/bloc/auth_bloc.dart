@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failures.dart';
@@ -20,8 +23,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLogin(AuthLoginEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    final fcmToken = await NotificationService.instance.getToken();
-    final result = await repository.login(event.phone, fcmToken: fcmToken);
+    String? fcmToken;
+    try {
+      fcmToken = await NotificationService.instance.getToken();
+    } catch (_) {}
+
+    final platform = Platform.isAndroid ? 'android' : 'ios';
+    String? deviceId;
+    try {
+      final info = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        deviceId = (await info.androidInfo).id;
+      } else {
+        deviceId = (await info.iosInfo).identifierForVendor;
+      }
+    } catch (_) {}
+
+    final result = await repository.login(event.phone, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
     result.fold((failure) => emit(AuthError(_mapFailure(failure))), (user) {
       emit(
         AuthPhoneChecked(

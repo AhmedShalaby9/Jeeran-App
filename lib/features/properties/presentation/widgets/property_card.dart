@@ -681,6 +681,7 @@ class _SimilarCard extends StatelessWidget {
           children: [
             SizedBox(
               height: 118,
+              width: double.infinity,
               child: _buildImage(),
             ),
             Padding(
@@ -743,7 +744,7 @@ class _SimilarCard extends StatelessWidget {
   Widget _buildImage() {
     final url = property.coverImage;
     if (url != null && url.isNotEmpty) {
-      return AppImage.network(url, fit: BoxFit.cover);
+      return AppImage.network(url, width: double.infinity, fit: BoxFit.cover);
     }
     return Container(
       color: AppColors.primary.withValues(alpha: 0.08),

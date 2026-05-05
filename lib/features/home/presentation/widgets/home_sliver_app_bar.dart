@@ -9,6 +9,7 @@ import '../../../../core/widgets/app_image.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../plans/presentation/pages/plans_page.dart';
 import '../../../subscription/presentation/pages/subscription_details_page.dart';
 
@@ -97,9 +98,10 @@ class _HomeSliverAppBarViewState extends State<_HomeSliverAppBarView> {
 
         // ── Notifications bell ────────────────────────────────────
         GestureDetector(
-          onTap: () {
-            // TODO: navigate to notifications page
-          },
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const NotificationsPage()),
+          ),
           child: Container(
             margin: const EdgeInsets.only(left: 4, right: 16),
             child: Stack(

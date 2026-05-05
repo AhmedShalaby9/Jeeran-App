@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lottie/lottie.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -9,7 +10,10 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../auth/presentation/pages/my_profile_page.dart';
 import '../../../favorites/presentation/pages/favorites_page.dart';
+import '../../../../core/services/app_settings_service.dart';
+import '../../../../core/widgets/html_content_page.dart';
 import 'contact_us_page.dart';
+import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../../properties/presentation/pages/my_properties_page.dart';
 import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
@@ -102,15 +106,17 @@ class _MoreView extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (_) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Drag handle
               Container(
                 width: 40,
                 height: 4,
@@ -119,27 +125,22 @@ class _MoreView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 24),
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check_circle,
-                  color: AppColors.primary,
-                  size: 36,
-                ),
+              const SizedBox(height: 8),
+              // Lottie success animation
+              Lottie.asset(
+                'assets/animations/success.json',
+                width: 140,
+                height: 140,
+                repeat: false,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 4),
               Text(
                 'seller_request.success_title'.tr(),
                 style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.onBackground,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.ink,
+                  letterSpacing: -0.3,
                 ),
               ),
               const SizedBox(height: 8),
@@ -148,11 +149,53 @@ class _MoreView extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 14,
+                  fontWeight: FontWeight.w600,
                   color: AppColors.inkSub,
-                  height: 1.5,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
+              // Approval info card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.tagPrimaryBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 2),
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.access_time_rounded,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'seller_request.approval_note'.tr(),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.inkSub,
+                          height: 1.55,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -162,10 +205,17 @@ class _MoreView extends StatelessWidget {
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'seller_request.got_it'.tr(),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  child: Text('actions.cancel'.tr()),
                 ),
               ),
             ],
@@ -324,7 +374,10 @@ class _MoreView extends StatelessWidget {
             _MoreTile(
               icon: Icons.notifications_outlined,
               label: 'more.notifications'.tr(),
-              onTap: () {},
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsPage()),
+              ),
             ),
 
             const SizedBox(height: 16),
@@ -333,7 +386,17 @@ class _MoreView extends StatelessWidget {
             _MoreTile(
               icon: Icons.info_outline,
               label: 'more.about'.tr(),
-              onTap: () {},
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HtmlContentPage(
+                    title: 'more.about'.tr(),
+                    html: AppSettingsService.instance.about(
+                      context.locale.languageCode,
+                    ),
+                  ),
+                ),
+              ),
             ),
             _MoreTile(
               icon: Icons.headset_mic_outlined,
@@ -346,12 +409,32 @@ class _MoreView extends StatelessWidget {
             _MoreTile(
               icon: Icons.policy_outlined,
               label: 'more.privacy_policy'.tr(),
-              onTap: () {},
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HtmlContentPage(
+                    title: 'more.privacy_policy'.tr(),
+                    html: AppSettingsService.instance.terms(
+                      context.locale.languageCode,
+                    ),
+                  ),
+                ),
+              ),
             ),
             _MoreTile(
               icon: Icons.description_outlined,
               label: 'more.terms_of_service'.tr(),
-              onTap: () {},
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HtmlContentPage(
+                    title: 'more.terms_of_service'.tr(),
+                    html: AppSettingsService.instance.terms(
+                      context.locale.languageCode,
+                    ),
+                  ),
+                ),
+              ),
             ),
 
             const SizedBox(height: 16),

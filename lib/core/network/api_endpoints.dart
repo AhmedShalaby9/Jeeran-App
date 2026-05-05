@@ -1,4 +1,7 @@
 ﻿class ApiEndpoints {
+  // App Settings
+  static const String appSettings = '/settings';
+
   // Auth
   static const String login = '/auth/login';
   static const String register = '/auth/register';

@@ -47,8 +47,14 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     if (raw == null || raw.isEmpty) return '—';
     final n = double.tryParse(raw.replaceAll(RegExp(r'[^0-9.]'), ''));
     if (n == null) return raw;
-    if (n >= 1000000) return 'M';
-    if (n >= 1000) return 'K';
+    if (n >= 1000000) {
+      final v = n / 1000000;
+      return '${v % 1 == 0 ? v.toInt() : v.toStringAsFixed(1)}M';
+    }
+    if (n >= 1000) {
+      final v = n / 1000;
+      return '${v % 1 == 0 ? v.toInt() : v.toStringAsFixed(1)}K';
+    }
     return raw;
   }
 
@@ -70,10 +76,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
 
   String _initials(String? name) {
     if (name == null || name.isEmpty) return '?';
-    final parts = name.trim().split(' ');
-    return parts.length >= 2
-        ? ''.toUpperCase()
-        : parts[0][0].toUpperCase();
+    return name.trim()[0].toUpperCase();
   }
 
   @override

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/property.dart';
 import 'property_widgets.dart';
@@ -16,6 +18,23 @@ class PropertyBottomBar extends StatelessWidget {
     required this.onToggleSave,
     required this.onShare,
   });
+
+  Future<void> _call() async {
+    final number = property.agentMobile;
+    if (number == null || number.isEmpty) return;
+    final uri = Uri.parse('tel:$number');
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
+  }
+
+  Future<void> _whatsapp() async {
+    final number = property.agentWhatsapp;
+    if (number == null || number.isEmpty) return;
+    final clean = number.replaceAll(RegExp(r'\D'), '');
+    final uri = Uri.parse('https://wa.me/$clean');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,9 +65,9 @@ class PropertyBottomBar extends StatelessWidget {
             Expanded(
               child: CTAButton(
                 label: 'WhatsApp',
-                icon: Icons.chat_rounded,
+                icon: const FaIcon(FontAwesomeIcons.whatsapp, size: 16, color: Colors.white),
                 color: AppColors.whatsapp,
-                onTap: () {},
+                onTap: _whatsapp,
               ),
             ),
             const SizedBox(width: 8),
@@ -56,9 +75,9 @@ class PropertyBottomBar extends StatelessWidget {
           Expanded(
             child: CTAButton(
               label: 'Call',
-              icon: Icons.phone_rounded,
+              icon: const Icon(Icons.phone_rounded, size: 16, color: Colors.white),
               color: AppColors.primary,
-              onTap: () {},
+              onTap: _call,
             ),
           ),
         ],

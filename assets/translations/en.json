@@ -138,8 +138,10 @@
     "join_as_seller_button": "Apply Now"
   },
   "seller_request": {
-    "success_title": "Request Submitted",
-    "success_message": "The admin will review your profile and get in touch with you soon."
+    "success_title": "Request Submitted!",
+    "success_message": "Your request is now pending admin approval.",
+    "approval_note": "Our team will review your account and activate it shortly. You'll receive a notification as soon as you're approved.",
+    "got_it": "Got it"
   },
   "onboarding": {
     "welcome_title": "Welcome to Jeeran",

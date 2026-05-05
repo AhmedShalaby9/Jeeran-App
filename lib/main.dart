@@ -15,7 +15,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.setEnvironment(AppEnvironment.staging);
   await AppStorage.init();
-  await NotificationService.instance.init();
+  NotificationService.instance.init().catchError(
+    (e) => debugPrint('NotificationService init failed: $e'),
+  );
   await EasyLocalization.ensureInitialized();
   await di.init();
   Bloc.observer = AppBlocObserver();

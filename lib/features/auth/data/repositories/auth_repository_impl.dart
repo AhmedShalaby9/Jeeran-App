@@ -19,10 +19,10 @@ class AuthRepositoryImpl implements AuthRepository {
   });
 
   @override
-  Future<Either<Failure, User>> login(String phone, {String? fcmToken}) async {
+  Future<Either<Failure, User>> login(String phone, {String? fcmToken, String? platform, String? deviceId}) async {
     if (await networkInfo.isConnected) {
       try {
-        final user = await remoteDataSource.login(phone, fcmToken: fcmToken);
+        final user = await remoteDataSource.login(phone, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
         _saveToken(user);
         return Right(user);
       } on ServerException catch (e) {

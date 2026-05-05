@@ -1,6 +1,5 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
-import '../../domain/entities/property.dart';
 
 class GlassButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -94,7 +93,7 @@ class InfoChip extends StatelessWidget {
 
 class ContactCircle extends StatelessWidget {
   final Color color;
-  final IconData icon;
+  final Widget icon;
   final VoidCallback onTap;
   const ContactCircle({super.key, required this.color, required this.icon, required this.onTap});
 
@@ -105,7 +104,7 @@ class ContactCircle extends StatelessWidget {
       width: 36,
       height: 36,
       decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      child: Icon(icon, size: 16, color: Colors.white),
+      child: Center(child: icon),
     ),
   );
 }
@@ -133,7 +132,7 @@ class SquareButton extends StatelessWidget {
 
 class CTAButton extends StatelessWidget {
   final String label;
-  final IconData icon;
+  final Widget icon;
   final Color color;
   final VoidCallback onTap;
   const CTAButton({super.key, required this.label, required this.icon, required this.color, required this.onTap});
@@ -150,7 +149,7 @@ class CTAButton extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 16, color: Colors.white),
+          icon,
           const SizedBox(width: 7),
           Text(
             label,

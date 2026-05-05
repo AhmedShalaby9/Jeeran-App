@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/app_image.dart';
 import '../../../projects/domain/entities/project.dart';
 import '../../../projects/presentation/bloc/projects_bloc.dart';
 import '../../../projects/presentation/bloc/projects_event.dart';
@@ -12,7 +13,17 @@ import '../../../properties/presentation/pages/properties_screen.dart';
 
 class SearchPage extends StatefulWidget {
   final ValueNotifier<bool>? resetNotifier;
-  const SearchPage({super.key, this.resetNotifier});
+  // Pre-fills the form when opening from PropertiesScreen to edit active filters.
+  final PropertyFilterParams? initialParams;
+  // When set, called instead of pushing PropertiesScreen (used by PropertiesScreen).
+  final void Function(PropertyFilterParams)? onSearch;
+
+  const SearchPage({
+    super.key,
+    this.resetNotifier,
+    this.initialParams,
+    this.onSearch,
+  });
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -49,7 +60,33 @@ class _SearchPageState extends State<SearchPage> {
   void initState() {
     super.initState();
     widget.resetNotifier?.addListener(_onResetSignal);
+    _prefillFromParams(widget.initialParams);
   }
+
+  void _prefillFromParams(PropertyFilterParams? p) {
+    if (p == null) return;
+    _queryController.text = p.q ?? '';
+    _selectedStatus = p.status;
+    _selectedType = _reverseMapType(p.type);
+    _selectedProjectId = p.projectId;
+    _selectedProjectName = p.projectName;
+    _minPriceController.text = p.minPrice ?? '';
+    _maxPriceController.text = p.maxPrice ?? '';
+    _selectedBedrooms = p.bedrooms;
+    _isFeatured = p.isFeatured ?? false;
+    _selectedSort = p.sort;
+    _selectedOrder = p.order;
+  }
+
+  String? _reverseMapType(String? value) => switch (value) {
+    'فيلا' => 'villa',
+    'شقة' => 'apartment',
+    'أرض' => 'land',
+    'ستوديو' => 'studio',
+    'شاليه' => 'chalet',
+    'دوبلكس' => 'duplex',
+    _ => value,
+  };
 
   @override
   void didUpdateWidget(covariant SearchPage oldWidget) {
@@ -97,6 +134,7 @@ class _SearchPageState extends State<SearchPage> {
       status: _selectedStatus,
       type: _mapType(_selectedType),
       projectId: _selectedProjectId,
+      projectName: _selectedProjectName,
       minPrice: _minPriceController.text.isNotEmpty
           ? _minPriceController.text
           : null,
@@ -122,10 +160,14 @@ class _SearchPageState extends State<SearchPage> {
 
   void _onSearch() {
     final params = _buildFilterParams();
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => PropertiesScreen(params: params)),
-    );
+    if (widget.onSearch != null) {
+      widget.onSearch!(params);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => PropertiesScreen(params: params)),
+      );
+    }
   }
 
   static bool _projectsInitialized = false;
@@ -691,20 +733,29 @@ class _ProjectPickerSheet extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.primary.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(
-                          Icons.business_rounded,
-                          size: 18,
-                          color: isSelected ? Colors.white : AppColors.primary,
-                        ),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: p.coverImage != null
+                            ? AppImage.network(
+                                p.coverImage!,
+                                width: 36,
+                                height: 36,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                width: 36,
+                                height: 36,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.primary.withValues(alpha: 0.08),
+                                child: Icon(
+                                  Icons.business_rounded,
+                                  size: 18,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : AppColors.primary,
+                                ),
+                              ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(

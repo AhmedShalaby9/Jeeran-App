@@ -137,15 +137,15 @@ class PropertyPriceCard extends StatelessWidget {
             Row(
               children: [
                 if (property.bedrooms != null) ...[
-                  StatPill(icon: Icons.bed_rounded, label: ' Beds'),
+                  StatPill(icon: Icons.bed_rounded, label: '${property.bedrooms} Beds'),
                   const SizedBox(width: 6),
                 ],
                 if (property.bathrooms != null) ...[
-                  StatPill(icon: Icons.bathtub_rounded, label: ' Baths'),
+                  StatPill(icon: Icons.bathtub_rounded, label: '${property.bathrooms} Baths'),
                   const SizedBox(width: 6),
                 ],
                 if (property.size?.isNotEmpty == true)
-                  StatPill(icon: Icons.crop_square_rounded, label: ' m²'),
+                  StatPill(icon: Icons.crop_square_rounded, label: '${property.size} m²'),
               ],
             ),
           ],
