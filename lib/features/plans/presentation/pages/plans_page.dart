@@ -60,8 +60,13 @@ class _PlansPageState extends State<PlansPage> {
             context.read<AuthBloc>().add(const AuthGetMeEvent());
             await SubscriptionSuccessSheet.show(context);
           } else if (state is UpgradeSubscriptionSuccess) {
-            await SubscriptionSuccessSheet.show(context);
-            if (context.mounted) Navigator.pop(context, true);
+            AppSnackbar.show(
+              context,
+              message: 'subscription.upgrade_success'.tr(),
+              icon: Icons.check_circle_outline_rounded,
+              iconColor: AppColors.success,
+            );
+            Navigator.pop(context, true);
           } else if (state is SubscriptionError) {
             AppSnackbar.show(
               context,

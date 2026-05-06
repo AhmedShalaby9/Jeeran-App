@@ -230,6 +230,7 @@
     "keep_plan": "Keep my plan",
     "confirm_cancel": "Yes, cancel subscription",
     "cancel_success": "Subscription cancelled successfully",
+    "upgrade_success": "Plan upgraded successfully",
     "new_listing": "New listing",
     "upgrade": "Upgrade",
     "invoices": "Invoices",
