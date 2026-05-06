@@ -40,6 +40,7 @@
   static const String subscriptions = '/subscriptions';
   static const String mySubscription = '/subscriptions/my';
   static const String upgradeSubscription = '/subscriptions/upgrade';
+  static const String cancelSubscription = '/subscriptions/cancel';
 
   // Seller Request
   static const String sellerRequests = '/seller-requests';

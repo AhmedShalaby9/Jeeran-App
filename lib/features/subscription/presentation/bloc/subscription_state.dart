@@ -15,6 +15,8 @@ class SubscriptionSuccess extends SubscriptionState {}
 
 class UpgradeSubscriptionSuccess extends SubscriptionState {}
 
+class CancelSubscriptionSuccess extends SubscriptionState {}
+
 class SubscriptionError extends SubscriptionState {
   final String message;
   const SubscriptionError(this.message);

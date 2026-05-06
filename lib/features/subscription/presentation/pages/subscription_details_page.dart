@@ -3,6 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/app_snackbar.dart';
+import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../../../auth/presentation/bloc/auth_event.dart';
+import '../../../home/presentation/pages/home_page.dart';
+import '../../../main/presentation/pages/main_page.dart';
 import '../../../plans/presentation/pages/plans_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../domain/entities/user_subscription.dart';
@@ -29,44 +34,70 @@ class _SubscriptionDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: BlocBuilder<SubscriptionBloc, SubscriptionState>(
-        builder: (context, state) {
-          if (state is MySubscriptionLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            );
-          }
-          if (state is MySubscriptionError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppColors.inkMute),
-                    const SizedBox(height: 12),
-                    Text(
-                      state.message,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: AppColors.inkSub),
-                    ),
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: () => context.read<SubscriptionBloc>().add(const FetchMySubscriptionEvent()),
-                      child: Text('subscription.retry'.tr()),
-                    ),
-                  ],
+    return BlocListener<SubscriptionBloc, SubscriptionState>(
+      listener: (context, state) {
+        if (state is CancelSubscriptionSuccess) {
+          HomePage.reset();
+          context.read<AuthBloc>().add(const AuthGetMeEvent());
+          AppSnackbar.show(
+            context,
+            message: 'subscription.cancel_success'.tr(),
+            icon: Icons.check_circle_outline_rounded,
+            iconColor: AppColors.success,
+          );
+          MainPage.switchTab(0);
+        } else if (state is SubscriptionError) {
+          AppSnackbar.show(
+            context,
+            message: state.message,
+            icon: Icons.error_outline_rounded,
+            iconColor: AppColors.danger,
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: BlocBuilder<SubscriptionBloc, SubscriptionState>(
+          buildWhen: (prev, curr) =>
+              curr is MySubscriptionLoading ||
+              curr is MySubscriptionLoaded ||
+              curr is MySubscriptionError,
+          builder: (context, state) {
+            if (state is MySubscriptionLoading) {
+              return const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              );
+            }
+            if (state is MySubscriptionError) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: AppColors.inkMute),
+                      const SizedBox(height: 12),
+                      Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: AppColors.inkSub),
+                      ),
+                      const SizedBox(height: 16),
+                      TextButton(
+                        onPressed: () => context.read<SubscriptionBloc>().add(const FetchMySubscriptionEvent()),
+                        child: Text('subscription.retry'.tr()),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }
-          if (state is MySubscriptionLoaded) {
-            return _buildContent(context, state.subscription);
-          }
-          return const SizedBox.shrink();
-        },
+              );
+            }
+            if (state is MySubscriptionLoaded) {
+              return _buildContent(context, state.subscription);
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
@@ -81,6 +112,19 @@ class _SubscriptionDetailsView extends StatelessWidget {
     );
     if (upgraded == true) {
       bloc.add(const FetchMySubscriptionEvent());
+    }
+  }
+
+  Future<void> _showCancelSheet(BuildContext context) async {
+    final bloc = context.read<SubscriptionBloc>();
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _CancelConfirmSheet(),
+    );
+    if (confirmed == true) {
+      bloc.add(const CancelSubscriptionEvent());
     }
   }
 
@@ -132,7 +176,17 @@ class _SubscriptionDetailsView extends StatelessWidget {
                 children: [
                   DetailRow(label: 'subscription.switch_plan'.tr(), value: ''),
                   DetailRow(label: 'subscription.pause_renewal'.tr(), value: ''),
-                  ManageRow(label: 'subscription.cancel'.tr(), danger: true),
+                  BlocBuilder<SubscriptionBloc, SubscriptionState>(
+                    builder: (context, state) => ManageRow(
+                      label: state is SubscriptionLoading
+                          ? 'subscription.cancelling'.tr()
+                          : 'subscription.cancel'.tr(),
+                      danger: true,
+                      onTap: state is SubscriptionLoading
+                          ? null
+                          : () => _showCancelSheet(context),
+                    ),
+                  ),
                 ],
               ),
               Padding(
@@ -228,6 +282,114 @@ class _SubscriptionDetailsView extends StatelessWidget {
             icon: Icons.receipt_long_rounded,
             iconColor: AppColors.inkSub,
             onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Cancel confirmation sheet ─────────────────────────────────────────────────
+
+class _CancelConfirmSheet extends StatelessWidget {
+  const _CancelConfirmSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        24,
+        24,
+        24,
+        MediaQuery.of(context).padding.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.hairline,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 28),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: AppColors.danger.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.cancel_outlined,
+              size: 32,
+              color: AppColors.danger,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'subscription.cancel_confirm_title'.tr(),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.ink,
+              letterSpacing: -0.3,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'subscription.cancel_confirm_body'.tr(),
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.inkSub,
+              height: 1.5,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context, false),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(
+                'subscription.keep_plan'.tr(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.danger,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(
+                'subscription.confirm_cancel'.tr(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ),
           ),
         ],
       ),

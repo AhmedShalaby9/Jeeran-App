@@ -19,6 +19,11 @@ import 'tab4_destination.dart';
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
+  static final _tabNotifier = ValueNotifier<int?>(null);
+
+  /// Switch to the given tab index from anywhere in the app.
+  static void switchTab(int index) => _tabNotifier.value = index;
+
   @override
   State<MainPage> createState() => _MainPageState();
 }
@@ -87,6 +92,15 @@ class _MainPageState extends State<MainPage> {
   void initState() {
     super.initState();
     _buildNav();
+    MainPage._tabNotifier.addListener(_onTabSwitch);
+  }
+
+  void _onTabSwitch() {
+    final index = MainPage._tabNotifier.value;
+    if (index != null && index != _selectedIndex) {
+      setState(() => _selectedIndex = index);
+      MainPage._tabNotifier.value = null;
+    }
   }
 
   void _onAuthUpdated(bool isSeller, bool hasSubscription) {
@@ -102,6 +116,7 @@ class _MainPageState extends State<MainPage> {
 
   @override
   void dispose() {
+    MainPage._tabNotifier.removeListener(_onTabSwitch);
     _searchResetNotifier.dispose();
     super.dispose();
   }

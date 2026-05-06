@@ -38,6 +38,17 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   }
 
   @override
+  Future<Either<Failure, void>> cancelSubscription() async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      await remoteDataSource.cancelSubscription();
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, UserSubscription>> getMySubscription() async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {

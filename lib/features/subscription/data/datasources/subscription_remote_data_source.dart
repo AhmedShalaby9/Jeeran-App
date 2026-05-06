@@ -7,6 +7,7 @@ abstract class SubscriptionRemoteDataSource {
   Future<void> createSubscription({required int packageId});
   Future<UserSubscriptionModel> getMySubscription();
   Future<void> upgradeSubscription({required int packageId});
+  Future<void> cancelSubscription();
 }
 
 class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
@@ -38,6 +39,20 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
         ApiEndpoints.upgradeSubscription,
         data: {'package_id': packageId},
       );
+      if (response.statusCode == null || response.statusCode! >= 300) {
+        throw ServerException();
+      }
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> cancelSubscription() async {
+    try {
+      final response = await apiClient.patch(ApiEndpoints.cancelSubscription);
       if (response.statusCode == null || response.statusCode! >= 300) {
         throw ServerException();
       }

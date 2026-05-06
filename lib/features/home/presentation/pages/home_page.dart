@@ -29,6 +29,8 @@ class HomePage extends StatelessWidget {
   static bool _initialized = false;
   static late final PropertiesBloc _propertiesBloc;
 
+  static void reset() => _initialized = false;
+
   void _ensureEventsDispatched() {
     if (_initialized) return;
     _initialized = true;

@@ -12,6 +12,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     on<CreateSubscriptionEvent>(_onCreate);
     on<FetchMySubscriptionEvent>(_onFetch);
     on<UpgradeSubscriptionEvent>(_onUpgrade);
+    on<CancelSubscriptionEvent>(_onCancel);
   }
 
   Future<void> _onCreate(
@@ -43,6 +44,22 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
             : 'errors.network'.tr(),
       )),
       (_) => emit(UpgradeSubscriptionSuccess()),
+    );
+  }
+
+  Future<void> _onCancel(
+    CancelSubscriptionEvent event,
+    Emitter<SubscriptionState> emit,
+  ) async {
+    emit(SubscriptionLoading());
+    final result = await repository.cancelSubscription();
+    result.fold(
+      (failure) => emit(SubscriptionError(
+        failure is ServerFailure
+            ? (failure.message ?? 'errors.server'.tr())
+            : 'errors.network'.tr(),
+      )),
+      (_) => emit(CancelSubscriptionSuccess()),
     );
   }
 

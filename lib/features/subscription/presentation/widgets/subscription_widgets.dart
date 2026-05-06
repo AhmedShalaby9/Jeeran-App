@@ -117,12 +117,16 @@ class DetailRow extends StatelessWidget {
 class ManageRow extends StatelessWidget {
   final String label;
   final bool danger;
+  final VoidCallback? onTap;
 
-  const ManageRow({super.key, required this.label, this.danger = false});
+  const ManageRow({super.key, required this.label, this.danger = false, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
@@ -138,6 +142,7 @@ class ManageRow extends StatelessWidget {
           ),
           const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkMute),
         ],
+      ),
       ),
     );
   }

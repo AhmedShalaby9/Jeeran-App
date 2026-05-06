@@ -23,3 +23,7 @@ class UpgradeSubscriptionEvent extends SubscriptionEvent {
   @override
   List<Object?> get props => [packageId];
 }
+
+class CancelSubscriptionEvent extends SubscriptionEvent {
+  const CancelSubscriptionEvent();
+}

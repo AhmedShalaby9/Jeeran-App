@@ -29,8 +29,11 @@ class AiChatHeader extends StatelessWidget {
           child: Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white, size: 20),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
                 onPressed: () => Navigator.pop(context),
               ),
               const SizedBox(width: 4),
@@ -66,7 +69,9 @@ class AiChatHeader extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                color: Colors.white60, fontSize: 12),
+                              color: Colors.white60,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -75,12 +80,16 @@ class AiChatHeader extends StatelessWidget {
                 ),
               ),
               PopupMenuButton<String>(
-                icon: const Icon(Icons.more_vert_rounded,
-                    color: Colors.white70, size: 22),
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: Colors.white70,
+                  size: 22,
+                ),
                 color: AppColors.surface,
                 elevation: 8,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14)),
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 offset: const Offset(0, 8),
                 onSelected: onMenuSelected,
                 itemBuilder: (_) => [
@@ -88,8 +97,11 @@ class AiChatHeader extends StatelessWidget {
                     value: 'new_session',
                     child: Row(
                       children: [
-                        const Icon(Icons.add_comment_rounded,
-                            color: AppColors.secondary, size: 20),
+                        const Icon(
+                          Icons.add_comment_rounded,
+                          color: AppColors.secondary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 10),
                         Text(
                           'ai_chat.new_session'.tr(),
@@ -107,8 +119,11 @@ class AiChatHeader extends StatelessWidget {
                     value: 'history',
                     child: Row(
                       children: [
-                        const Icon(Icons.history_rounded,
-                            color: AppColors.secondary, size: 20),
+                        const Icon(
+                          Icons.history_rounded,
+                          color: AppColors.secondary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 10),
                         Text(
                           'ai_chat.history'.tr(),
@@ -150,8 +165,11 @@ class _AiHeaderAvatar extends StatelessWidget {
           ),
         ],
       ),
-      child: const Icon(Icons.auto_awesome_rounded,
-          color: Colors.white, size: 22),
+      child: const Icon(
+        Icons.auto_awesome_rounded,
+        color: Colors.white,
+        size: 22,
+      ),
     );
   }
 }
