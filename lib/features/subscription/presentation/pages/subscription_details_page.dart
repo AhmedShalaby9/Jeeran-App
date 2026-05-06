@@ -23,9 +23,7 @@ class SubscriptionDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<SubscriptionBloc>()
-        ..add(const FetchMySubscriptionEvent())
-        ..add(const FetchSubscriptionHistoryEvent()),
+      create: (_) => sl<SubscriptionBloc>()..add(const FetchMySubscriptionEvent()),
       child: const _SubscriptionDetailsView(),
     );
   }
@@ -38,7 +36,9 @@ class _SubscriptionDetailsView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<SubscriptionBloc, SubscriptionState>(
       listener: (context, state) {
-        if (state is CancelSubscriptionSuccess) {
+        if (state is MySubscriptionLoaded) {
+          context.read<SubscriptionBloc>().add(const FetchSubscriptionHistoryEvent());
+        } else if (state is CancelSubscriptionSuccess) {
           HomePage.reset();
           context.read<AuthBloc>().add(const AuthGetMeEvent());
           AppSnackbar.show(
@@ -111,9 +111,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
       MaterialPageRoute(builder: (_) => PlansPage(currentPlanId: currentPlanId)),
     );
     if (upgraded == true) {
-      bloc
-        ..add(const FetchMySubscriptionEvent())
-        ..add(const FetchSubscriptionHistoryEvent());
+      bloc.add(const FetchMySubscriptionEvent());
     }
   }
 
