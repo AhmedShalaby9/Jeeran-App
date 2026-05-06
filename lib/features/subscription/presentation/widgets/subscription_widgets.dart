@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../domain/entities/user_subscription.dart';
 
 class SubscriptionSection extends StatelessWidget {
   final String title;
@@ -117,9 +118,10 @@ class DetailRow extends StatelessWidget {
 class ManageRow extends StatelessWidget {
   final String label;
   final bool danger;
+  final bool last;
   final VoidCallback? onTap;
 
-  const ManageRow({super.key, required this.label, this.danger = false, this.onTap});
+  const ManageRow({super.key, required this.label, this.danger = false, this.last = false, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -128,6 +130,9 @@ class ManageRow extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        border: last ? null : const Border(bottom: BorderSide(color: AppColors.hairline)),
+      ),
       child: Row(
         children: [
           Expanded(
@@ -149,14 +154,24 @@ class ManageRow extends StatelessWidget {
 }
 
 class BillingRow extends StatelessWidget {
-  final String date;
-  final String amount;
+  final UserSubscription subscription;
   final bool last;
 
-  const BillingRow({super.key, required this.date, required this.amount, this.last = false});
+  const BillingRow({super.key, required this.subscription, this.last = false});
 
   @override
   Widget build(BuildContext context) {
+    final dt = DateTime.tryParse(subscription.startDate);
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    final dateStr = dt != null ? '${months[dt.month - 1]} ${dt.day}, ${dt.year}' : subscription.startDate;
+    final status = subscription.status;
+    final (statusLabel, statusColor) = switch (status) {
+      'active'   => ('Active', AppColors.success),
+      'upgraded' => ('Upgraded', AppColors.primary),
+      'cancelled'=> ('Cancelled', AppColors.danger),
+      _          => (status, AppColors.inkMute),
+    };
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -168,12 +183,12 @@ class BillingRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Growth — monthly',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink),
+                Text(
+                  '${subscription.package.name} — monthly',
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink),
                 ),
                 const SizedBox(height: 2),
-                Text(date, style: const TextStyle(fontSize: 12, color: AppColors.inkSub)),
+                Text(dateStr, style: const TextStyle(fontSize: 12, color: AppColors.inkSub)),
               ],
             ),
           ),
@@ -181,18 +196,16 @@ class BillingRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                amount,
+                '${subscription.package.price} EGP',
                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink),
               ),
               const SizedBox(height: 2),
-              const Text(
-                'Paid',
-                style: TextStyle(fontSize: 11, color: AppColors.success, fontWeight: FontWeight.w600),
+              Text(
+                statusLabel,
+                style: TextStyle(fontSize: 11, color: statusColor, fontWeight: FontWeight.w600),
               ),
             ],
           ),
-          const SizedBox(width: 8),
-          const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.inkMute),
         ],
       ),
     );

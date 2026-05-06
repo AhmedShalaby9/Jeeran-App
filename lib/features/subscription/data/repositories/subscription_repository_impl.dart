@@ -49,6 +49,17 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   }
 
   @override
+  Future<Either<Failure, List<UserSubscription>>> getSubscriptionHistory() async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final result = await remoteDataSource.getSubscriptionHistory();
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, UserSubscription>> getMySubscription() async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {

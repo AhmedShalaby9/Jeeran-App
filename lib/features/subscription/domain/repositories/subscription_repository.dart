@@ -7,4 +7,5 @@ abstract class SubscriptionRepository {
   Future<Either<Failure, UserSubscription>> getMySubscription();
   Future<Either<Failure, void>> upgradeSubscription({required int packageId});
   Future<Either<Failure, void>> cancelSubscription();
+  Future<Either<Failure, List<UserSubscription>>> getSubscriptionHistory();
 }

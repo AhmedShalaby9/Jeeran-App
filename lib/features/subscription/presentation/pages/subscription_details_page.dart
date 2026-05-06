@@ -23,7 +23,9 @@ class SubscriptionDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<SubscriptionBloc>()..add(const FetchMySubscriptionEvent()),
+      create: (_) => sl<SubscriptionBloc>()
+        ..add(const FetchMySubscriptionEvent())
+        ..add(const FetchSubscriptionHistoryEvent()),
       child: const _SubscriptionDetailsView(),
     );
   }
@@ -58,7 +60,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: BlocBuilder<SubscriptionBloc, SubscriptionState>(
-          buildWhen: (prev, curr) =>
+          buildWhen: (_, curr) =>
               curr is MySubscriptionLoading ||
               curr is MySubscriptionLoaded ||
               curr is MySubscriptionError,
@@ -106,12 +108,12 @@ class _SubscriptionDetailsView extends StatelessWidget {
     final bloc = context.read<SubscriptionBloc>();
     final upgraded = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(
-        builder: (_) => PlansPage(currentPlanId: currentPlanId),
-      ),
+      MaterialPageRoute(builder: (_) => PlansPage(currentPlanId: currentPlanId)),
     );
     if (upgraded == true) {
-      bloc.add(const FetchMySubscriptionEvent());
+      bloc
+        ..add(const FetchMySubscriptionEvent())
+        ..add(const FetchSubscriptionHistoryEvent());
     }
   }
 
@@ -133,55 +135,84 @@ class _SubscriptionDetailsView extends StatelessWidget {
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(child: _buildHeader(context)),
-        SliverToBoxAdapter(
-          child: SubscriptionHeroCard(subscription: subscription),
-        ),
+        SliverToBoxAdapter(child: SubscriptionHeroCard(subscription: subscription)),
         SliverToBoxAdapter(child: _buildQuickActions(context, subscription)),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList.list(
             children: [
+              // ── Plan details ────────────────────────────────────────
               SubscriptionSection(
                 title: 'subscription.plan'.tr(),
                 children: [
                   DetailRow(label: 'subscription.tier'.tr(), value: plan.name),
-                  DetailRow(label: 'subscription.monthly_listings'.tr(), value: '${plan.availableListings}', chevron: false),
-                  DetailRow(label: 'subscription.next_renewal'.tr(), value: _formatDate(subscription.endDate), chevron: false, last: true),
+                  DetailRow(
+                    label: 'subscription.monthly_listings'.tr(),
+                    value: '${plan.availableListings}',
+                    chevron: false,
+                  ),
+                  DetailRow(
+                    label: 'subscription.next_renewal'.tr(),
+                    value: _formatDate(subscription.endDate),
+                    chevron: false,
+                    last: true,
+                  ),
                 ],
               ),
-              SubscriptionSection(
-                title: 'subscription.add_ons'.tr(),
-                action: 'subscription.add'.tr(),
-                children: [
-                  DetailRow(label: 'subscription.payg_wallet'.tr(), value: '15 ${'currency'.tr()}', valueColor: AppColors.primary),
-                  DetailRow(label: 'subscription.featured_placements'.tr(), value: '2 remaining', last: true),
-                ],
+
+              // ── Billing history (real data) ─────────────────────────
+              BlocBuilder<SubscriptionBloc, SubscriptionState>(
+                buildWhen: (_, curr) =>
+                    curr is SubscriptionHistoryLoading ||
+                    curr is SubscriptionHistoryLoaded ||
+                    curr is SubscriptionHistoryError,
+                builder: (context, state) {
+                  if (state is SubscriptionHistoryLoading) {
+                    return SubscriptionSection(
+                      title: 'subscription.billing_history'.tr(),
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+                  if (state is SubscriptionHistoryLoaded && state.history.isNotEmpty) {
+                    return SubscriptionSection(
+                      title: 'subscription.billing_history'.tr(),
+                      children: state.history.asMap().entries.map((e) {
+                        return BillingRow(
+                          subscription: e.value,
+                          last: e.key == state.history.length - 1,
+                        );
+                      }).toList(),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
-              SubscriptionSection(
-                title: 'subscription.payment_method'.tr(),
-                action: 'subscription.change'.tr(),
-                children: const [FawryRow()],
-              ),
-              SubscriptionSection(
-                title: 'subscription.billing_history'.tr(),
-                action: 'subscription.see_all'.tr(),
-                children: [
-                  BillingRow(date: 'Apr 18, 2026', amount: '49.00 ${'currency'.tr()}'),
-                  BillingRow(date: 'Mar 18, 2026', amount: '49.00 ${'currency'.tr()}'),
-                  BillingRow(date: 'Feb 18, 2026', amount: '19.00 ${'currency'.tr()}', last: true),
-                ],
-              ),
+
+              // ── Manage ──────────────────────────────────────────────
               SubscriptionSection(
                 title: 'subscription.manage'.tr(),
                 children: [
-                  DetailRow(label: 'subscription.switch_plan'.tr(), value: ''),
-                  DetailRow(label: 'subscription.pause_renewal'.tr(), value: ''),
+                  ManageRow(
+                    label: 'subscription.upgrade'.tr(),
+                    onTap: () => _openUpgradePage(context, subscription.packageId),
+                  ),
                   BlocBuilder<SubscriptionBloc, SubscriptionState>(
                     builder: (context, state) => ManageRow(
                       label: state is SubscriptionLoading
                           ? 'subscription.cancelling'.tr()
                           : 'subscription.cancel'.tr(),
                       danger: true,
+                      last: true,
                       onTap: state is SubscriptionLoading
                           ? null
                           : () => _showCancelSheet(context),
@@ -189,12 +220,17 @@ class _SubscriptionDetailsView extends StatelessWidget {
                   ),
                 ],
               ),
+
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
                 child: Text(
                   'subscription.cancel_note'.tr(),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 11, color: AppColors.inkMute, height: 1.5),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.inkMute,
+                    height: 1.5,
+                  ),
                 ),
               ),
             ],
@@ -207,10 +243,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
   String _formatDate(String raw) {
     final dt = DateTime.tryParse(raw);
     if (dt == null) return raw;
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-    ];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }
 
@@ -275,14 +308,6 @@ class _SubscriptionDetailsView extends StatelessWidget {
             iconColor: AppColors.gold,
             onTap: () => _openUpgradePage(context, subscription.packageId),
           ),
-          const SizedBox(width: 10),
-          QuickAction(
-            label: 'subscription.invoices'.tr(),
-            iconBg: AppColors.tagNeutralBg,
-            icon: Icons.receipt_long_rounded,
-            iconColor: AppColors.inkSub,
-            onTap: () {},
-          ),
         ],
       ),
     );
@@ -302,9 +327,7 @@ class _CancelConfirmSheet extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: EdgeInsets.fromLTRB(
-        24,
-        24,
-        24,
+        24, 24, 24,
         MediaQuery.of(context).padding.bottom + 24,
       ),
       child: Column(
@@ -326,11 +349,7 @@ class _CancelConfirmSheet extends StatelessWidget {
               color: AppColors.danger.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
-              Icons.cancel_outlined,
-              size: 32,
-              color: AppColors.danger,
-            ),
+            child: const Icon(Icons.cancel_outlined, size: 32, color: AppColors.danger),
           ),
           const SizedBox(height: 20),
           Text(
@@ -346,11 +365,7 @@ class _CancelConfirmSheet extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'subscription.cancel_confirm_body'.tr(),
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.inkSub,
-              height: 1.5,
-            ),
+            style: const TextStyle(fontSize: 14, color: AppColors.inkSub, height: 1.5),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -363,9 +378,7 @@ class _CancelConfirmSheet extends StatelessWidget {
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               child: Text(
                 'subscription.keep_plan'.tr(),
@@ -381,9 +394,7 @@ class _CancelConfirmSheet extends StatelessWidget {
               onPressed: () => Navigator.pop(context, true),
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.danger,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               child: Text(
                 'subscription.confirm_cancel'.tr(),

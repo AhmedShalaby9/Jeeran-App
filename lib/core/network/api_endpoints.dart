@@ -41,6 +41,7 @@
   static const String mySubscription = '/subscriptions/my';
   static const String upgradeSubscription = '/subscriptions/upgrade';
   static const String cancelSubscription = '/subscriptions/cancel';
+  static const String subscriptionHistory = '/subscriptions/history';
 
   // Seller Request
   static const String sellerRequests = '/seller-requests';

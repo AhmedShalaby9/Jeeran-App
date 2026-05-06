@@ -17,6 +17,22 @@ class UpgradeSubscriptionSuccess extends SubscriptionState {}
 
 class CancelSubscriptionSuccess extends SubscriptionState {}
 
+class SubscriptionHistoryLoading extends SubscriptionState {}
+
+class SubscriptionHistoryLoaded extends SubscriptionState {
+  final List<UserSubscription> history;
+  const SubscriptionHistoryLoaded(this.history);
+  @override
+  List<Object?> get props => [history];
+}
+
+class SubscriptionHistoryError extends SubscriptionState {
+  final String message;
+  const SubscriptionHistoryError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
 class SubscriptionError extends SubscriptionState {
   final String message;
   const SubscriptionError(this.message);

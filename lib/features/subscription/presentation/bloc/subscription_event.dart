@@ -27,3 +27,7 @@ class UpgradeSubscriptionEvent extends SubscriptionEvent {
 class CancelSubscriptionEvent extends SubscriptionEvent {
   const CancelSubscriptionEvent();
 }
+
+class FetchSubscriptionHistoryEvent extends SubscriptionEvent {
+  const FetchSubscriptionHistoryEvent();
+}
