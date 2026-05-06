@@ -148,7 +148,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
                   DetailRow(label: 'subscription.tier'.tr(), value: plan.name),
                   DetailRow(
                     label: 'subscription.monthly_listings'.tr(),
-                    value: '${plan.availableListings}',
+                    value: '${subscription.availableListings}',
                     chevron: false,
                   ),
                   DetailRow(

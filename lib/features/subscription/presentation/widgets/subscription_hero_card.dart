@@ -22,8 +22,9 @@ class SubscriptionHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final plan = subscription.package;
-    final total = plan.availableListings;
-    final remaining = subscription.remainingListings;
+    final total = subscription.availableListings;
+    final consumed = subscription.consumedListings;
+    final remaining = (total - consumed).clamp(0, total);
     final progress = total > 0 ? (remaining / total).clamp(0.0, 1.0) : 0.0;
     final daysLeft = subscription.daysRemaining;
 
