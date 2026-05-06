@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
@@ -8,9 +8,7 @@ import '../../domain/entities/plan.dart';
 import '../bloc/plans_bloc.dart';
 import '../bloc/plans_event.dart';
 import '../bloc/plans_state.dart';
-import '../widgets/billing_toggle.dart';
 import '../widgets/nav_icon_button.dart';
-import '../widgets/payg_section.dart';
 import '../widgets/plan_card.dart';
 import '../widgets/plans_sticky_button.dart';
 import '../../../subscription/presentation/bloc/subscription_bloc.dart';
@@ -31,14 +29,12 @@ class PlansPage extends StatefulWidget {
 }
 
 class _PlansPageState extends State<PlansPage> {
-  String _billing = 'monthly';
   int? _selectedPlanId;
 
   bool get _isUpgrade => widget.currentPlanId != null;
 
   Plan? _selectDefault(List<Plan> plans) {
     if (plans.isEmpty) return null;
-    // When upgrading, pre-select the current plan; otherwise default to 'growth'
     if (_isUpgrade) {
       return plans.firstWhere(
         (p) => p.id == widget.currentPlanId,
@@ -77,23 +73,16 @@ class _PlansPageState extends State<PlansPage> {
           }
         },
         child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: BlocBuilder<PlansBloc, PlansState>(
-          builder: (context, state) {
-            return Column(
-              children: [
-                Expanded(
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(child: _buildTopBar()),
-                      SliverToBoxAdapter(child: _buildHeader()),
-                      SliverToBoxAdapter(
-                        child: BillingToggle(
-                          selected: _billing,
-                          onChanged: (v) => setState(() => _billing = v),
-                        ),
-                      ),
-                      if (_billing == 'monthly') ...[
+          backgroundColor: AppColors.background,
+          body: BlocBuilder<PlansBloc, PlansState>(
+            builder: (context, state) {
+              return Column(
+                children: [
+                  Expanded(
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(child: _buildTopBar()),
+                        SliverToBoxAdapter(child: _buildHeader()),
                         if (state is PlansLoading)
                           const SliverToBoxAdapter(
                             child: Padding(
@@ -142,43 +131,38 @@ class _PlansPageState extends State<PlansPage> {
                               },
                             ),
                           ),
-                      ] else
-                        const SliverToBoxAdapter(child: PaygSection()),
-                      const SliverToBoxAdapter(child: SizedBox(height: 100)),
-                    ],
-                  ),
-                ),
-                if (state is PlansLoaded && _billing == 'monthly')
-                  BlocBuilder<SubscriptionBloc, SubscriptionState>(
-                    builder: (context, subState) => PlansStickyButton(
-                      billing: _billing,
-                      price: _activePrice(state.plans),
-                      isUpgrade: _isUpgrade,
-                      onPressed: subState is SubscriptionLoading
-                          ? null
-                          : () {
-                              final planId = _selectedPlanId ??
-                                  _selectDefault(state.plans)?.id;
-                              if (planId == null) return;
-                              if (_isUpgrade) {
-                                context.read<SubscriptionBloc>().add(
-                                      UpgradeSubscriptionEvent(packageId: planId),
-                                    );
-                              } else {
-                                context.read<SubscriptionBloc>().add(
-                                      CreateSubscriptionEvent(packageId: planId),
-                                    );
-                              }
-                            },
+                        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                      ],
                     ),
-                  )
-                else if (_billing == 'payg')
-                  PlansStickyButton(billing: _billing),
-              ],
-            );
-          },
+                  ),
+                  if (state is PlansLoaded)
+                    BlocBuilder<SubscriptionBloc, SubscriptionState>(
+                      builder: (context, subState) => PlansStickyButton(
+                        price: _activePrice(state.plans),
+                        isUpgrade: _isUpgrade,
+                        onPressed: subState is SubscriptionLoading
+                            ? null
+                            : () {
+                                final planId = _selectedPlanId ??
+                                    _selectDefault(state.plans)?.id;
+                                if (planId == null) return;
+                                if (_isUpgrade) {
+                                  context.read<SubscriptionBloc>().add(
+                                        UpgradeSubscriptionEvent(packageId: planId),
+                                      );
+                                } else {
+                                  context.read<SubscriptionBloc>().add(
+                                        CreateSubscriptionEvent(packageId: planId),
+                                      );
+                                }
+                              },
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
         ),
-      ),
       ),
     );
   }

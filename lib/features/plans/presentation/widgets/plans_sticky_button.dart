@@ -1,16 +1,14 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 
 class PlansStickyButton extends StatelessWidget {
-  final String billing;
   final String? price;
   final VoidCallback? onPressed;
   final bool isUpgrade;
 
   const PlansStickyButton({
     super.key,
-    required this.billing,
     this.price,
     this.onPressed,
     this.isUpgrade = false,
@@ -54,11 +52,9 @@ class PlansStickyButton extends StatelessWidget {
                 ),
               ),
               child: Text(
-                billing == 'monthly'
-                    ? (isUpgrade
-                        ? 'plans.upgrade_price'.tr(namedArgs: {'price': price ?? ''})
-                        : 'plans.subscribe_price'.tr(namedArgs: {'price': price ?? ''}))
-                    : 'plans.top_up_wallet'.tr(),
+                isUpgrade
+                    ? 'plans.upgrade_price'.tr(namedArgs: {'price': price ?? ''})
+                    : 'plans.subscribe_price'.tr(namedArgs: {'price': price ?? ''}),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
