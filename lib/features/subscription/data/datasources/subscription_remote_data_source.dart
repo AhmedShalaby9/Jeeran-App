@@ -4,11 +4,15 @@ import '../../../../core/network/api_endpoints.dart';
 import '../models/user_subscription_model.dart';
 
 abstract class SubscriptionRemoteDataSource {
-  Future<void> createSubscription({required int packageId});
+  Future<UserSubscriptionModel> createSubscription({required int packageId});
   Future<UserSubscriptionModel> getMySubscription();
-  Future<void> upgradeSubscription({required int packageId});
+  Future<UserSubscriptionModel> upgradeSubscription({required int packageId});
   Future<void> cancelSubscription();
   Future<List<UserSubscriptionModel>> getSubscriptionHistory();
+  Future<UserSubscriptionModel> submitPaymentProof({
+    required int subscriptionId,
+    required String filePath,
+  });
 }
 
 class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
@@ -17,15 +21,18 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
   SubscriptionRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<void> createSubscription({required int packageId}) async {
+  Future<UserSubscriptionModel> createSubscription({required int packageId}) async {
     try {
       final response = await apiClient.post(
         ApiEndpoints.subscriptions,
         data: {'package_id': packageId},
       );
-      if (response.statusCode == null || response.statusCode! >= 300) {
-        throw ServerException();
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return UserSubscriptionModel.fromJson(
+          response.data['data'] as Map<String, dynamic>,
+        );
       }
+      throw ServerException();
     } on ServerException {
       rethrow;
     } catch (_) {
@@ -34,15 +41,18 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
   }
 
   @override
-  Future<void> upgradeSubscription({required int packageId}) async {
+  Future<UserSubscriptionModel> upgradeSubscription({required int packageId}) async {
     try {
       final response = await apiClient.post(
         ApiEndpoints.upgradeSubscription,
         data: {'package_id': packageId},
       );
-      if (response.statusCode == null || response.statusCode! >= 300) {
-        throw ServerException();
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return UserSubscriptionModel.fromJson(
+          response.data['data'] as Map<String, dynamic>,
+        );
       }
+      throw ServerException();
     } on ServerException {
       rethrow;
     } catch (_) {
@@ -86,6 +96,30 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
   Future<UserSubscriptionModel> getMySubscription() async {
     try {
       final response = await apiClient.get(ApiEndpoints.mySubscription);
+      if (response.statusCode == 200) {
+        return UserSubscriptionModel.fromJson(
+          response.data['data'] as Map<String, dynamic>,
+        );
+      }
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<UserSubscriptionModel> submitPaymentProof({
+    required int subscriptionId,
+    required String filePath,
+  }) async {
+    try {
+      final response = await apiClient.postMultipart(
+        ApiEndpoints.subscriptionPaymentProof(subscriptionId),
+        filePath: filePath,
+        fileField: 'file',
+      );
       if (response.statusCode == 200) {
         return UserSubscriptionModel.fromJson(
           response.data['data'] as Map<String, dynamic>,

@@ -16,22 +16,22 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   });
 
   @override
-  Future<Either<Failure, void>> createSubscription({required int packageId}) async {
+  Future<Either<Failure, UserSubscription>> createSubscription({required int packageId}) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      await remoteDataSource.createSubscription(packageId: packageId);
-      return const Right(null);
+      final result = await remoteDataSource.createSubscription(packageId: packageId);
+      return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
   }
 
   @override
-  Future<Either<Failure, void>> upgradeSubscription({required int packageId}) async {
+  Future<Either<Failure, UserSubscription>> upgradeSubscription({required int packageId}) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      await remoteDataSource.upgradeSubscription(packageId: packageId);
-      return const Right(null);
+      final result = await remoteDataSource.upgradeSubscription(packageId: packageId);
+      return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     }
@@ -64,6 +64,23 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
       final result = await remoteDataSource.getMySubscription();
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserSubscription>> submitPaymentProof({
+    required int subscriptionId,
+    required String filePath,
+  }) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final result = await remoteDataSource.submitPaymentProof(
+        subscriptionId: subscriptionId,
+        filePath: filePath,
+      );
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

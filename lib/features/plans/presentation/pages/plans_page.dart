@@ -14,9 +14,7 @@ import '../widgets/plans_sticky_button.dart';
 import '../../../subscription/presentation/bloc/subscription_bloc.dart';
 import '../../../subscription/presentation/bloc/subscription_event.dart';
 import '../../../subscription/presentation/bloc/subscription_state.dart';
-import '../../../subscription/presentation/widgets/subscription_success_sheet.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/presentation/bloc/auth_event.dart';
+import '../../../subscription/presentation/pages/subscription_details_page.dart';
 
 class PlansPage extends StatefulWidget {
   /// When provided, pre-selects this plan and uses the upgrade endpoint.
@@ -57,8 +55,10 @@ class _PlansPageState extends State<PlansPage> {
       child: BlocListener<SubscriptionBloc, SubscriptionState>(
         listener: (context, state) async {
           if (state is SubscriptionSuccess) {
-            context.read<AuthBloc>().add(const AuthGetMeEvent());
-            await SubscriptionSuccessSheet.show(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const SubscriptionDetailsPage()),
+            );
           } else if (state is UpgradeSubscriptionSuccess) {
             AppSnackbar.show(
               context,

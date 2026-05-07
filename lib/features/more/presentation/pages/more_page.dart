@@ -16,6 +16,7 @@ import 'contact_us_page.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../../properties/presentation/pages/my_properties_page.dart';
+import '../../../main/presentation/pages/main_page.dart';
 import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
 import '../../../seller_request/presentation/bloc/seller_request_state.dart';
 import '../../../seller_request/presentation/widgets/seller_request_tile.dart';
@@ -78,9 +79,14 @@ class _MoreView extends StatelessWidget {
                     ? const Icon(Icons.check_circle, color: AppColors.primary)
                     : null,
                 onTap: () async {
+                  if (context.locale.languageCode == 'en') {
+                    Navigator.pop(context);
+                    return;
+                  }
+                  Navigator.pop(context);
                   await context.setLocale(const Locale('en'));
                   await AppStorage.setLanguage('en');
-                  if (context.mounted) Navigator.pop(context);
+                  if (context.mounted) _restartApp(context);
                 },
               ),
               ListTile(
@@ -90,15 +96,32 @@ class _MoreView extends StatelessWidget {
                     ? const Icon(Icons.check_circle, color: AppColors.primary)
                     : null,
                 onTap: () async {
+                  if (context.locale.languageCode == 'ar') {
+                    Navigator.pop(context);
+                    return;
+                  }
+                  Navigator.pop(context);
                   await context.setLocale(const Locale('ar'));
                   await AppStorage.setLanguage('ar');
-                  if (context.mounted) Navigator.pop(context);
+                  if (context.mounted) _restartApp(context);
                 },
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  void _restartApp(BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (ctx, animation, _) =>
+            AppStorage.isLoggedIn ? const MainPage() : const LoginPage(),
+        transitionDuration: Duration.zero,
+      ),
+      (_) => false,
     );
   }
 

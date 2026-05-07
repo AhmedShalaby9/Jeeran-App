@@ -11,9 +11,19 @@ class SubscriptionInitial extends SubscriptionState {}
 
 class SubscriptionLoading extends SubscriptionState {}
 
-class SubscriptionSuccess extends SubscriptionState {}
+class SubscriptionSuccess extends SubscriptionState {
+  final UserSubscription subscription;
+  const SubscriptionSuccess(this.subscription);
+  @override
+  List<Object?> get props => [subscription];
+}
 
-class UpgradeSubscriptionSuccess extends SubscriptionState {}
+class UpgradeSubscriptionSuccess extends SubscriptionState {
+  final UserSubscription subscription;
+  const UpgradeSubscriptionSuccess(this.subscription);
+  @override
+  List<Object?> get props => [subscription];
+}
 
 class CancelSubscriptionSuccess extends SubscriptionState {}
 
@@ -52,6 +62,22 @@ class MySubscriptionLoaded extends SubscriptionState {
 class MySubscriptionError extends SubscriptionState {
   final String message;
   const MySubscriptionError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
+
+class PaymentProofLoading extends SubscriptionState {}
+
+class PaymentProofSuccess extends SubscriptionState {
+  final UserSubscription subscription;
+  const PaymentProofSuccess(this.subscription);
+  @override
+  List<Object?> get props => [subscription];
+}
+
+class PaymentProofError extends SubscriptionState {
+  final String message;
+  const PaymentProofError(this.message);
   @override
   List<Object?> get props => [message];
 }

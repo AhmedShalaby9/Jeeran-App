@@ -234,7 +234,18 @@
     "new_listing": "إعلان جديد",
     "upgrade": "ترقية",
     "invoices": "الفواتير",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "pending_payment": "في انتظار الدفع",
+    "pending_approval": "قيد المراجعة",
+    "rejected": "مرفوض",
+    "pending_payment_title": "في انتظار الدفع",
+    "pending_payment_subtitle": "قم بتحويل المبلغ ورفع إيصال التحويل البنكي لتفعيل اشتراكك.",
+    "pending_approval_title": "قيد المراجعة",
+    "pending_approval_subtitle": "تم استلام إيصال الدفع الخاص بك وهو قيد المراجعة من قِبل فريقنا. ستتلقى إشعاراً عند الموافقة.",
+    "bank_instructions": "تعليمات الدفع",
+    "upload_proof": "رفع إيصال التحويل",
+    "uploading": "جارٍ الرفع…",
+    "proof_submitted": "تم إرسال الإيصال! في انتظار مراجعة الإدارة."
   },
   "property_details": {
     "overview": "نظرة عامة",

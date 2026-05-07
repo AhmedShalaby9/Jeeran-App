@@ -161,15 +161,20 @@ class BillingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final dt = DateTime.tryParse(subscription.startDate);
+    final rawDate = subscription.startDate;
+    final dt = rawDate != null ? DateTime.tryParse(rawDate) : null;
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    final dateStr = dt != null ? '${months[dt.month - 1]} ${dt.day}, ${dt.year}' : subscription.startDate;
+    final dateStr = dt != null ? '${months[dt.month - 1]} ${dt.day}, ${dt.year}' : '—';
     final status = subscription.status;
     final (statusLabel, statusColor) = switch (status) {
-      'active'   => ('Active', AppColors.success),
-      'upgraded' => ('Upgraded', AppColors.primary),
-      'cancelled'=> ('Cancelled', AppColors.danger),
-      _          => (status, AppColors.inkMute),
+      'active'           => ('Active',           AppColors.success),
+      'upgraded'         => ('Upgraded',         AppColors.primary),
+      'cancelled'        => ('Cancelled',        AppColors.danger),
+      'rejected'         => ('Rejected',         AppColors.danger),
+      'expired'          => ('Expired',          AppColors.inkMute),
+      'pending_payment'  => ('Pending Payment',  AppColors.inkMute),
+      'pending_approval' => ('Under Review',     AppColors.primary),
+      _                  => (status,             AppColors.inkMute),
     };
 
     return Container(

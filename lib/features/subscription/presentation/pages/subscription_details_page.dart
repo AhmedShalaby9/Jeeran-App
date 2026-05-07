@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_snackbar.dart';
@@ -48,6 +49,21 @@ class _SubscriptionDetailsView extends StatelessWidget {
             iconColor: AppColors.success,
           );
           MainPage.switchTab(0);
+        } else if (state is PaymentProofSuccess) {
+          AppSnackbar.show(
+            context,
+            message: 'subscription.proof_submitted'.tr(),
+            icon: Icons.check_circle_outline_rounded,
+            iconColor: AppColors.success,
+          );
+          context.read<SubscriptionBloc>().add(const FetchMySubscriptionEvent());
+        } else if (state is PaymentProofError) {
+          AppSnackbar.show(
+            context,
+            message: state.message,
+            icon: Icons.error_outline_rounded,
+            iconColor: AppColors.danger,
+          );
         } else if (state is SubscriptionError) {
           AppSnackbar.show(
             context,
@@ -128,7 +144,181 @@ class _SubscriptionDetailsView extends StatelessWidget {
     }
   }
 
+  Future<void> _pickAndUploadProof(BuildContext context, int subscriptionId) async {
+    final picker = ImagePicker();
+    final file = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (file == null) return;
+    if (context.mounted) {
+      context.read<SubscriptionBloc>().add(
+        SubmitPaymentProofEvent(subscriptionId: subscriptionId, filePath: file.path),
+      );
+    }
+  }
+
   Widget _buildContent(BuildContext context, UserSubscription subscription) {
+    if (subscription.isPendingPayment) {
+      return _buildPendingPaymentContent(context, subscription);
+    }
+    if (subscription.isPendingApproval) {
+      return _buildPendingApprovalContent(context, subscription);
+    }
+    return _buildActiveContent(context, subscription);
+  }
+
+  Widget _buildPendingPaymentContent(BuildContext context, UserSubscription subscription) {
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _buildHeader(context)),
+        SliverToBoxAdapter(child: SubscriptionHeroCard(subscription: subscription)),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverList.list(
+            children: [
+              SubscriptionSection(
+                title: 'subscription.bank_instructions'.tr(),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      'subscription.pending_payment_subtitle'.tr(),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.inkSub,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              BlocBuilder<SubscriptionBloc, SubscriptionState>(
+                builder: (context, state) {
+                  final isUploading = state is PaymentProofLoading;
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton.icon(
+                      onPressed: isUploading
+                          ? null
+                          : () => _pickAndUploadProof(context, subscription.id),
+                      icon: isUploading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.upload_rounded, size: 20),
+                      label: Text(
+                        isUploading
+                            ? 'subscription.uploading'.tr()
+                            : 'subscription.upload_proof'.tr(),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              SubscriptionSection(
+                title: 'subscription.manage'.tr(),
+                children: [
+                  BlocBuilder<SubscriptionBloc, SubscriptionState>(
+                    builder: (context, state) => ManageRow(
+                      label: state is SubscriptionLoading
+                          ? 'subscription.cancelling'.tr()
+                          : 'subscription.cancel'.tr(),
+                      danger: true,
+                      last: true,
+                      onTap: state is SubscriptionLoading
+                          ? null
+                          : () => _showCancelSheet(context),
+                    ),
+                  ),
+                ],
+              ),
+              _buildBillingHistory(),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPendingApprovalContent(BuildContext context, UserSubscription subscription) {
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: _buildHeader(context)),
+        SliverToBoxAdapter(child: SubscriptionHeroCard(subscription: subscription)),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverList.list(
+            children: [
+              SubscriptionSection(
+                title: 'subscription.pending_approval_title'.tr(),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.info_outline_rounded, size: 20, color: AppColors.primary),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'subscription.pending_approval_subtitle'.tr(),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: AppColors.inkSub,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SubscriptionSection(
+                title: 'subscription.manage'.tr(),
+                children: [
+                  BlocBuilder<SubscriptionBloc, SubscriptionState>(
+                    builder: (context, state) => ManageRow(
+                      label: state is SubscriptionLoading
+                          ? 'subscription.cancelling'.tr()
+                          : 'subscription.cancel'.tr(),
+                      danger: true,
+                      last: true,
+                      onTap: state is SubscriptionLoading
+                          ? null
+                          : () => _showCancelSheet(context),
+                    ),
+                  ),
+                ],
+              ),
+              _buildBillingHistory(),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActiveContent(BuildContext context, UserSubscription subscription) {
     final plan = subscription.package;
     return CustomScrollView(
       slivers: [
@@ -139,7 +329,6 @@ class _SubscriptionDetailsView extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList.list(
             children: [
-              // ── Plan details ────────────────────────────────────────
               SubscriptionSection(
                 title: 'subscription.plan'.tr(),
                 children: [
@@ -149,54 +338,23 @@ class _SubscriptionDetailsView extends StatelessWidget {
                     value: '${subscription.availableListings}',
                     chevron: false,
                   ),
-                  DetailRow(
-                    label: 'subscription.next_renewal'.tr(),
-                    value: _formatDate(subscription.endDate),
-                    chevron: false,
-                    last: true,
-                  ),
+                  if (subscription.endDate != null)
+                    DetailRow(
+                      label: 'subscription.next_renewal'.tr(),
+                      value: _formatDate(subscription.endDate!),
+                      chevron: false,
+                      last: true,
+                    )
+                  else
+                    DetailRow(
+                      label: 'subscription.next_renewal'.tr(),
+                      value: '—',
+                      chevron: false,
+                      last: true,
+                    ),
                 ],
               ),
-
-              // ── Billing history (real data) ─────────────────────────
-              BlocBuilder<SubscriptionBloc, SubscriptionState>(
-                buildWhen: (_, curr) =>
-                    curr is SubscriptionHistoryLoading ||
-                    curr is SubscriptionHistoryLoaded ||
-                    curr is SubscriptionHistoryError,
-                builder: (context, state) {
-                  if (state is SubscriptionHistoryLoading) {
-                    return SubscriptionSection(
-                      title: 'subscription.billing_history'.tr(),
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                              strokeWidth: 2,
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                  if (state is SubscriptionHistoryLoaded && state.history.isNotEmpty) {
-                    return SubscriptionSection(
-                      title: 'subscription.billing_history'.tr(),
-                      children: state.history.asMap().entries.map((e) {
-                        return BillingRow(
-                          subscription: e.value,
-                          last: e.key == state.history.length - 1,
-                        );
-                      }).toList(),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                },
-              ),
-
-              // ── Manage ──────────────────────────────────────────────
+              _buildBillingHistory(),
               SubscriptionSection(
                 title: 'subscription.manage'.tr(),
                 children: [
@@ -218,7 +376,6 @@ class _SubscriptionDetailsView extends StatelessWidget {
                   ),
                 ],
               ),
-
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 0, 8, 24),
                 child: Text(
@@ -235,6 +392,45 @@ class _SubscriptionDetailsView extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBillingHistory() {
+    return BlocBuilder<SubscriptionBloc, SubscriptionState>(
+      buildWhen: (_, curr) =>
+          curr is SubscriptionHistoryLoading ||
+          curr is SubscriptionHistoryLoaded ||
+          curr is SubscriptionHistoryError,
+      builder: (context, state) {
+        if (state is SubscriptionHistoryLoading) {
+          return SubscriptionSection(
+            title: 'subscription.billing_history'.tr(),
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                    strokeWidth: 2,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+        if (state is SubscriptionHistoryLoaded && state.history.isNotEmpty) {
+          return SubscriptionSection(
+            title: 'subscription.billing_history'.tr(),
+            children: state.history.asMap().entries.map((e) {
+              return BillingRow(
+                subscription: e.value,
+                last: e.key == state.history.length - 1,
+              );
+            }).toList(),
+          );
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 
@@ -311,8 +507,6 @@ class _SubscriptionDetailsView extends StatelessWidget {
     );
   }
 }
-
-// ── Cancel confirmation sheet ─────────────────────────────────────────────────
 
 class _CancelConfirmSheet extends StatelessWidget {
   const _CancelConfirmSheet();

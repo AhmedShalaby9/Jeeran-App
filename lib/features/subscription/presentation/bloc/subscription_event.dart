@@ -31,3 +31,11 @@ class CancelSubscriptionEvent extends SubscriptionEvent {
 class FetchSubscriptionHistoryEvent extends SubscriptionEvent {
   const FetchSubscriptionHistoryEvent();
 }
+
+class SubmitPaymentProofEvent extends SubscriptionEvent {
+  final int subscriptionId;
+  final String filePath;
+  const SubmitPaymentProofEvent({required this.subscriptionId, required this.filePath});
+  @override
+  List<Object?> get props => [subscriptionId, filePath];
+}

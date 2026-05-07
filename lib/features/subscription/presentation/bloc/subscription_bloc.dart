@@ -14,6 +14,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
     on<UpgradeSubscriptionEvent>(_onUpgrade);
     on<CancelSubscriptionEvent>(_onCancel);
     on<FetchSubscriptionHistoryEvent>(_onFetchHistory);
+    on<SubmitPaymentProofEvent>(_onSubmitPaymentProof);
   }
 
   Future<void> _onCreate(
@@ -28,7 +29,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
             ? (failure.message ?? 'errors.server'.tr())
             : 'errors.network'.tr(),
       )),
-      (_) => emit(SubscriptionSuccess()),
+      (subscription) => emit(SubscriptionSuccess(subscription)),
     );
   }
 
@@ -44,7 +45,7 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
             ? (failure.message ?? 'errors.server'.tr())
             : 'errors.network'.tr(),
       )),
-      (_) => emit(UpgradeSubscriptionSuccess()),
+      (subscription) => emit(UpgradeSubscriptionSuccess(subscription)),
     );
   }
 
@@ -93,6 +94,25 @@ class SubscriptionBloc extends Bloc<SubscriptionEvent, SubscriptionState> {
             : 'errors.network'.tr(),
       )),
       (subscription) => emit(MySubscriptionLoaded(subscription)),
+    );
+  }
+
+  Future<void> _onSubmitPaymentProof(
+    SubmitPaymentProofEvent event,
+    Emitter<SubscriptionState> emit,
+  ) async {
+    emit(PaymentProofLoading());
+    final result = await repository.submitPaymentProof(
+      subscriptionId: event.subscriptionId,
+      filePath: event.filePath,
+    );
+    result.fold(
+      (failure) => emit(PaymentProofError(
+        failure is ServerFailure
+            ? (failure.message ?? 'errors.server'.tr())
+            : 'errors.network'.tr(),
+      )),
+      (subscription) => emit(PaymentProofSuccess(subscription)),
     );
   }
 }

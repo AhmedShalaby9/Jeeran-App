@@ -234,7 +234,18 @@
     "new_listing": "New listing",
     "upgrade": "Upgrade",
     "invoices": "Invoices",
-    "retry": "Retry"
+    "retry": "Retry",
+    "pending_payment": "Pending Payment",
+    "pending_approval": "Under Review",
+    "rejected": "Rejected",
+    "pending_payment_title": "Pending Payment",
+    "pending_payment_subtitle": "Transfer the amount and upload your bank transfer receipt to activate your subscription.",
+    "pending_approval_title": "Under Review",
+    "pending_approval_subtitle": "Your payment receipt has been submitted and is being reviewed by our team. You'll receive a notification once approved.",
+    "bank_instructions": "PAYMENT INSTRUCTIONS",
+    "upload_proof": "Upload Transfer Receipt",
+    "uploading": "Uploading…",
+    "proof_submitted": "Receipt submitted! Awaiting admin review."
   },
   "property_details": {
     "overview": "Overview",
