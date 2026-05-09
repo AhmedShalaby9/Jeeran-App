@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
+import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_snackbar.dart';
 import '../bloc/add_property_bloc.dart';
@@ -80,6 +81,30 @@ class _AddPropertyViewState extends State<_AddPropertyView> {
 
   int _step = 1;
   final _form = AddPropertyForm();
+
+  @override
+  void initState() {
+    super.initState();
+    final cached = AppStorage.userName;
+    if (cached != null && cached.isNotEmpty) _form.agentName = cached;
+    _prefillAgentInfo();
+  }
+
+  Future<void> _prefillAgentInfo() async {
+    final result = await sl<AuthRepository>().getMe();
+    if (!mounted) return;
+    result.fold(
+      (_) {},
+      (user) => setState(() {
+        if ((user.name ?? '').isNotEmpty) _form.agentName = user.name!;
+        if ((user.phone ?? '').isNotEmpty) {
+          _form.agentMobile = user.phone!;
+          _form.agentWhatsapp = user.phone!;
+        }
+        if ((user.email ?? '').isNotEmpty) _form.agentEmail = user.email!;
+      }),
+    );
+  }
 
   // ── Navigation ─────────────────────────────────────────────
 

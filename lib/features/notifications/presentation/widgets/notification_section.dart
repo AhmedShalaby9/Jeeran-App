@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../domain/entities/notification_item.dart';
 import 'notif_helpers.dart';
-import 'notif_item.dart';
 import 'notification_tile.dart';
 
 class NotificationSection extends StatelessWidget {
   final String type;
-  final List<NotifItem> notifications;
+  final List<NotificationItem> notifications;
+  final String lang;
   final bool isExpanded;
   final VoidCallback onToggle;
-  final void Function(NotifItem) onTap;
+  final void Function(NotificationItem) onTap;
 
   const NotificationSection({
     super.key,
     required this.type,
     required this.notifications,
+    required this.lang,
     required this.isExpanded,
     required this.onToggle,
     required this.onTap,
@@ -68,7 +70,13 @@ class NotificationSection extends StatelessWidget {
             ),
           ),
           if (isExpanded) ...[
-            ...notifications.map((n) => NotificationTile(item: n, onTap: () => onTap(n))),
+            ...notifications.map(
+              (n) => NotificationTile(
+                item: n,
+                lang: lang,
+                onTap: () => onTap(n),
+              ),
+            ),
             const SizedBox(height: 8),
           ],
         ],

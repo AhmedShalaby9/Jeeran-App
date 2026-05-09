@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -5,8 +6,7 @@ import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
-  // ignore: avoid_print
-  print('Background message: ${message.messageId} | ${message.notification?.title}');
+  debugPrint('Background message: ${message.messageId}');
 }
 
 class NotificationService {
@@ -14,6 +14,14 @@ class NotificationService {
   static final instance = NotificationService._();
 
   bool _initialized = false;
+
+  // Emits FCM data payload when user taps a notification
+  final _tapController = StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get tapStream => _tapController.stream;
+
+  // Emits when a foreground message arrives (for badge increment)
+  final _foregroundController = StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get foregroundStream => _foregroundController.stream;
 
   Future<void> init() async {
     // 1 — Firebase core
@@ -42,22 +50,19 @@ class NotificationService {
 
     // 4 — Foreground messages
     FirebaseMessaging.onMessage.listen((message) {
-      // ignore: avoid_print
-      print('Foreground notification: ${message.messageId} | ${message.notification?.title}');
+      _foregroundController.add(message.data);
     });
 
     // 5 — Tapped while app was in background
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
-      // ignore: avoid_print
-      print('Notification tapped (background): ${message.messageId} | ${message.notification?.title}');
+      _tapController.add(message.data);
     });
 
     // 6 — Tapped while app was terminated
     try {
       final initial = await FirebaseMessaging.instance.getInitialMessage();
       if (initial != null) {
-        // ignore: avoid_print
-        print('Notification tapped (terminated): ${initial.messageId} | ${initial.notification?.title}');
+        _tapController.add(initial.data);
       }
     } catch (e) {
       debugPrint('getInitialMessage failed: $e');

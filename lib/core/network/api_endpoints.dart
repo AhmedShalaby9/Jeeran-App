@@ -55,4 +55,14 @@
   static const String chatSessions = '/chat/sessions';
   static String chatSessionById(int id) => '/chat/sessions/$id';
   static String chatMessages(int sessionId) => '/chat/sessions/$sessionId/messages';
+
+  // FCM Tokens
+  static const String fcmTokens = '/fcm-tokens';
+  static String fcmToken(String deviceId) => '/fcm-tokens/$deviceId';
+
+  // Notifications
+  static const String notifications = '/notifications';
+  static const String notificationsUnreadCount = '/notifications/unread-count';
+  static String notificationRead(int receiptId) => '/notifications/$receiptId/read';
+  static const String notificationsReadAll = '/notifications/read-all';
 }

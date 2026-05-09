@@ -50,6 +50,11 @@ import '../../features/ai_chat/data/repositories/chat_repository_impl.dart';
 import '../../features/ai_chat/domain/repositories/chat_repository.dart';
 import '../../features/ai_chat/presentation/chat/bloc/chat_bloc.dart';
 import '../../features/ai_chat/presentation/session/bloc/chat_sessions_bloc.dart';
+import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
+import '../../features/notifications/data/repositories/notification_repository_impl.dart';
+import '../../features/notifications/domain/repositories/notification_repository.dart';
+import '../../features/notifications/presentation/bloc/notification_bloc.dart';
+import '../../features/notifications/presentation/bloc/unread_count_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -70,6 +75,8 @@ Future<void> init() async {
   sl.registerFactory(() => SubscriptionBloc(repository: sl()));
   sl.registerLazySingleton(() => ChatSessionsBloc(repository: sl()));
   sl.registerFactory(() => ChatBloc(repository: sl()));
+  sl.registerFactory(() => NotificationBloc(repository: sl()));
+  sl.registerLazySingleton(() => UnreadCountCubit(repository: sl()));
 
   // -- Repositories --------------------------------------
   sl.registerLazySingleton<HomeRepository>(
@@ -106,6 +113,9 @@ Future<void> init() async {
   sl.registerLazySingleton<ChatRepository>(
     () => ChatRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
+  sl.registerLazySingleton<NotificationRepository>(
+    () => NotificationRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
 
   // -- Data sources --------------------------------------
   sl.registerLazySingleton<ProjectRemoteDataSource>(
@@ -140,6 +150,9 @@ sl.registerLazySingleton<HomeLocalDataSource>(
   );
   sl.registerLazySingleton<ChatRemoteDataSource>(
     () => ChatRemoteDataSourceImpl(apiClient: sl()),
+  );
+  sl.registerLazySingleton<NotificationRemoteDataSource>(
+    () => NotificationRemoteDataSourceImpl(apiClient: sl()),
   );
 
 // -- Core ----------------------------------------------

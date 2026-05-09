@@ -1,14 +1,18 @@
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'core/config/app_config.dart';
 import 'core/di/injection_container.dart' as di;
+import 'core/di/injection_container.dart';
 import 'core/observers/app_bloc_observer.dart';
 import 'core/services/notification_service.dart';
 import 'core/storage/app_storage.dart';
 import 'core/utils/app_colors.dart';
 import 'core/utils/app_strings.dart';
+import 'features/notifications/domain/repositories/notification_repository.dart';
 import 'features/splash/presentation/pages/splash_screen.dart';
 
 void main() async {
@@ -21,6 +25,7 @@ void main() async {
   await EasyLocalization.ensureInitialized();
   await di.init();
   Bloc.observer = AppBlocObserver();
+  _registerFcmToken().catchError((e) => debugPrint('FCM registration failed: $e'));
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ar')],
@@ -32,6 +37,34 @@ void main() async {
       child: const JeeranApp(),
     ),
   );
+}
+
+Future<void> _registerFcmToken() async {
+  final token = await NotificationService.instance.getToken();
+  if (token == null) return;
+  // Skip if this exact token was already registered
+  if (AppStorage.lastFcmToken == token) return;
+  String deviceId;
+  String platform;
+  try {
+    final info = DeviceInfoPlugin();
+    if (Platform.isAndroid) {
+      deviceId = (await info.androidInfo).id;
+      platform = 'android';
+    } else {
+      deviceId = (await info.iosInfo).identifierForVendor ?? '';
+      platform = 'ios';
+    }
+  } catch (_) {
+    return;
+  }
+  if (deviceId.isEmpty) return;
+  final result = await sl<NotificationRepository>().registerFcmToken(
+    token: token,
+    deviceId: deviceId,
+    platform: platform,
+  );
+  if (result.isRight()) await AppStorage.saveLastFcmToken(token);
 }
 
 class JeeranApp extends StatelessWidget {

@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/image_paths.dart';
 import '../../../../core/widgets/app_image.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../notifications/presentation/bloc/unread_count_cubit.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../plans/presentation/pages/plans_page.dart';
 import '../../../subscription/presentation/pages/subscription_details_page.dart';
@@ -36,8 +38,6 @@ class _HomeSliverAppBarView extends StatefulWidget {
 }
 
 class _HomeSliverAppBarViewState extends State<_HomeSliverAppBarView> {
-  final int _unreadCount = 0;
-
   @override
   Widget build(BuildContext context) {
     final isSeller = widget.user?.isSeller ?? false;
@@ -97,54 +97,56 @@ class _HomeSliverAppBarViewState extends State<_HomeSliverAppBarView> {
           ),
 
         // ── Notifications bell ────────────────────────────────────
-        GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const NotificationsPage()),
-          ),
-          child: Container(
-            margin: const EdgeInsets.only(left: 4, right: 16),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: AppColors.navButtonBg,
-                  child: const Icon(
-                    Icons.notifications_outlined,
-                    color: AppColors.onBackground,
-                    size: 22,
+        BlocBuilder<UnreadCountCubit, int>(
+          builder: (context, unreadCount) => GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NotificationsPage()),
+            ).then((_) => sl<UnreadCountCubit>().fetch()),
+            child: Container(
+              margin: const EdgeInsets.only(left: 4, right: 16),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColors.navButtonBg,
+                    child: const Icon(
+                      Icons.notifications_outlined,
+                      color: AppColors.onBackground,
+                      size: 22,
+                    ),
                   ),
-                ),
-                if (_unreadCount > 0)
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: AppColors.danger,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 1.5),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 18,
-                        minHeight: 18,
-                      ),
-                      child: Center(
-                        child: Text(
-                          _unreadCount > 99 ? '99+' : '$_unreadCount',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
+                  if (unreadCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppColors.danger,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.5),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Center(
+                          child: Text(
+                            unreadCount > 99 ? '99+' : '$unreadCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

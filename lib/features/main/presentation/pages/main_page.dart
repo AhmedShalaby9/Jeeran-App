@@ -1,7 +1,11 @@
+import 'dart:async';
+import 'dart:io';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../ai_chat/presentation/session/pages/ai_chat_history_page.dart';
@@ -11,6 +15,10 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../home/presentation/pages/home_page.dart';
+import '../../../notifications/domain/repositories/notification_repository.dart';
+import '../../../notifications/presentation/bloc/unread_count_cubit.dart';
+import '../../../notifications/presentation/pages/notifications_page.dart';
+import '../../../projects/presentation/pages/project_details_page.dart';
 import '../../../search/presentation/pages/search_page.dart';
 import '../../../projects/presentation/pages/projects_page.dart';
 import '../../../more/presentation/pages/more_page.dart';
@@ -35,6 +43,8 @@ class _MainPageState extends State<MainPage> {
   late List<Widget> _pages;
   late List<_NavItem> _navItems;
   final _searchResetNotifier = ValueNotifier<bool>(false);
+  StreamSubscription<Map<String, dynamic>>? _fcmTapSub;
+  StreamSubscription<Map<String, dynamic>>? _fcmFgSub;
 
   void _goToProjects() {
     if (_selectedIndex == 2) return;
@@ -93,6 +103,44 @@ class _MainPageState extends State<MainPage> {
     super.initState();
     _buildNav();
     MainPage._tabNotifier.addListener(_onTabSwitch);
+    sl<UnreadCountCubit>().fetch();
+
+    _fcmTapSub = NotificationService.instance.tapStream.listen(_handleFcmTap);
+    _fcmFgSub = NotificationService.instance.foregroundStream.listen((_) {
+      sl<UnreadCountCubit>().increment();
+    });
+  }
+
+  void _handleFcmTap(Map<String, dynamic> data) {
+    if (!mounted) return;
+    final type = data['type'] as String? ?? 'general';
+    final entityId = int.tryParse(data['entity_id'] as String? ?? '');
+
+    switch (type) {
+      case 'project':
+        if (entityId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ProjectDetailsPage.fromId(
+                projectId: entityId,
+                displayName: null,
+              ),
+            ),
+          );
+          return;
+        }
+      case 'subscription':
+        MainPage.switchTab(3);
+        return;
+      default:
+        break;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificationsPage()),
+    );
   }
 
   void _onTabSwitch() {
@@ -118,6 +166,8 @@ class _MainPageState extends State<MainPage> {
   void dispose() {
     MainPage._tabNotifier.removeListener(_onTabSwitch);
     _searchResetNotifier.dispose();
+    _fcmTapSub?.cancel();
+    _fcmFgSub?.cancel();
     super.dispose();
   }
 
@@ -135,6 +185,7 @@ class _MainPageState extends State<MainPage> {
           create: (_) => sl<AuthBloc>()..add(const AuthGetMeEvent()),
         ),
         BlocProvider.value(value: sl<FavoritesBloc>()),
+        BlocProvider.value(value: sl<UnreadCountCubit>()),
       ],
       child: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -177,6 +228,55 @@ class _MainScaffold extends StatelessWidget {
       ),
       floatingActionButton: const _AiChatFab(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+}
+
+// ── Notification bell — drop into any page's AppBar.actions ─────────────────
+
+class NotificationBell extends StatelessWidget {
+  const NotificationBell({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<UnreadCountCubit, int>(
+      builder: (context, count) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined),
+              color: AppColors.onBackground,
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsPage()),
+              ).then((_) => sl<UnreadCountCubit>().fetch()),
+            ),
+            if (count > 0)
+              Positioned(
+                top: 6,
+                right: 6,
+                child: Container(
+                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.danger,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    count > 99 ? '99+' : '$count',
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -231,8 +331,8 @@ class _AiChatFabState extends State<_AiChatFab>
         onPressed: () => Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (_, animation, __) => const AiChatHistoryPage(),
-            transitionsBuilder: (_, animation, __, child) {
+            pageBuilder: (_, animation, _) => const AiChatHistoryPage(),
+            transitionsBuilder: (_, animation, _, child) {
               return SlideTransition(
                 position: Tween<Offset>(
                   begin: const Offset(0, 1),
@@ -348,4 +448,21 @@ class _NavItem {
     required this.activeIcon,
     required this.label,
   });
+}
+
+// ── FCM token unregistration helper (called from logout) ────────────────────
+
+Future<void> unregisterFcmTokenOnLogout() async {
+  try {
+    final info = DeviceInfoPlugin();
+    final String deviceId;
+    if (Platform.isAndroid) {
+      deviceId = (await info.androidInfo).id;
+    } else {
+      deviceId = (await info.iosInfo).identifierForVendor ?? '';
+    }
+    if (deviceId.isNotEmpty) {
+      await sl<NotificationRepository>().unregisterFcmToken(deviceId);
+    }
+  } catch (_) {}
 }

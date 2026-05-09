@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../domain/entities/notification_item.dart';
 import 'notif_helpers.dart';
-import 'notif_item.dart';
 
 class NotificationTile extends StatelessWidget {
-  final NotifItem item;
+  final NotificationItem item;
+  final String lang;
   final VoidCallback onTap;
 
-  const NotificationTile({super.key, required this.item, required this.onTap});
+  const NotificationTile({
+    super.key,
+    required this.item,
+    required this.lang,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     final unread = !item.isRead;
+    final title = item.notification.localTitle(lang);
+    final body = item.notification.localBody(lang);
+
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -21,7 +30,9 @@ class NotificationTile extends StatelessWidget {
           color: unread ? AppColors.primary.withValues(alpha: 0.05) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: unread ? AppColors.primary.withValues(alpha: 0.3) : AppColors.divider,
+            color: unread
+                ? AppColors.primary.withValues(alpha: 0.3)
+                : AppColors.divider,
           ),
         ),
         child: Row(
@@ -39,7 +50,7 @@ class NotificationTile extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
-                    iconForType(item.type),
+                    iconForType(item.notification.type),
                     size: 18,
                     color: unread ? AppColors.primary : AppColors.inkMute,
                   ),
@@ -66,7 +77,7 @@ class NotificationTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.title,
+                    title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -78,7 +89,7 @@ class NotificationTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    item.body,
+                    body,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -89,7 +100,7 @@ class NotificationTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    item.timeAgo,
+                    _formatDate(item.createdAt),
                     style: const TextStyle(fontSize: 11, color: AppColors.inkMute),
                   ),
                 ],
@@ -99,5 +110,21 @@ class NotificationTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatDate(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+      if (diff.inMinutes < 1) return 'Just now';
+      if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+      if (diff.inHours < 24) return '${diff.inHours}h ago';
+      if (diff.inDays == 1) return 'Yesterday';
+      if (diff.inDays < 7) return '${diff.inDays}d ago';
+      return '${dt.day}/${dt.month}/${dt.year}';
+    } catch (_) {
+      return '';
+    }
   }
 }

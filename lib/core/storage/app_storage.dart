@@ -9,6 +9,7 @@ class AppStorage {
   static const String _keyUserName = 'user_name';
   static const String _keyUserType = 'user_type';
   static const String _keyLanguage = 'language';
+  static const String _keyLastFcmToken = 'last_fcm_token';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -79,6 +80,11 @@ class AppStorage {
   }
 
   static bool get isLoggedIn => authToken != null;
+
+  // FCM token registration cache
+  static String? get lastFcmToken => _box.get(_keyLastFcmToken) as String?;
+  static Future<void> saveLastFcmToken(String token) =>
+      _box.put(_keyLastFcmToken, token);
 
   // Language
   static String? get language => _box.get(_keyLanguage) as String?;

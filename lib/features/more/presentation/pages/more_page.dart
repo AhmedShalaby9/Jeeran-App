@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import '../../../main/presentation/pages/main_page.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -16,7 +18,6 @@ import 'contact_us_page.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../../properties/presentation/pages/my_properties_page.dart';
-import '../../../main/presentation/pages/main_page.dart';
 import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
 import '../../../seller_request/presentation/bloc/seller_request_state.dart';
 import '../../../seller_request/presentation/widgets/seller_request_tile.dart';
@@ -471,6 +472,27 @@ class _MoreView extends StatelessWidget {
               ),
 
             const SizedBox(height: 24),
+
+            // ── App version ──────────────────────────────────────
+            FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (_, snap) {
+                final version = snap.data?.version ?? '';
+                if (version.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 24),
+                  child: Text(
+                    'Version $version',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w300,
+                      color: AppColors.grey,
+                    ),
+                  ),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -491,6 +513,7 @@ class _MoreView extends StatelessWidget {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
+              unregisterFcmTokenOnLogout().ignore();
               AppStorage.clearAuth();
               Navigator.pushAndRemoveUntil(
                 context,
