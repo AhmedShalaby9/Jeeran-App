@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'chat_references.dart';
 
 class ChatMessage extends Equatable {
   final int id;
@@ -6,6 +7,7 @@ class ChatMessage extends Equatable {
   final String content;
   final String role; // 'user' | 'assistant'
   final DateTime createdAt;
+  final ChatReferences? references;
 
   const ChatMessage({
     required this.id,
@@ -13,10 +15,11 @@ class ChatMessage extends Equatable {
     required this.content,
     required this.role,
     required this.createdAt,
+    this.references,
   });
 
   bool get isUser => role == 'user';
 
   @override
-  List<Object?> get props => [id, sessionId, content, role, createdAt];
+  List<Object?> get props => [id, sessionId, content, role, createdAt, references];
 }

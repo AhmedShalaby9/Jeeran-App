@@ -2,6 +2,7 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../models/chat_message_model.dart';
+import '../models/chat_references_model.dart';
 import '../models/chat_session_model.dart';
 
 abstract class ChatRemoteDataSource {
@@ -119,10 +120,14 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       if (response.statusCode == 200 || response.statusCode == 201) {
         final body = response.data as Map<String, dynamic>;
         final data = body['data'] as Map<String, dynamic>;
-        // Shape: { "reply": "...", "usage": {...}, "session_id": N }
+        final rawRefs = data['references'];
+        final references = rawRefs is Map<String, dynamic>
+            ? ChatReferencesModel.fromJson(rawRefs)
+            : null;
         return ChatMessageModel.fromReply(
           reply: data['reply'] as String,
           sessionId: data['session_id'] as int? ?? sessionId,
+          references: references,
         );
       }
       throw ServerException();

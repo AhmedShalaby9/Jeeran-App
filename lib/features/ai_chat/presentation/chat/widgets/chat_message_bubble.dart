@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../../../core/utils/app_colors.dart';
 import '../../../domain/entities/chat_message.dart';
+import 'chat_reference_cards.dart';
 
 class ChatMessageBubble extends StatelessWidget {
   final ChatMessage message;
@@ -73,6 +74,14 @@ class ChatMessageBubble extends StatelessWidget {
                   style: const TextStyle(
                       color: AppColors.grey, fontSize: 11),
                 ),
+                if (!isUser &&
+                    message.references != null &&
+                    !message.references!.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: ChatReferenceCards(
+                        references: message.references!),
+                  ),
               ],
             ),
           ),

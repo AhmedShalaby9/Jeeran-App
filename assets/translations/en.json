@@ -334,7 +334,10 @@
     "minutes_ago": "{count}m ago",
     "hours_ago": "{count}h ago",
     "yesterday": "Yesterday",
-    "days_ago": "{count}d ago"
+    "days_ago": "{count}d ago",
+    "references_properties": "Properties",
+    "references_projects": "Projects",
+    "references_news": "News"
   },
   "profile": {
     "title": "My Profile",

@@ -334,7 +334,10 @@
     "minutes_ago": "منذ {count} د",
     "hours_ago": "منذ {count} س",
     "yesterday": "أمس",
-    "days_ago": "منذ {count} أيام"
+    "days_ago": "منذ {count} أيام",
+    "references_properties": "العقارات",
+    "references_projects": "المشاريع",
+    "references_news": "الأخبار"
   },
   "profile": {
     "title": "ملفي الشخصي",
