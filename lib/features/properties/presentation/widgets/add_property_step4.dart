@@ -146,6 +146,11 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
 
         // ── Photo grid ─────────────────────────────────────────────
         WizardLabel('Photos ($count/$_maxPhotos)', required: true),
+        const Text(
+          'The first photo will be used as the cover image.',
+          style: TextStyle(fontSize: 12, color: AppColors.inkSub),
+        ),
+        const SizedBox(height: 8),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
