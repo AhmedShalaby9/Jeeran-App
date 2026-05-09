@@ -25,4 +25,15 @@ class ProjectRepositoryImpl implements ProjectRepository {
       return Left(ServerFailure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, Project>> getProjectById(int id) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final project = await remoteDataSource.getProjectById(id);
+      return Right(project);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 }

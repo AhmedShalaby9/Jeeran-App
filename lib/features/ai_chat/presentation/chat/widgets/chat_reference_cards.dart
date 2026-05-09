@@ -117,7 +117,10 @@ class _ProjectChip extends StatelessWidget {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => ProjectDetailsPage(project: project),
+          builder: (_) => ProjectDetailsPage.fromId(
+            projectId: project.id,
+            displayName: project.name,
+          ),
         ),
       ),
       child: Container(
@@ -125,14 +128,16 @@ class _ProjectChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.primary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: AppColors.primary.withValues(alpha: 0.2),
-          ),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.business_rounded, size: 14, color: AppColors.primary),
+            const Icon(
+              Icons.business_rounded,
+              size: 14,
+              color: AppColors.primary,
+            ),
             const SizedBox(width: 6),
             Text(
               project.name,
@@ -159,10 +164,12 @@ class _NewsRows extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: newsRefs
-          .map((ref) => Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: _NewsRow(newsRef: ref),
-              ))
+          .map(
+            (ref) => Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: _NewsRow(newsRef: ref),
+            ),
+          )
           .toList(),
     );
   }

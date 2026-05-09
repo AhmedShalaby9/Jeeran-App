@@ -5,6 +5,7 @@ import '../models/project_model.dart';
 
 abstract class ProjectRemoteDataSource {
   Future<List<ProjectModel>> getProjects();
+  Future<ProjectModel> getProjectById(int id);
 }
 
 class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
@@ -23,6 +24,22 @@ class ProjectRemoteDataSourceImpl implements ProjectRemoteDataSource {
             .whereType<Map<String, dynamic>>()
             .map(ProjectModel.fromJson)
             .toList();
+      }
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<ProjectModel> getProjectById(int id) async {
+    try {
+      final response = await apiClient.get(ApiEndpoints.projectById(id));
+      if (response.statusCode == 200) {
+        final body = response.data as Map<String, dynamic>;
+        return ProjectModel.fromJson(body['data'] as Map<String, dynamic>);
       }
       throw ServerException();
     } on ServerException {

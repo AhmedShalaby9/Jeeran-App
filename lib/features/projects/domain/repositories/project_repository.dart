@@ -4,4 +4,5 @@ import '../entities/project.dart';
 
 abstract class ProjectRepository {
   Future<Either<Failure, List<Project>>> getProjects();
+  Future<Either<Failure, Project>> getProjectById(int id);
 }

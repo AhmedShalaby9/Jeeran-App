@@ -32,6 +32,19 @@ class AddPropertyBloc extends Bloc<AddPropertyEvent, AddPropertyState> {
       uploadedUrls.add(url!);
     }
 
+    // ── 1b. Upload video if selected ──────────────────────────────────────────
+    if (form.videoFile != null) {
+      emit(const AddPropertySubmitting());
+      final videoResult = await repository.uploadImage(form.videoFile!.path);
+      String? videoUrl;
+      videoResult.fold((f) => videoUrl = null, (u) => videoUrl = u);
+      if (videoUrl == null) {
+        emit(AddPropertyFailure('Failed to upload video. Please try again.'));
+        return;
+      }
+      form.videoUrl = videoUrl;
+    }
+
     // ── 2. Create property ────────────────────────────────────────────────────
     emit(const AddPropertySubmitting());
     final body = form.toBody(uploadedUrls);

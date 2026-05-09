@@ -19,6 +19,7 @@
 
   // Projects
   static const String projects = '/projects';
+  static String projectById(int id) => '/projects/$id';
 
   // Properties
   static const String properties = '/properties';

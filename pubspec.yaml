@@ -57,6 +57,7 @@ dependencies:
   font_awesome_flutter: ^10.7.0
   package_info_plus: ^8.0.2
   flutter_html: ^3.0.0-beta.2
+  translator: ^1.0.0
 
 dependency_overrides:
   connectivity_plus: ">=5.0.0 <7.0.0"

@@ -26,6 +26,7 @@ class AddPropertyForm {
   List<XFile> selectedImages = [];
 
   String? videoUrl;
+  XFile? videoFile;
 
   String agentName = '';
   String agentMobile = '';
@@ -177,6 +178,7 @@ class WizardTextArea extends StatelessWidget {
   final int rows;
   final ValueChanged<String> onChanged;
   final TextDirection? textDirection;
+  final TextEditingController? controller;
 
   const WizardTextArea({
     super.key,
@@ -185,12 +187,14 @@ class WizardTextArea extends StatelessWidget {
     required this.onChanged,
     this.rows = 5,
     this.textDirection,
+    this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      initialValue: value,
+      controller: controller,
+      initialValue: controller != null ? null : value,
       onChanged: onChanged,
       maxLines: rows,
       textDirection: textDirection,
