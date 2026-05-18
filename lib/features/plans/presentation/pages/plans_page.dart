@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_snackbar.dart';
@@ -55,18 +56,36 @@ class _PlansPageState extends State<PlansPage> {
       child: BlocListener<SubscriptionBloc, SubscriptionState>(
         listener: (context, state) async {
           if (state is SubscriptionSuccess) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const SubscriptionDetailsPage()),
-            );
+            final paymentUrl = state.subscription.paymentUrl;
+            if (paymentUrl != null) {
+              final uri = Uri.parse(paymentUrl);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            }
+            if (context.mounted) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const SubscriptionDetailsPage()),
+              );
+            }
           } else if (state is UpgradeSubscriptionSuccess) {
-            AppSnackbar.show(
-              context,
-              message: 'subscription.upgrade_success'.tr(),
-              icon: Icons.check_circle_outline_rounded,
-              iconColor: AppColors.success,
-            );
-            Navigator.pop(context, true);
+            final paymentUrl = state.subscription.paymentUrl;
+            if (paymentUrl != null) {
+              final uri = Uri.parse(paymentUrl);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              }
+            }
+            if (context.mounted) {
+              AppSnackbar.show(
+                context,
+                message: 'subscription.upgrade_success'.tr(),
+                icon: Icons.check_circle_outline_rounded,
+                iconColor: AppColors.success,
+              );
+              Navigator.pop(context, true);
+            }
           } else if (state is SubscriptionError) {
             AppSnackbar.show(
               context,

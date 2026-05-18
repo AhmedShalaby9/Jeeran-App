@@ -167,14 +167,12 @@ class BillingRow extends StatelessWidget {
     final dateStr = dt != null ? '${months[dt.month - 1]} ${dt.day}, ${dt.year}' : '—';
     final status = subscription.status;
     final (statusLabel, statusColor) = switch (status) {
-      'active'           => ('Active',           AppColors.success),
-      'upgraded'         => ('Upgraded',         AppColors.primary),
-      'cancelled'        => ('Cancelled',        AppColors.danger),
-      'rejected'         => ('Rejected',         AppColors.danger),
-      'expired'          => ('Expired',          AppColors.inkMute),
-      'pending_payment'  => ('Pending Payment',  AppColors.inkMute),
-      'pending_approval' => ('Under Review',     AppColors.primary),
-      _                  => (status,             AppColors.inkMute),
+      'active'          => ('Active',           AppColors.success),
+      'upgraded'        => ('Upgraded',         AppColors.primary),
+      'cancelled'       => ('Cancelled',        AppColors.danger),
+      'expired'         => ('Expired',          AppColors.inkMute),
+      'pending_payment' => ('Pending Payment',  AppColors.inkMute),
+      _                 => (status,             AppColors.inkMute),
     };
 
     return Container(

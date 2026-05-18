@@ -22,7 +22,6 @@ class SubscriptionHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (subscription.isPendingPayment) return _PendingPaymentCard(subscription: subscription);
-    if (subscription.isPendingApproval) return _PendingApprovalCard(subscription: subscription);
     return _ActiveCard(subscription: subscription, formatDate: _formatDate);
   }
 }
@@ -113,102 +112,6 @@ class _PendingPaymentCard extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 'subscription.pending_payment_subtitle'.tr(),
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.white.withValues(alpha: 0.85),
-                  height: 1.4,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PendingApprovalCard extends StatelessWidget {
-  final UserSubscription subscription;
-  const _PendingApprovalCard({required this.subscription});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF0369A1), Color(0xFF0EA5E9)],
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0369A1).withValues(alpha: 0.3),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.hardEdge,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(99),
-                ),
-                child: const Text(
-                  'Under Review',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                '${subscription.package.name} plan',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white.withValues(alpha: 0.85),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    subscription.package.price.replaceAll('.00', '').replaceAll(RegExp(r'\.0$'), ''),
-                    style: const TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: -1.2,
-                      height: 1,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '${'currency'.tr()} / month',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'subscription.pending_approval_subtitle'.tr(),
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.white.withValues(alpha: 0.85),

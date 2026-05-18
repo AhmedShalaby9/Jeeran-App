@@ -69,21 +69,4 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
       return Left(ServerFailure(e.message));
     }
   }
-
-  @override
-  Future<Either<Failure, UserSubscription>> submitPaymentProof({
-    required int subscriptionId,
-    required String filePath,
-  }) async {
-    if (!await networkInfo.isConnected) return Left(NetworkFailure());
-    try {
-      final result = await remoteDataSource.submitPaymentProof(
-        subscriptionId: subscriptionId,
-        filePath: filePath,
-      );
-      return Right(result);
-    } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
-    }
-  }
 }

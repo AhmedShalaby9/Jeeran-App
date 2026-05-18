@@ -65,19 +65,3 @@ class MySubscriptionError extends SubscriptionState {
   @override
   List<Object?> get props => [message];
 }
-
-class PaymentProofLoading extends SubscriptionState {}
-
-class PaymentProofSuccess extends SubscriptionState {
-  final UserSubscription subscription;
-  const PaymentProofSuccess(this.subscription);
-  @override
-  List<Object?> get props => [subscription];
-}
-
-class PaymentProofError extends SubscriptionState {
-  final String message;
-  const PaymentProofError(this.message);
-  @override
-  List<Object?> get props => [message];
-}

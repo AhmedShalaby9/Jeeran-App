@@ -9,10 +9,6 @@ abstract class SubscriptionRemoteDataSource {
   Future<UserSubscriptionModel> upgradeSubscription({required int packageId});
   Future<void> cancelSubscription();
   Future<List<UserSubscriptionModel>> getSubscriptionHistory();
-  Future<UserSubscriptionModel> submitPaymentProof({
-    required int subscriptionId,
-    required String filePath,
-  });
 }
 
 class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
@@ -96,30 +92,6 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
   Future<UserSubscriptionModel> getMySubscription() async {
     try {
       final response = await apiClient.get(ApiEndpoints.mySubscription);
-      if (response.statusCode == 200) {
-        return UserSubscriptionModel.fromJson(
-          response.data['data'] as Map<String, dynamic>,
-        );
-      }
-      throw ServerException();
-    } on ServerException {
-      rethrow;
-    } catch (_) {
-      throw ServerException();
-    }
-  }
-
-  @override
-  Future<UserSubscriptionModel> submitPaymentProof({
-    required int subscriptionId,
-    required String filePath,
-  }) async {
-    try {
-      final response = await apiClient.postMultipart(
-        ApiEndpoints.subscriptionPaymentProof(subscriptionId),
-        filePath: filePath,
-        fileField: 'file',
-      );
       if (response.statusCode == 200) {
         return UserSubscriptionModel.fromJson(
           response.data['data'] as Map<String, dynamic>,

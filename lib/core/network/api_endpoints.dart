@@ -43,7 +43,6 @@
   static const String upgradeSubscription = '/subscriptions/upgrade';
   static const String cancelSubscription = '/subscriptions/cancel';
   static const String subscriptionHistory = '/subscriptions/history';
-  static String subscriptionPaymentProof(int id) => '/subscriptions/$id/payment-proof';
 
   // Seller Request
   static const String sellerRequests = '/seller-requests';

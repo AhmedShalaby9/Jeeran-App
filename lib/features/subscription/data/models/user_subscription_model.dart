@@ -13,10 +13,8 @@ class UserSubscriptionModel extends UserSubscription {
     required super.remainingListings,
     required super.availableListings,
     required super.consumedListings,
-    super.isPaid,
-    super.paymentProofUrl,
-    super.reviewedBy,
-    super.reviewedAt,
+    super.paymentUrl,
+    super.paymentOrderId,
   });
 
   factory UserSubscriptionModel.fromJson(Map<String, dynamic> json) {
@@ -33,10 +31,8 @@ class UserSubscriptionModel extends UserSubscription {
       remainingListings: json['remaining_listings'] as int? ?? 0,
       availableListings: availableListings,
       consumedListings: consumedListings,
-      isPaid: json['is_paid'] as bool? ?? false,
-      paymentProofUrl: json['payment_proof_url'] as String?,
-      reviewedBy: json['reviewed_by'] as int?,
-      reviewedAt: json['reviewed_at'] as String?,
+      paymentUrl: json['payment_url'] as String?,
+      paymentOrderId: json['payment_order_id'] as String?,
     );
   }
 }
