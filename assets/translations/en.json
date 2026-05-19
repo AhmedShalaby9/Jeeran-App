@@ -200,6 +200,7 @@
     "all": "All",
     "approved": "Approved",
     "pending": "Pending",
+    "featured": "Featured",
     "empty_title": "No properties yet",
     "empty_subtitle": "Your listed properties will appear here.",
     "retry": "Retry"
@@ -211,6 +212,7 @@
     "plan": "PLAN",
     "tier": "Tier",
     "monthly_listings": "Monthly listings",
+    "featured_listings": "Featured listings",
     "next_renewal": "Next renewal",
     "add_ons": "ADD-ONS",
     "add": "Add",

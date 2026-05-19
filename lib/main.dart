@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'core/config/app_config.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/di/injection_container.dart';
+import 'core/navigation/app_navigator.dart';
 import 'core/observers/app_bloc_observer.dart';
 import 'core/services/notification_service.dart';
 import 'core/storage/app_storage.dart';
@@ -75,6 +76,7 @@ class JeeranApp extends StatelessWidget {
     return MaterialApp(
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
+      navigatorKey: appNavigatorKey,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,

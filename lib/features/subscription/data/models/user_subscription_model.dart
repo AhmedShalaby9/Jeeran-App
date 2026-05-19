@@ -23,6 +23,8 @@ class UserSubscriptionModel extends UserSubscription {
   factory UserSubscriptionModel.fromJson(Map<String, dynamic> json) {
     final availableListings = json['available_listings'] as int? ?? 0;
     final consumedListings = json['consumed_listings'] as int? ?? 0;
+    final availableFeatured = json['available_featured'] as int? ?? 0;
+    final consumedFeatured = json['consumed_featured'] as int? ?? 0;
     return UserSubscriptionModel(
       id: json['id'] as int,
       userId: json['user_id'] as int,
@@ -34,9 +36,10 @@ class UserSubscriptionModel extends UserSubscription {
       remainingListings: json['remaining_listings'] as int? ?? 0,
       availableListings: availableListings,
       consumedListings: consumedListings,
-      remainingFeatured: json['remaining_featured'] as int? ?? 0,
-      availableFeatured: json['available_featured'] as int? ?? 0,
-      consumedFeatured: json['consumed_featured'] as int? ?? 0,
+      // Compute client-side — server's remaining_featured field can be stale
+      remainingFeatured: (availableFeatured - consumedFeatured).clamp(0, availableFeatured),
+      availableFeatured: availableFeatured,
+      consumedFeatured: consumedFeatured,
       paymentUrl: json['payment_url'] as String?,
       paymentOrderId: json['payment_order_id'] as String?,
     );
