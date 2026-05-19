@@ -18,6 +18,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   late List<VideoPlayerController> _videoControllers;
   late List<Future<void>> _initializeVideoFutures;
+  final List<bool> _videoInitialized = [];
 
   final List<_OnboardingPageData> _pages = [
     _OnboardingPageData(
@@ -54,15 +55,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return VideoPlayerController.networkUrl(Uri.parse(page.videoUrl));
     }).toList();
 
-    _initializeVideoFutures = _videoControllers.map((controller) {
-      return controller.initialize().then((_) {
-        controller.setLooping(true);
-        controller.setVolume(0);
-      });
-    }).toList();
+    _videoInitialized.addAll(List.filled(_pages.length, false));
+
+    _initializeVideoFutures = List.generate(_pages.length, (i) {
+      final controller = _videoControllers[i];
+      return controller
+          .initialize()
+          .timeout(const Duration(seconds: 10))
+          .then((_) {
+            controller.setLooping(true);
+            controller.setVolume(0);
+            if (mounted) setState(() => _videoInitialized[i] = true);
+          })
+          .catchError((_) {
+            // Video failed to load — fallback will be shown by FutureBuilder
+          });
+    });
 
     _initializeVideoFutures[0].then((_) {
-      if (mounted) _videoControllers[0].play();
+      if (mounted && _videoInitialized[0]) _videoControllers[0].play();
     });
   }
 
@@ -80,7 +91,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       for (final controller in _videoControllers) {
         controller.pause();
       }
-      _videoControllers[page].play();
+      if (_videoInitialized[page]) _videoControllers[page].play();
       _currentPage = page;
     });
   }
@@ -221,7 +232,9 @@ class _OnboardingPage extends StatelessWidget {
         FutureBuilder(
           future: initializeFuture,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.connectionState == ConnectionState.done &&
+                !snapshot.hasError &&
+                videoController.value.isInitialized) {
               return FittedBox(
                 fit: BoxFit.cover,
                 child: SizedBox(
@@ -230,6 +243,12 @@ class _OnboardingPage extends StatelessWidget {
                   child: VideoPlayer(videoController),
                 ),
               );
+            }
+            if (snapshot.hasError ||
+                (snapshot.connectionState == ConnectionState.done &&
+                    !videoController.value.isInitialized)) {
+              // Video failed or timed out — show dark background so the screen is usable
+              return const ColoredBox(color: Colors.black87);
             }
             return const ColoredBox(
               color: Colors.black,

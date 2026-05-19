@@ -105,46 +105,48 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _navigateToNextScreen() async {
-    if (_profileRefresh != null) {
-      await _profileRefresh!.timeout(
-        const Duration(seconds: 4),
-        onTimeout: () {},
-      );
-    }
+    try {
+      // Wait for both background requests concurrently, capped at 3 seconds total.
+      final futures = <Future>[
+        if (_profileRefresh != null) _profileRefresh!,
+        if (_settingsFetch != null) _settingsFetch!,
+      ];
+      if (futures.isNotEmpty) {
+        await Future.wait(futures).timeout(
+          const Duration(seconds: 3),
+          onTimeout: () => [],
+        );
+      }
 
-    // Wait for settings (capped at 4 s) before deciding whether to force-update.
-    if (_settingsFetch != null) {
-      await _settingsFetch!.timeout(
-        const Duration(seconds: 4),
-        onTimeout: () {},
-      );
+      if (!mounted) return;
+
+      // --- Force-update check ---
+      final settings = AppSettingsService.instance.settings;
+      if (settings != null) {
+        final minVersion = Platform.isIOS
+            ? settings.minVersionIos
+            : settings.minVersionAndroid;
+        final storeUrl = Platform.isIOS
+            ? settings.appStoreUrl
+            : settings.googlePlayUrl;
+
+        if (minVersion != null && minVersion.isNotEmpty) {
+          final info = await PackageInfo.fromPlatform();
+          final needsUpdate = AppUpdateService.isUpdateRequired(
+            minVersion,
+            info.version,
+          );
+          if (needsUpdate && mounted) {
+            _showForceUpdateSheet(storeUrl);
+            return;
+          }
+        }
+      }
+    } catch (_) {
+      // Any unexpected error must not block navigation.
     }
 
     if (!mounted) return;
-
-    // --- Force-update check ---
-    final settings = AppSettingsService.instance.settings;
-    if (settings != null) {
-      final minVersion = Platform.isIOS
-          ? settings.minVersionIos
-          : settings.minVersionAndroid;
-      final storeUrl = Platform.isIOS
-          ? settings.appStoreUrl
-          : settings.googlePlayUrl;
-
-      if (minVersion != null && minVersion.isNotEmpty) {
-        final info = await PackageInfo.fromPlatform();
-        final needsUpdate = AppUpdateService.isUpdateRequired(
-          minVersion,
-          info.version,
-        );
-        if (needsUpdate && mounted) {
-          _showForceUpdateSheet(storeUrl);
-          return;
-        }
-      }
-    }
-
     await _fadeController.forward();
     if (!mounted) return;
 
@@ -152,10 +154,11 @@ class _SplashScreenState extends State<SplashScreen>
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) {
-          if (AppStorage.isFirstTimeUser) return const OnboardingScreen();
+          // if (AppStorage.isFirstTimeUser) return const OnboardingScreen();
           if (!AppStorage.isLoggedIn) return const LoginPage();
           return const MainPage();
         },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
         transitionDuration: Duration.zero,
       ),
     );
