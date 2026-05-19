@@ -1,33 +1,20 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../properties/domain/repositories/property_repository.dart';
 import '../../domain/repositories/ai_ads_repository.dart';
 import 'ai_ad_detail_page.dart';
 
-/// Page for creating a new AI ad generation.
-///
-/// Flow:
-///   1. User enters a caption.
-///   2. Source image URLs are provided (upload beforehand).
-///   3. POST /ai-ads/generate → returns { id, payment_url }.
-///   4. App opens payment_url in external browser.
-///   5. On return, user is taken to the detail page to poll for results.
 class AiAdGeneratePage extends StatefulWidget {
-  /// Pre-filled source image URLs (e.g. uploaded from the property form).
-  final List<String> sourceImages;
+  const AiAdGeneratePage({super.key});
 
-  const AiAdGeneratePage({super.key, this.sourceImages = const []});
-
-  static Future<void> push(
-    BuildContext context, {
-    List<String> sourceImages = const [],
-  }) {
+  static Future<void> push(BuildContext context) {
     return Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => AiAdGeneratePage(sourceImages: sourceImages),
-      ),
+      MaterialPageRoute(builder: (_) => const AiAdGeneratePage()),
     );
   }
 
@@ -38,30 +25,31 @@ class AiAdGeneratePage extends StatefulWidget {
 class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
   final _captionCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _picker = ImagePicker();
+
   bool _isLoading = false;
   String? _error;
-
-  // Image URLs entered manually (or injected from parent).
-  late final List<String> _imageUrls;
-  final _imageUrlCtrl = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _imageUrls = List.of(widget.sourceImages);
-  }
+  XFile? _pickedImage;
 
   @override
   void dispose() {
     _captionCtrl.dispose();
-    _imageUrlCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage() async {
+    final file = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+    if (file == null) return;
+    setState(() => _pickedImage = file);
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_imageUrls.isEmpty) {
-      setState(() => _error = 'Add at least one source image URL.');
+    if (_pickedImage == null) {
+      setState(() => _error = 'Please add a source image.');
       return;
     }
 
@@ -70,9 +58,24 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
       _error = null;
     });
 
+    // Upload image first.
+    final uploadResult =
+        await sl<PropertyRepository>().uploadImage(_pickedImage!.path);
+    String? imageUrl;
+    uploadResult.fold((f) => imageUrl = null, (url) => imageUrl = url);
+
+    if (!mounted) return;
+    if (imageUrl == null) {
+      setState(() {
+        _isLoading = false;
+        _error = 'Failed to upload image. Please try again.';
+      });
+      return;
+    }
+
     final result = await sl<AiAdsRepository>().generate(
       caption: _captionCtrl.text.trim(),
-      sourceImages: _imageUrls,
+      sourceImages: [imageUrl!],
     );
 
     if (!mounted) return;
@@ -101,7 +104,6 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
         if (!mounted) return;
 
         if (adId != null) {
-          // Replace this page with the detail/polling page.
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -113,15 +115,6 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
         }
       },
     );
-  }
-
-  void _addImageUrl() {
-    final url = _imageUrlCtrl.text.trim();
-    if (url.isEmpty) return;
-    setState(() {
-      _imageUrls.add(url);
-      _imageUrlCtrl.clear();
-    });
   }
 
   @override
@@ -149,9 +142,9 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Our AI will generate a professional ad image based on your property photos and caption.',
-                      style:
-                          TextStyle(fontSize: 13, color: AppColors.onBackground),
+                      'Our AI will generate a professional ad image based on your property photo and caption.',
+                      style: TextStyle(
+                          fontSize: 13, color: AppColors.onBackground),
                     ),
                   ),
                 ],
@@ -193,9 +186,9 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
 
             const SizedBox(height: 24),
 
-            // Source Images
+            // Source Image
             const Text(
-              'Source Image URLs',
+              'Source Image',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -204,62 +197,28 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
             ),
             const SizedBox(height: 4),
             const Text(
-              'Paste the URL of an uploaded property image.',
+              'Upload one property photo for AI to use as reference.',
               style: TextStyle(fontSize: 12, color: AppColors.inkSub),
             ),
             const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _imageUrlCtrl,
-                    keyboardType: TextInputType.url,
-                    decoration: InputDecoration(
-                      hintText: 'https://...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                            color: AppColors.grey.withValues(alpha: 0.3)),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide:
-                            const BorderSide(color: AppColors.primary),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 10),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: _addImageUrl,
-                  icon: const Icon(Icons.add_circle, color: AppColors.primary),
-                  iconSize: 32,
-                ),
-              ],
-            ),
-            if (_imageUrls.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _imageUrls.asMap().entries.map((entry) {
-                  return Chip(
-                    label: Text(
-                      'Image ${entry.key + 1}',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    deleteIcon: const Icon(Icons.close, size: 16),
-                    onDeleted: () =>
-                        setState(() => _imageUrls.removeAt(entry.key)),
-                    backgroundColor:
-                        AppColors.primary.withValues(alpha: 0.08),
-                    deleteIconColor: AppColors.inkSub,
-                  );
-                }).toList(),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 1,
               ),
-            ],
+              itemCount: _pickedImage == null ? 1 : 2,
+              itemBuilder: (_, i) {
+                if (i == 0) return _AddPhotoTile(onTap: _pickImage);
+                return _PhotoTile(
+                  filePath: _pickedImage!.path,
+                  onRemove: () => setState(() => _pickedImage = null),
+                );
+              },
+            ),
 
             if (_error != null) ...[
               const SizedBox(height: 16),
@@ -271,7 +230,8 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
                 ),
                 child: Text(
                   _error!,
-                  style: const TextStyle(color: AppColors.danger, fontSize: 13),
+                  style:
+                      const TextStyle(color: AppColors.danger, fontSize: 13),
                 ),
               ),
             ],
@@ -321,4 +281,83 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
       ),
     );
   }
+}
+
+// ── Photo tiles ───────────────────────────────────────────────────
+
+class _AddPhotoTile extends StatelessWidget {
+  final VoidCallback onTap;
+  const _AddPhotoTile({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.add_a_photo_rounded,
+                size: 24,
+                color: AppColors.primary.withValues(alpha: 0.7),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Add',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class _PhotoTile extends StatelessWidget {
+  final String filePath;
+  final VoidCallback onRemove;
+
+  const _PhotoTile({required this.filePath, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) => Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.file(
+              File(filePath),
+              fit: BoxFit.cover,
+            ),
+          ),
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              onTap: onRemove,
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: const BoxDecoration(
+                  color: Color(0xCC000000),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close_rounded,
+                    size: 13, color: Colors.white),
+              ),
+            ),
+          ),
+        ],
+      );
 }

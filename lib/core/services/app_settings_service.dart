@@ -10,6 +10,8 @@ class AppSettings {
   final String? termsAr;
   final String? aboutUsEn;
   final String? aboutUsAr;
+  final String? adGenerationPrice;
+  final int? adGenerationTrials;
 
   const AppSettings({
     this.minVersionIos,
@@ -20,6 +22,8 @@ class AppSettings {
     this.termsAr,
     this.aboutUsEn,
     this.aboutUsAr,
+    this.adGenerationPrice,
+    this.adGenerationTrials,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -31,6 +35,8 @@ class AppSettings {
         termsAr: json['terms_ar'] as String?,
         aboutUsEn: json['about_us_en'] as String?,
         aboutUsAr: json['about_us_ar'] as String?,
+        adGenerationPrice: json['ad_generation_price'] as String?,
+        adGenerationTrials: json['ad_generation_trials'] as int?,
       );
 }
 
