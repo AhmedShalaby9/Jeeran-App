@@ -5,11 +5,13 @@ import 'add_property_form.dart';
 class AddPropertyStep5 extends StatefulWidget {
   final AddPropertyForm form;
   final VoidCallback onChanged;
+  final int remainingFeatured;
 
   const AddPropertyStep5({
     super.key,
     required this.form,
     required this.onChanged,
+    this.remainingFeatured = 0,
   });
 
   @override
@@ -80,9 +82,103 @@ class _AddPropertyStep5State extends State<AddPropertyStep5> {
         ),
         const SizedBox(height: 28),
 
+        // ── Featured toggle ───────────────────────────────────────
+        _FeaturedToggleCard(
+          form: form,
+          remainingFeatured: widget.remainingFeatured,
+          onChanged: widget.onChanged,
+        ),
+        const SizedBox(height: 16),
+
         // ── Summary card ──────────────────────────────────────────
         _SummaryCard(form: form),
       ],
+    );
+  }
+}
+
+// ── Featured toggle card ──────────────────────────────────────
+
+class _FeaturedToggleCard extends StatefulWidget {
+  final AddPropertyForm form;
+  final int remainingFeatured;
+  final VoidCallback onChanged;
+
+  const _FeaturedToggleCard({
+    required this.form,
+    required this.remainingFeatured,
+    required this.onChanged,
+  });
+
+  @override
+  State<_FeaturedToggleCard> createState() => _FeaturedToggleCardState();
+}
+
+class _FeaturedToggleCardState extends State<_FeaturedToggleCard> {
+  static const _amber = Color(0xFFF59E0B);
+
+  @override
+  Widget build(BuildContext context) {
+    final canToggleOn = widget.remainingFeatured > 0;
+    final isEnabled = canToggleOn || widget.form.isFeatured;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: widget.form.isFeatured
+            ? const Color(0xFFFFFBEB)
+            : const Color(0xFFF5F6F8),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: widget.form.isFeatured ? _amber : AppColors.hairline,
+          width: widget.form.isFeatured ? 1.5 : 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.star_rounded,
+            color: widget.form.isFeatured ? _amber : AppColors.inkMute,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Feature this listing',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isEnabled ? AppColors.ink : AppColors.inkMute,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  canToggleOn
+                      ? '${widget.remainingFeatured} featured slot${widget.remainingFeatured == 1 ? '' : 's'} remaining'
+                      : 'No featured slots available',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isEnabled ? AppColors.inkSub : AppColors.inkMute,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: widget.form.isFeatured,
+            onChanged: isEnabled
+                ? (val) {
+                    setState(() => widget.form.isFeatured = val);
+                    widget.onChanged();
+                  }
+                : null,
+            activeColor: _amber,
+          ),
+        ],
+      ),
     );
   }
 }

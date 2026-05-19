@@ -12,6 +12,9 @@ class UserSubscription extends Equatable {
   final int remainingListings;
   final int availableListings;
   final int consumedListings;
+  final int remainingFeatured;
+  final int availableFeatured;
+  final int consumedFeatured;
   final String? paymentUrl;
   final String? paymentOrderId;
 
@@ -26,12 +29,16 @@ class UserSubscription extends Equatable {
     required this.remainingListings,
     required this.availableListings,
     required this.consumedListings,
+    this.remainingFeatured = 0,
+    this.availableFeatured = 0,
+    this.consumedFeatured = 0,
     this.paymentUrl,
     this.paymentOrderId,
   });
 
   bool get isActive => status == 'active';
   bool get isPendingPayment => status == 'pending_payment';
+  bool get hasFeaturedSlots => remainingFeatured > 0;
 
   int get daysRemaining {
     if (endDate == null) return 0;
@@ -44,6 +51,7 @@ class UserSubscription extends Equatable {
   List<Object?> get props => [
     id, userId, packageId, startDate, endDate, status, package,
     remainingListings, availableListings, consumedListings,
+    remainingFeatured, availableFeatured, consumedFeatured,
     paymentUrl, paymentOrderId,
   ];
 }

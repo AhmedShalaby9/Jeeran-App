@@ -13,6 +13,9 @@ class UserSubscriptionModel extends UserSubscription {
     required super.remainingListings,
     required super.availableListings,
     required super.consumedListings,
+    super.remainingFeatured = 0,
+    super.availableFeatured = 0,
+    super.consumedFeatured = 0,
     super.paymentUrl,
     super.paymentOrderId,
   });
@@ -31,6 +34,9 @@ class UserSubscriptionModel extends UserSubscription {
       remainingListings: json['remaining_listings'] as int? ?? 0,
       availableListings: availableListings,
       consumedListings: consumedListings,
+      remainingFeatured: json['remaining_featured'] as int? ?? 0,
+      availableFeatured: json['available_featured'] as int? ?? 0,
+      consumedFeatured: json['consumed_featured'] as int? ?? 0,
       paymentUrl: json['payment_url'] as String?,
       paymentOrderId: json['payment_order_id'] as String?,
     );

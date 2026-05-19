@@ -33,6 +33,8 @@ class AddPropertyForm {
   String agentWhatsapp = '';
   String agentEmail = '';
 
+  bool isFeatured = false;
+
   // ── Per-step validation ──────────────────────────────────────
   bool get step1Valid => propertyType != null && propertyStatus != null;
   bool get step2Valid => location != null && projectId != null;
@@ -81,6 +83,7 @@ class AddPropertyForm {
         'agent_email': agentEmail.trim(),
         if (videoUrl != null && videoUrl!.trim().isNotEmpty)
           'video_url': videoUrl!.trim(),
+        if (isFeatured) 'is_featured': true,
       };
 }
 

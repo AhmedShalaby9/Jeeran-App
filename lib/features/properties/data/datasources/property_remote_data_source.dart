@@ -10,6 +10,7 @@ abstract class PropertyRemoteDataSource {
   Future<List<PropertyModel>> getSimilarProperties(int propertyId, {int page = 1, int limit = 20});
   Future<String> uploadImage(String filePath);
   Future<void> createProperty(Map<String, dynamic> data);
+  Future<void> updateProperty(int id, Map<String, dynamic> data);
 }
 
 class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
@@ -122,6 +123,22 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
     try {
       final response = await apiClient.post(
         ApiEndpoints.properties,
+        data: data,
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) return;
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> updateProperty(int id, Map<String, dynamic> data) async {
+    try {
+      final response = await apiClient.patch(
+        ApiEndpoints.propertyById(id),
         data: data,
       );
       if (response.statusCode == 200 || response.statusCode == 201) return;

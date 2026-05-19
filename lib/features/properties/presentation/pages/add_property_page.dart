@@ -6,6 +6,9 @@ import '../../../../core/storage/app_storage.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_snackbar.dart';
+import '../../../subscription/presentation/bloc/subscription_bloc.dart';
+import '../../../subscription/presentation/bloc/subscription_event.dart';
+import '../../../subscription/presentation/bloc/subscription_state.dart';
 import '../bloc/add_property_bloc.dart';
 import '../bloc/add_property_event.dart';
 import '../bloc/add_property_state.dart';
@@ -35,8 +38,14 @@ class AddPropertyPage extends StatelessWidget {
       context,
       MaterialPageRoute(
         fullscreenDialog: true,
-        builder: (_) => BlocProvider(
-          create: (_) => sl<AddPropertyBloc>(),
+        builder: (_) => MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => sl<AddPropertyBloc>()),
+            BlocProvider(
+              create: (_) =>
+                  sl<SubscriptionBloc>()..add(const FetchMySubscriptionEvent()),
+            ),
+          ],
           child: const AddPropertyPage(),
         ),
       ),
@@ -220,13 +229,26 @@ class _AddPropertyViewState extends State<_AddPropertyView> {
     );
   }
 
-  Widget _buildStep() => switch (_step) {
-    1 => AddPropertyStep1(form: _form, onChanged: () => setState(() {})),
-    2 => AddPropertyStep2(form: _form, onChanged: () => setState(() {})),
-    3 => AddPropertyStep3(form: _form, onChanged: () => setState(() {})),
-    4 => AddPropertyStep4(form: _form, onChanged: () => setState(() {})),
-    _ => AddPropertyStep5(form: _form, onChanged: () => setState(() {})),
-  };
+  Widget _buildStep() {
+    if (_step == 5) {
+      final subState = context.read<SubscriptionBloc>().state;
+      final remainingFeatured = subState is MySubscriptionLoaded
+          ? subState.subscription.remainingFeatured
+          : 0;
+      return AddPropertyStep5(
+        form: _form,
+        onChanged: () => setState(() {}),
+        remainingFeatured: remainingFeatured,
+      );
+    }
+    return switch (_step) {
+      1 => AddPropertyStep1(form: _form, onChanged: () => setState(() {})),
+      2 => AddPropertyStep2(form: _form, onChanged: () => setState(() {})),
+      3 => AddPropertyStep3(form: _form, onChanged: () => setState(() {})),
+      4 => AddPropertyStep4(form: _form, onChanged: () => setState(() {})),
+      _ => AddPropertyStep5(form: _form, onChanged: () => setState(() {})),
+    };
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
