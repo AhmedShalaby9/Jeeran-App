@@ -1,4 +1,4 @@
-package com.example.jeeran_flutter
+package com.jeeran.realestate
 
 import io.flutter.embedding.android.FlutterActivity
 
