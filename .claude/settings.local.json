@@ -34,7 +34,8 @@
       "Bash(grep -E \"\\\\.\\(dart\\)$\")",
       "Bash(grep -v \"^Analyzing\\\\|^$\\\\|Running \")",
       "Bash(rm \"C:\\\\Users\\\\ahmed\\\\StudioProjects\\\\jeeran_flutter\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\com\\\\example\\\\jeeran_flutter\\\\MainActivity.kt\")",
-      "Bash(rmdir -p \"C:\\\\Users\\\\ahmed\\\\StudioProjects\\\\jeeran_flutter\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\com\\\\example\\\\jeeran_flutter\")"
+      "Bash(rmdir -p \"C:\\\\Users\\\\ahmed\\\\StudioProjects\\\\jeeran_flutter\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\com\\\\example\\\\jeeran_flutter\")",
+      "Bash(dart run:*)"
     ]
   }
 }
