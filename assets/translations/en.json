@@ -135,7 +135,8 @@
     "logout_confirm": "Are you sure you want to logout?",
     "join_as_seller_title": "Join us as a Seller",
     "join_as_seller_subtitle": "Start listing your properties on Jeeran",
-    "join_as_seller_button": "Apply Now"
+    "join_as_seller_button": "Apply Now",
+    "ai_ads": "My AI Ads"
   },
   "seller_request": {
     "success_title": "Request Submitted!",

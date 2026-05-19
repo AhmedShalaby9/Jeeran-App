@@ -135,7 +135,8 @@
     "logout_confirm": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
     "join_as_seller_title": "انضم إلينا كبائع",
     "join_as_seller_subtitle": "ابدأ بنشر عقاراتك على جيران",
-    "join_as_seller_button": "قدم الآن"
+    "join_as_seller_button": "قدم الآن",
+    "ai_ads": "إعلاناتي الذكية"
   },
   "seller_request": {
     "success_title": "تم إرسال الطلب!",

@@ -59,6 +59,12 @@
   static const String fcmTokens = '/fcm-tokens';
   static String fcmToken(String deviceId) => '/fcm-tokens/$deviceId';
 
+  // AI Ads
+  static const String aiAdsGenerate = '/ai-ads/generate';
+  static const String aiAds = '/ai-ads';
+  static String aiAdById(int id) => '/ai-ads/$id';
+  static String aiAdTrials(int id) => '/ai-ads/$id/trials';
+
   // Notifications
   static const String notifications = '/notifications';
   static const String notificationsUnreadCount = '/notifications/unread-count';

@@ -55,6 +55,11 @@ import '../../features/notifications/data/repositories/notification_repository_i
 import '../../features/notifications/domain/repositories/notification_repository.dart';
 import '../../features/notifications/presentation/bloc/notification_bloc.dart';
 import '../../features/notifications/presentation/bloc/unread_count_cubit.dart';
+import '../../features/ai_ads/data/datasources/ai_ads_remote_data_source.dart';
+import '../../features/ai_ads/data/repositories/ai_ads_repository_impl.dart';
+import '../../features/ai_ads/domain/repositories/ai_ads_repository.dart';
+import '../../features/ai_ads/presentation/bloc/ai_ads_bloc.dart';
+import '../../features/ai_ads/presentation/bloc/ai_ad_detail_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -77,6 +82,8 @@ Future<void> init() async {
   sl.registerFactory(() => ChatBloc(repository: sl()));
   sl.registerFactory(() => NotificationBloc(repository: sl()));
   sl.registerLazySingleton(() => UnreadCountCubit(repository: sl()));
+  sl.registerFactory(() => AiAdsBloc(repository: sl()));
+  sl.registerFactory(() => AiAdDetailBloc(repository: sl()));
 
   // -- Repositories --------------------------------------
   sl.registerLazySingleton<HomeRepository>(
@@ -116,6 +123,9 @@ Future<void> init() async {
   sl.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
+  sl.registerLazySingleton<AiAdsRepository>(
+    () => AiAdsRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
 
   // -- Data sources --------------------------------------
   sl.registerLazySingleton<ProjectRemoteDataSource>(
@@ -153,6 +163,9 @@ sl.registerLazySingleton<HomeLocalDataSource>(
   );
   sl.registerLazySingleton<NotificationRemoteDataSource>(
     () => NotificationRemoteDataSourceImpl(apiClient: sl()),
+  );
+  sl.registerLazySingleton<AiAdsRemoteDataSource>(
+    () => AiAdsRemoteDataSourceImpl(apiClient: sl()),
   );
 
 // -- Core ----------------------------------------------
