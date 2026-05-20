@@ -10,6 +10,7 @@ class AiAdDetailBloc extends Bloc<AiAdDetailEvent, AiAdDetailState> {
     on<LoadAiAdDetail>(_onLoad);
     on<RefreshAiAdDetail>(_onRefresh);
     on<CreateAiAdTrial>(_onCreateTrial);
+    on<CheckAiAdPayment>(_onCheckPayment);
   }
 
   Future<void> _onLoad(
@@ -78,6 +79,29 @@ class AiAdDetailBloc extends Bloc<AiAdDetailEvent, AiAdDetailState> {
           clearTrialError: true,
         ));
       },
+    );
+  }
+
+  Future<void> _onCheckPayment(
+    CheckAiAdPayment event,
+    Emitter<AiAdDetailState> emit,
+  ) async {
+    final current = state;
+    if (current is! AiAdDetailLoaded) return;
+
+    emit(current.copyWith(isCheckingPayment: true));
+
+    final result = await repository.checkPayment(event.id);
+
+    result.fold(
+      (failure) => emit(current.copyWith(
+        isCheckingPayment: false,
+        trialError: _mapFailure(failure),
+      )),
+      (updatedAd) => emit(current.copyWith(
+        ad: updatedAd,
+        isCheckingPayment: false,
+      )),
     );
   }
 

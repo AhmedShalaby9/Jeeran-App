@@ -64,6 +64,7 @@
   static const String aiAds = '/ai-ads';
   static String aiAdById(int id) => '/ai-ads/$id';
   static String aiAdTrials(int id) => '/ai-ads/$id/trials';
+  static String aiAdCheckPayment(int id) => '/ai-ads/$id/check-payment';
 
   // Notifications
   static const String notifications = '/notifications';

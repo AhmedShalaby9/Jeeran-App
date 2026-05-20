@@ -26,4 +26,7 @@ abstract class AiAdsRepository {
 
   /// List all trials for an original ad.
   Future<Either<Failure, List<AiAd>>> listTrials(int parentId);
+
+  /// Ask the backend to verify payment with Kashier and update status if paid.
+  Future<Either<Failure, AiAd>> checkPayment(int id);
 }

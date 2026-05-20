@@ -91,4 +91,14 @@ class AiAdsRepositoryImpl implements AiAdsRepository {
       return Left(ServerFailure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, AiAd>> checkPayment(int id) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      return Right(await remoteDataSource.checkPayment(id));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 }

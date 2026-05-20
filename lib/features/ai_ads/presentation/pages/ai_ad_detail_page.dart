@@ -167,6 +167,8 @@ class _AiAdDetailViewState extends State<_AiAdDetailView> {
           if (state is AiAdDetailLoaded) {
             if (state.ad.isPending) {
               _startPolling();
+            } else if (state.ad.isAwaitingPayment) {
+              _stopPolling();
             } else {
               _stopPolling();
             }
@@ -230,6 +232,13 @@ class _AiAdDetailViewState extends State<_AiAdDetailView> {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
               children: [
                 _AdResultCard(ad: loaded.ad),
+                if (loaded.ad.isAwaitingPayment) ...[
+                  const SizedBox(height: 16),
+                  _PaymentPendingBanner(
+                    adId: loaded.ad.id,
+                    isChecking: loaded.isCheckingPayment,
+                  ),
+                ],
                 const SizedBox(height: 24),
                 _TrialsSection(
                   ad: loaded.ad,
@@ -241,6 +250,86 @@ class _AiAdDetailViewState extends State<_AiAdDetailView> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+// ── Payment Pending Banner ───────────────────────────────────────────────────
+
+class _PaymentPendingBanner extends StatelessWidget {
+  final int adId;
+  final bool isChecking;
+  const _PaymentPendingBanner({required this.adId, required this.isChecking});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orange.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.payment_rounded, color: Colors.orange, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Awaiting Payment',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.orange,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'After completing payment, tap the button below to activate your ad.',
+            style: TextStyle(fontSize: 13, color: AppColors.inkSub),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: isChecking
+                  ? null
+                  : () => context
+                      .read<AiAdDetailBloc>()
+                      .add(CheckAiAdPayment(adId)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                elevation: 0,
+              ),
+              child: isChecking
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      "I've Completed Payment",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }

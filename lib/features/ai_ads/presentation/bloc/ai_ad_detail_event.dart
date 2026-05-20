@@ -27,3 +27,10 @@ class CreateAiAdTrial extends AiAdDetailEvent {
   @override
   List<Object?> get props => [parentId, caption];
 }
+
+class CheckAiAdPayment extends AiAdDetailEvent {
+  final int id;
+  const CheckAiAdPayment(this.id);
+  @override
+  List<Object?> get props => [id];
+}

@@ -14,12 +14,14 @@ class AiAdDetailLoaded extends AiAdDetailState {
   final AiAd ad;
   final List<AiAd> trials;
   final bool isCreatingTrial;
+  final bool isCheckingPayment;
   final String? trialError;
 
   const AiAdDetailLoaded({
     required this.ad,
     required this.trials,
     this.isCreatingTrial = false,
+    this.isCheckingPayment = false,
     this.trialError,
   });
 
@@ -27,6 +29,7 @@ class AiAdDetailLoaded extends AiAdDetailState {
     AiAd? ad,
     List<AiAd>? trials,
     bool? isCreatingTrial,
+    bool? isCheckingPayment,
     String? trialError,
     bool clearTrialError = false,
   }) {
@@ -34,12 +37,13 @@ class AiAdDetailLoaded extends AiAdDetailState {
       ad: ad ?? this.ad,
       trials: trials ?? this.trials,
       isCreatingTrial: isCreatingTrial ?? this.isCreatingTrial,
+      isCheckingPayment: isCheckingPayment ?? this.isCheckingPayment,
       trialError: clearTrialError ? null : (trialError ?? this.trialError),
     );
   }
 
   @override
-  List<Object?> get props => [ad, trials, isCreatingTrial, trialError];
+  List<Object?> get props => [ad, trials, isCreatingTrial, isCheckingPayment, trialError];
 }
 
 class AiAdDetailError extends AiAdDetailState {

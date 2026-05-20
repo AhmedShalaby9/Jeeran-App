@@ -30,6 +30,7 @@ class AiAd extends Equatable {
   });
 
   bool get isOriginal => parentId == null;
+  bool get isAwaitingPayment => status == 'awaiting_payment';
   bool get isPending => status == 'pending' || status == 'processing';
   bool get isDone => status == 'done';
   bool get isFailed => status == 'failed';

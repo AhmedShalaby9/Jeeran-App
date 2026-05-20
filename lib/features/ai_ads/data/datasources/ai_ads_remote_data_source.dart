@@ -13,6 +13,7 @@ abstract class AiAdsRemoteDataSource {
   Future<void> deleteAd(int id);
   Future<AiAdModel> createTrial({required int parentId, required String caption});
   Future<List<AiAdModel>> listTrials(int parentId);
+  Future<AiAdModel> checkPayment(int id);
 }
 
 class AiAdsRemoteDataSourceImpl implements AiAdsRemoteDataSource {
@@ -107,6 +108,23 @@ class AiAdsRemoteDataSourceImpl implements AiAdsRemoteDataSource {
       }
       throw ServerException(
         response.data?['message'] as String? ?? 'Failed to create trial',
+      );
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<AiAdModel> checkPayment(int id) async {
+    try {
+      final response = await apiClient.post(ApiEndpoints.aiAdCheckPayment(id));
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return AiAdModel.fromJson(response.data['data'] as Map<String, dynamic>);
+      }
+      throw ServerException(
+        response.data?['message'] as String? ?? 'Failed to check payment',
       );
     } on ServerException {
       rethrow;
