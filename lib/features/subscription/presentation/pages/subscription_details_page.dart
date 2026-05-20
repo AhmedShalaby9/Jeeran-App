@@ -62,14 +62,10 @@ class _SubscriptionDetailsView extends StatelessWidget {
         backgroundColor: AppColors.background,
         body: BlocBuilder<SubscriptionBloc, SubscriptionState>(
           buildWhen: (_, curr) =>
-              curr is MySubscriptionLoading ||
-              curr is MySubscriptionLoaded ||
-              curr is MySubscriptionError,
+              curr is MySubscriptionLoading || curr is MySubscriptionLoaded || curr is MySubscriptionError,
           builder: (context, state) {
             if (state is MySubscriptionLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              );
+              return const Center(child: CircularProgressIndicator(color: AppColors.primary));
             }
             if (state is MySubscriptionError) {
               return Center(
@@ -161,18 +157,13 @@ class _SubscriptionDetailsView extends StatelessWidget {
                     icon: const Icon(Icons.payment_rounded, size: 20),
                     label: Text(
                       'subscription.complete_payment'.tr(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                   ),
                 ),
@@ -182,14 +173,10 @@ class _SubscriptionDetailsView extends StatelessWidget {
                 children: [
                   BlocBuilder<SubscriptionBloc, SubscriptionState>(
                     builder: (context, state) => ManageRow(
-                      label: state is SubscriptionLoading
-                          ? 'subscription.cancelling'.tr()
-                          : 'subscription.cancel'.tr(),
+                      label: state is SubscriptionLoading ? 'subscription.cancelling'.tr() : 'subscription.cancel'.tr(),
                       danger: true,
                       last: true,
-                      onTap: state is SubscriptionLoading
-                          ? null
-                          : () => _showCancelSheet(context),
+                      onTap: state is SubscriptionLoading ? null : () => _showCancelSheet(context),
                     ),
                   ),
                 ],
@@ -223,6 +210,11 @@ class _SubscriptionDetailsView extends StatelessWidget {
                     value: '${subscription.availableListings}',
                     chevron: false,
                   ),
+                  DetailRow(
+                    label: 'subscription.featured_listings'.tr(),
+                    value: '${subscription.availableFeatured}',
+                    chevron: false,
+                  ),
                   if (subscription.endDate != null)
                     DetailRow(
                       label: 'subscription.next_renewal'.tr(),
@@ -231,12 +223,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
                       last: true,
                     )
                   else
-                    DetailRow(
-                      label: 'subscription.next_renewal'.tr(),
-                      value: '—',
-                      chevron: false,
-                      last: true,
-                    ),
+                    DetailRow(label: 'subscription.next_renewal'.tr(), value: '—', chevron: false, last: true),
                 ],
               ),
               _buildBillingHistory(),
@@ -249,14 +236,10 @@ class _SubscriptionDetailsView extends StatelessWidget {
                   ),
                   BlocBuilder<SubscriptionBloc, SubscriptionState>(
                     builder: (context, state) => ManageRow(
-                      label: state is SubscriptionLoading
-                          ? 'subscription.cancelling'.tr()
-                          : 'subscription.cancel'.tr(),
+                      label: state is SubscriptionLoading ? 'subscription.cancelling'.tr() : 'subscription.cancel'.tr(),
                       danger: true,
                       last: true,
-                      onTap: state is SubscriptionLoading
-                          ? null
-                          : () => _showCancelSheet(context),
+                      onTap: state is SubscriptionLoading ? null : () => _showCancelSheet(context),
                     ),
                   ),
                 ],
@@ -266,11 +249,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
                 child: Text(
                   'subscription.cancel_note'.tr(),
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.inkMute,
-                    height: 1.5,
-                  ),
+                  style: const TextStyle(fontSize: 11, color: AppColors.inkMute, height: 1.5),
                 ),
               ),
             ],
@@ -283,9 +262,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
   Widget _buildBillingHistory() {
     return BlocBuilder<SubscriptionBloc, SubscriptionState>(
       buildWhen: (_, curr) =>
-          curr is SubscriptionHistoryLoading ||
-          curr is SubscriptionHistoryLoaded ||
-          curr is SubscriptionHistoryError,
+          curr is SubscriptionHistoryLoading || curr is SubscriptionHistoryLoaded || curr is SubscriptionHistoryError,
       builder: (context, state) {
         if (state is SubscriptionHistoryLoading) {
           return SubscriptionSection(
@@ -293,12 +270,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
             children: [
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
-                child: Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                    strokeWidth: 2,
-                  ),
-                ),
+                child: Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2)),
               ),
             ],
           );
@@ -307,10 +279,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
           return SubscriptionSection(
             title: 'subscription.billing_history'.tr(),
             children: state.history.asMap().entries.map((e) {
-              return BillingRow(
-                subscription: e.value,
-                last: e.key == state.history.length - 1,
-              );
+              return BillingRow(subscription: e.value, last: e.key == state.history.length - 1);
             }).toList(),
           );
         }
@@ -322,7 +291,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
   String _formatDate(String raw) {
     final dt = DateTime.tryParse(raw);
     if (dt == null) return raw;
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
   }
 
@@ -338,26 +307,15 @@ class _SubscriptionDetailsView extends StatelessWidget {
               child: Container(
                 width: 36,
                 height: 36,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.navButtonBg,
-                ),
-                child: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 16,
-                  color: AppColors.ink,
-                ),
+                decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.navButtonBg),
+                child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: AppColors.ink),
               ),
             ),
             Expanded(
               child: Text(
                 'subscription.title'.tr(),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.ink,
-                ),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.ink),
               ),
             ),
             const SizedBox(width: 36),
@@ -403,29 +361,20 @@ class _CancelConfirmSheet extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      padding: EdgeInsets.fromLTRB(
-        24, 24, 24,
-        MediaQuery.of(context).padding.bottom + 24,
-      ),
+      padding: EdgeInsets.fromLTRB(24, 24, 24, MediaQuery.of(context).padding.bottom + 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 40,
             height: 4,
-            decoration: BoxDecoration(
-              color: AppColors.hairline,
-              borderRadius: BorderRadius.circular(2),
-            ),
+            decoration: BoxDecoration(color: AppColors.hairline, borderRadius: BorderRadius.circular(2)),
           ),
           const SizedBox(height: 28),
           Container(
             width: 64,
             height: 64,
-            decoration: BoxDecoration(
-              color: AppColors.danger.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: AppColors.danger.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: const Icon(Icons.cancel_outlined, size: 32, color: AppColors.danger),
           ),
           const SizedBox(height: 20),

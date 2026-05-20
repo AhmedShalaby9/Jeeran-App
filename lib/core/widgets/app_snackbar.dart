@@ -131,13 +131,15 @@ class _SnackbarContent extends StatelessWidget {
             child: Icon(icon, size: 16, color: iconColor),
           ),
           const SizedBox(width: 10),
-          Text(
-            message,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              height: 1,
+          Flexible(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                height: 1,
+              ),
             ),
           ),
         ],

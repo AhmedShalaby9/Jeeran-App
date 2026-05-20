@@ -52,15 +52,20 @@ class _MyPropertiesViewState extends State<_MyPropertiesView>
   late final TabController _tabController;
   final ScrollController _scrollController = ScrollController();
 
-  static const _tabs = [null, true, false];
+  static final _tabs = [
+    const PropertyFilterParams(),
+    const PropertyFilterParams(isApproved: true),
+    const PropertyFilterParams(isApproved: false),
+    const PropertyFilterParams(isFeatured: true),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_onTabChanged);
     _scrollController.addListener(_onScroll);
-    _fetch(null);
+    _fetch(_tabs[0]);
   }
 
   void _onTabChanged() {
@@ -68,10 +73,8 @@ class _MyPropertiesViewState extends State<_MyPropertiesView>
     _fetch(_tabs[_tabController.index]);
   }
 
-  void _fetch(bool? isApproved) {
-    context.read<MyPropertiesBloc>().add(
-          FetchPropertiesEvent(PropertyFilterParams(isApproved: isApproved)),
-        );
+  void _fetch(PropertyFilterParams params) {
+    context.read<MyPropertiesBloc>().add(FetchPropertiesEvent(params));
   }
 
   void _onScroll() {
@@ -105,6 +108,7 @@ class _MyPropertiesViewState extends State<_MyPropertiesView>
             Tab(text: 'my_properties.all'.tr()),
             Tab(text: 'my_properties.approved'.tr()),
             Tab(text: 'my_properties.pending'.tr()),
+            Tab(text: 'my_properties.featured'.tr()),
           ],
         ),
       ),
@@ -129,35 +133,40 @@ class _MyPropertiesViewState extends State<_MyPropertiesView>
           if (properties == null) return const SizedBox.shrink();
           if (properties.isEmpty) return _EmptyView();
 
-          return ListView.separated(
-            controller: _scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            itemCount: properties.length + (state is PropertiesLoadingMore ? 1 : 0),
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              if (index == properties.length) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  ),
-                );
-              }
-              final property = properties[index];
-              final subState = context.read<SubscriptionBloc>().state;
+          return BlocBuilder<SubscriptionBloc, SubscriptionState>(
+            buildWhen: (_, curr) =>
+                curr is MySubscriptionLoaded || curr is MySubscriptionLoading,
+            builder: (context, subState) {
               final remainingFeatured = subState is MySubscriptionLoaded
-                  ? subState.subscription.remainingFeatured
+                ? subState.subscription.remainingFeatured
                   : 0;
-              return _PropertyCardWithFeaturedToggle(
-                property: property,
-                remainingFeatured: remainingFeatured,
-                onFeaturedToggled: () => _fetch(_tabs[_tabController.index]),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => PropertyDetailsPage(property: property),
-                  ),
-                ),
+              return ListView.separated(
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                itemCount: properties.length + (state is PropertiesLoadingMore ? 1 : 0),
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  if (index == properties.length) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: CircularProgressIndicator(color: AppColors.primary),
+                      ),
+                    );
+                  }
+                  final property = properties[index];
+                  return _PropertyCardWithFeaturedToggle(
+                    property: property,
+                    remainingFeatured: remainingFeatured,
+                    onFeaturedToggled: () => _fetch(_tabs[_tabController.index]),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PropertyDetailsPage(property: property),
+                      ),
+                    ),
+                  );
+                },
               );
             },
           );

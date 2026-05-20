@@ -231,14 +231,19 @@ class _AddPropertyViewState extends State<_AddPropertyView> {
 
   Widget _buildStep() {
     if (_step == 5) {
-      final subState = context.read<SubscriptionBloc>().state;
-      final remainingFeatured = subState is MySubscriptionLoaded
-          ? subState.subscription.remainingFeatured
-          : 0;
-      return AddPropertyStep5(
-        form: _form,
-        onChanged: () => setState(() {}),
-        remainingFeatured: remainingFeatured,
+      return BlocBuilder<SubscriptionBloc, SubscriptionState>(
+        buildWhen: (_, curr) =>
+            curr is MySubscriptionLoaded || curr is MySubscriptionLoading,
+        builder: (context, subState) {
+          final remainingFeatured = subState is MySubscriptionLoaded
+              ? subState.subscription.remainingFeatured
+              : 0;
+          return AddPropertyStep5(
+            form: _form,
+            onChanged: () => setState(() {}),
+            remainingFeatured: remainingFeatured,
+          );
+        },
       );
     }
     return switch (_step) {

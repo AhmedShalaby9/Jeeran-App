@@ -1,5 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import '../../navigation/app_navigator.dart';
 import '../../storage/app_storage.dart';
+import '../../../../features/auth/presentation/pages/login_page.dart';
 
 class AuthInterceptor extends Interceptor {
   @override
@@ -17,7 +20,18 @@ class AuthInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.response?.statusCode == 401) {
       AppStorage.clearAuth();
+      _redirectToLogin();
     }
     handler.next(err);
+  }
+
+  void _redirectToLogin() {
+    final navigator = appNavigatorKey.currentState;
+    if (navigator == null) return;
+    // Pop all routes and push login so the user can't go back to an authenticated screen.
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (_) => false,
+    );
   }
 }
