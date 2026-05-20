@@ -9,6 +9,7 @@ abstract class SubscriptionRemoteDataSource {
   Future<UserSubscriptionModel> upgradeSubscription({required int packageId});
   Future<void> cancelSubscription();
   Future<List<UserSubscriptionModel>> getSubscriptionHistory();
+  Future<UserSubscriptionModel> checkPayment(int id);
 }
 
 class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
@@ -79,6 +80,23 @@ class SubscriptionRemoteDataSourceImpl implements SubscriptionRemoteDataSource {
         return list
             .map((e) => UserSubscriptionModel.fromJson(e as Map<String, dynamic>))
             .toList();
+      }
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<UserSubscriptionModel> checkPayment(int id) async {
+    try {
+      final response = await apiClient.post(ApiEndpoints.subscriptionCheckPayment(id));
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return UserSubscriptionModel.fromJson(
+          response.data['data'] as Map<String, dynamic>,
+        );
       }
       throw ServerException();
     } on ServerException {
