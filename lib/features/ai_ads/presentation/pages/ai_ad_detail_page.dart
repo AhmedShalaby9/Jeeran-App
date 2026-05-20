@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/ai_ad.dart';
@@ -388,6 +389,28 @@ class _AdResultCard extends StatelessWidget {
                     ],
                   ],
                 ),
+                if (ad.isDone && ad.resultUrl != null) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => launchUrl(
+                        Uri.parse(ad.resultUrl!),
+                        mode: LaunchMode.externalApplication,
+                      ),
+                      icon: const Icon(Icons.download_rounded, size: 18),
+                      label: const Text('Download Image'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 const Text(
                   'Caption',
@@ -427,25 +450,15 @@ class _AdResultCard extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    if (ad.resultUrl != null) {
-      return Image.network(
-        ad.resultUrl!,
-        width: double.infinity,
-        height: 220,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _imagePlaceholder(),
-      );
-    }
-    if (ad.sourceImages.isNotEmpty) {
-      return Image.network(
-        ad.sourceImages.first,
-        width: double.infinity,
-        height: 220,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _imagePlaceholder(),
-      );
-    }
-    return _imagePlaceholder();
+    final url = ad.resultUrl ?? (ad.sourceImages.isNotEmpty ? ad.sourceImages.first : null);
+    if (url == null) return _imagePlaceholder();
+    return Image.network(
+      url,
+      width: double.infinity,
+      height: ad.resultUrl != null ? 360 : 220,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _imagePlaceholder(),
+    );
   }
 
   Widget _imagePlaceholder() {
@@ -546,63 +559,93 @@ class _TrialCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.grey.withValues(alpha: 0.15)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: trial.resultUrl != null
-                ? Image.network(
-                    trial.resultUrl!,
-                    width: 56,
-                    height: 56,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _thumb(),
-                  )
-                : _thumb(),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            child: _buildImage(),
           ),
-          const SizedBox(width: 12),
-          Expanded(
+          Padding(
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Trial #${trial.trialNumber}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.ink,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      'Trial #${trial.trialNumber}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                    const Spacer(),
+                    _StatusBadge(status: trial.status, small: true),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
                   trial.caption,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 12, color: AppColors.inkSub),
+                  style: const TextStyle(fontSize: 12, color: AppColors.inkSub),
                 ),
+                if (trial.resultUrl != null) ...[
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => launchUrl(
+                        Uri.parse(trial.resultUrl!),
+                        mode: LaunchMode.externalApplication,
+                      ),
+                      icon: const Icon(Icons.download_rounded, size: 16),
+                      label: const Text('Download'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: const BorderSide(color: AppColors.primary),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          _StatusBadge(status: trial.status, small: true),
         ],
       ),
     );
   }
 
-  Widget _thumb() => Container(
-        width: 56,
-        height: 56,
-        color: AppColors.primary.withValues(alpha: 0.08),
+  Widget _buildImage() {
+    final url = trial.resultUrl ??
+        (trial.sourceImages.isNotEmpty ? trial.sourceImages.first : null);
+    if (url == null) return _placeholder();
+    return Image.network(
+      url,
+      width: double.infinity,
+      height: 200,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _placeholder(),
+    );
+  }
+
+  Widget _placeholder() => Container(
+        width: double.infinity,
+        height: 200,
+        color: AppColors.primary.withValues(alpha: 0.06),
         child: const Icon(Icons.auto_awesome_outlined,
-            size: 22, color: AppColors.primary),
+            size: 40, color: AppColors.primary),
       );
 }
 

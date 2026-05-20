@@ -27,9 +27,11 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
   final _formKey = GlobalKey<FormState>();
   final _picker = ImagePicker();
 
+  static const int _maxImages = 5;
+
   bool _isLoading = false;
   String? _error;
-  XFile? _pickedImage;
+  final List<XFile> _pickedImages = [];
 
   @override
   void dispose() {
@@ -38,18 +40,20 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
   }
 
   Future<void> _pickImage() async {
+    final remaining = _maxImages - _pickedImages.length;
+    if (remaining <= 0) return;
     final file = await _picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 80,
     );
     if (file == null) return;
-    setState(() => _pickedImage = file);
+    setState(() => _pickedImages.add(file));
   }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_pickedImage == null) {
-      setState(() => _error = 'Please add a source image.');
+    if (_pickedImages.isEmpty) {
+      setState(() => _error = 'Please add at least one source image.');
       return;
     }
 
@@ -58,24 +62,30 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
       _error = null;
     });
 
-    // Upload image first.
-    final uploadResult =
-        await sl<PropertyRepository>().uploadImage(_pickedImage!.path);
-    String? imageUrl;
-    uploadResult.fold((f) => imageUrl = null, (url) => imageUrl = url);
+    // Upload all images in parallel.
+    final uploadFutures = _pickedImages
+        .map((f) => sl<PropertyRepository>().uploadImage(f.path))
+        .toList();
+    final uploadResults = await Future.wait(uploadFutures);
 
     if (!mounted) return;
-    if (imageUrl == null) {
+
+    final imageUrls = <String>[];
+    for (final result in uploadResults) {
+      result.fold((_) => null, (url) => imageUrls.add(url));
+    }
+
+    if (imageUrls.isEmpty) {
       setState(() {
         _isLoading = false;
-        _error = 'Failed to upload image. Please try again.';
+        _error = 'Failed to upload images. Please try again.';
       });
       return;
     }
 
     final result = await sl<AiAdsRepository>().generate(
       caption: _captionCtrl.text.trim(),
-      sourceImages: [imageUrl!],
+      sourceImages: imageUrls,
     );
 
     if (!mounted) return;
@@ -186,9 +196,9 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
 
             const SizedBox(height: 24),
 
-            // Source Image
+            // Source Images
             const Text(
-              'Source Image',
+              'Source Images',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -197,7 +207,7 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
             ),
             const SizedBox(height: 4),
             const Text(
-              'Upload one property photo for AI to use as reference.',
+              'Upload 1–5 property photos. The AI will use them all as reference.',
               style: TextStyle(fontSize: 12, color: AppColors.inkSub),
             ),
             const SizedBox(height: 8),
@@ -210,12 +220,16 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
                 mainAxisSpacing: 8,
                 childAspectRatio: 1,
               ),
-              itemCount: _pickedImage == null ? 1 : 2,
+              itemCount: _pickedImages.length < _maxImages
+                  ? _pickedImages.length + 1
+                  : _pickedImages.length,
               itemBuilder: (_, i) {
-                if (i == 0) return _AddPhotoTile(onTap: _pickImage);
+                if (i == _pickedImages.length) {
+                  return _AddPhotoTile(onTap: _pickImage);
+                }
                 return _PhotoTile(
-                  filePath: _pickedImage!.path,
-                  onRemove: () => setState(() => _pickedImage = null),
+                  filePath: _pickedImages[i].path,
+                  onRemove: () => setState(() => _pickedImages.removeAt(i)),
                 );
               },
             ),
@@ -305,15 +319,15 @@ class _AddPhotoTile extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.add_a_photo_rounded,
-                size: 24,
+                Icons.add_photo_alternate_rounded,
+                size: 28,
                 color: AppColors.primary.withValues(alpha: 0.7),
               ),
               const SizedBox(height: 6),
               Text(
-                'Add',
+                'Add Photo',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary.withValues(alpha: 0.8),
                 ),

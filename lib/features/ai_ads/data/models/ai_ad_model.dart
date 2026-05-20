@@ -29,7 +29,7 @@ class AiAdModel extends AiAd {
           [],
       status: json['status'] as String? ?? 'pending',
       paymentStatus: json['payment_status'] as String? ?? 'unpaid',
-      resultUrl: json['result_url'] as String?,
+      resultUrl: json['generated_image_url'] as String?,
       errorMessage: json['error_message'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
