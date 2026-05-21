@@ -8,6 +8,7 @@ import '../../../properties/domain/entities/property_filter_params.dart';
 import '../../../properties/presentation/bloc/properties_bloc.dart';
 import '../../../properties/presentation/bloc/properties_event.dart';
 import '../../../properties/presentation/bloc/properties_state.dart';
+import 'admin_property_detail_page.dart';
 
 class AdminPropertiesPage extends StatelessWidget {
   const AdminPropertiesPage({super.key});
@@ -62,88 +63,6 @@ class _AdminPropertiesViewState extends State<_AdminPropertiesView>
             ),
           ),
         );
-  }
-
-  void _showApproveDialog(BuildContext context, Property property) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('admin.approve'.tr()),
-        content: Text(
-          'admin.approve_property_confirm'.tr(
-            namedArgs: {'title': property.titleAr},
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('actions.cancel'.tr()),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context
-                  .read<PropertiesBloc>()
-                  .add(ApprovePropertyEvent(property.id));
-            },
-            child: Text(
-              'admin.approve'.tr(),
-              style: const TextStyle(color: AppColors.success),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showRejectDialog(BuildContext context, Property property) {
-    final reasonCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text('admin.reject'.tr()),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'admin.reject_property_confirm'.tr(
-                namedArgs: {'title': property.titleAr},
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonCtrl,
-              decoration: InputDecoration(
-                labelText: 'admin.rejection_reason'.tr(),
-                border: const OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('actions.cancel'.tr()),
-          ),
-          TextButton(
-            onPressed: () {
-              final reason = reasonCtrl.text.trim();
-              if (reason.isEmpty) return;
-              Navigator.pop(context);
-              context
-                  .read<PropertiesBloc>()
-                  .add(RejectPropertyEvent(property.id, reason));
-            },
-            child: Text(
-              'admin.reject'.tr(),
-              style: const TextStyle(color: AppColors.danger),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   void _refresh(BuildContext context) {
@@ -201,21 +120,28 @@ class _AdminPropertiesViewState extends State<_AdminPropertiesView>
             if (state.properties.isEmpty) {
               return Center(child: Text('admin.no_properties'.tr()));
             }
-            final showActions = _tabController.index == 0; // pending tab
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: state.properties.length,
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final property = state.properties[index];
-                return _PropertyAdminTile(
-                  property: property,
-                  onApprove: showActions
-                      ? () => _showApproveDialog(context, property)
-                      : null,
-                  onReject: showActions
-                      ? () => _showRejectDialog(context, property)
-                      : null,
+                final bloc = context.read<PropertiesBloc>();
+                return GestureDetector(
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => BlocProvider.value(
+                          value: bloc,
+                          child: AdminPropertyDetailPage(property: property),
+                        ),
+                      ),
+                    );
+                    // Refresh list when returning from detail
+                    if (context.mounted) _refresh(context);
+                  },
+                  child: _PropertyAdminTile(property: property),
                 );
               },
             );
@@ -229,14 +155,8 @@ class _AdminPropertiesViewState extends State<_AdminPropertiesView>
 
 class _PropertyAdminTile extends StatelessWidget {
   final Property property;
-  final VoidCallback? onApprove;
-  final VoidCallback? onReject;
 
-  const _PropertyAdminTile({
-    required this.property,
-    this.onApprove,
-    this.onReject,
-  });
+  const _PropertyAdminTile({required this.property});
 
   @override
   Widget build(BuildContext context) {
@@ -317,48 +237,9 @@ class _PropertyAdminTile extends StatelessWidget {
                   ],
                 ),
               ),
+              const Icon(Icons.chevron_right, color: AppColors.inkMute),
             ],
           ),
-          if (onApprove != null || onReject != null) ...[
-            const SizedBox(height: 12),
-            const Divider(height: 1),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                if (onReject != null)
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: onReject,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.danger,
-                        side: const BorderSide(color: AppColors.danger),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text('admin.reject'.tr()),
-                    ),
-                  ),
-                if (onApprove != null && onReject != null)
-                  const SizedBox(width: 8),
-                if (onApprove != null)
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: onApprove,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.success,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text('admin.approve'.tr()),
-                    ),
-                  ),
-              ],
-            ),
-          ],
         ],
       ),
     );

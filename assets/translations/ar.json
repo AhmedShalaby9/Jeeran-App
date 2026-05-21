@@ -379,7 +379,22 @@
     "no_properties": "لا توجد عقارات",
     "approve_property_confirm": "هل تريد الموافقة على العقار \"{title}\"؟",
     "reject_property_confirm": "هل تريد رفض العقار \"{title}\"؟",
-    "rejection_reason": "سبب الرفض"
+    "rejection_reason": "سبب الرفض",
+    "property_detail": "تفاصيل العقار",
+    "edit_property": "تعديل العقار",
+    "listing_info": "معلومات الإعلان",
+    "titles_descriptions": "العناوين والأوصاف",
+    "pricing_specs": "السعر والمواصفات",
+    "images": "الصور",
+    "agent_info": "معلومات الوكيل",
+    "is_active": "نشط",
+    "is_featured": "مميز",
+    "featured": "مميز",
+    "add_photos": "إضافة صور",
+    "upload_progress": "جارٍ رفع {current} من {total}...",
+    "property_type": "نوع العقار",
+    "property_status": "الغرض من الإعلان",
+    "inactive": "غير نشط"
   },
   "profile": {
     "title": "ملفي الشخصي",

@@ -9,6 +9,7 @@ class AddPropertyBloc extends Bloc<AddPropertyEvent, AddPropertyState> {
 
   AddPropertyBloc({required this.repository}) : super(const AddPropertyInitial()) {
     on<SubmitAddProperty>(_onSubmit);
+    on<SubmitUpdateProperty>(_onUpdate);
   }
 
   Future<void> _onSubmit(
@@ -49,6 +50,36 @@ class AddPropertyBloc extends Bloc<AddPropertyEvent, AddPropertyState> {
     emit(const AddPropertySubmitting());
     final body = form.toBody(uploadedUrls);
     final result = await repository.createProperty(body);
+    result.fold(
+      (failure) => emit(AddPropertyFailure(_mapFailure(failure))),
+      (_) => emit(const AddPropertySuccess()),
+    );
+  }
+
+  Future<void> _onUpdate(
+    SubmitUpdateProperty event,
+    Emitter<AddPropertyState> emit,
+  ) async {
+    final newImages = event.newImages;
+    final uploadedUrls = <String>[...event.existingImageUrls];
+
+    // Upload new images
+    for (int i = 0; i < newImages.length; i++) {
+      emit(AddPropertyUploading(current: i + 1, total: newImages.length));
+      final result = await repository.uploadImage(newImages[i].path);
+      String? url;
+      result.fold((f) => url = null, (u) => url = u);
+      if (url == null) {
+        emit(AddPropertyFailure('Failed to upload image ${i + 1}. Please try again.'));
+        return;
+      }
+      uploadedUrls.add(url!);
+    }
+
+    emit(const AddPropertySubmitting());
+    final body = Map<String, dynamic>.from(event.body);
+    body['images'] = uploadedUrls;
+    final result = await repository.updateProperty(event.propertyId, body);
     result.fold(
       (failure) => emit(AddPropertyFailure(_mapFailure(failure))),
       (_) => emit(const AddPropertySuccess()),

@@ -379,7 +379,22 @@
     "no_properties": "No properties found",
     "approve_property_confirm": "Approve the property \"{title}\"?",
     "reject_property_confirm": "Reject the property \"{title}\"?",
-    "rejection_reason": "Rejection reason"
+    "rejection_reason": "Rejection reason",
+    "property_detail": "Property Detail",
+    "edit_property": "Edit Property",
+    "listing_info": "Listing Info",
+    "titles_descriptions": "Titles & Descriptions",
+    "pricing_specs": "Pricing & Specs",
+    "images": "Images",
+    "agent_info": "Agent Info",
+    "is_active": "Active",
+    "is_featured": "Featured",
+    "featured": "Featured",
+    "add_photos": "Add Photos",
+    "upload_progress": "Uploading {current} of {total}...",
+    "property_type": "Property Type",
+    "property_status": "Listing Purpose",
+    "inactive": "Inactive"
   },
   "profile": {
     "title": "My Profile",
