@@ -31,6 +31,7 @@
 
   // News
   static const String news = '/news';
+  static String newsById(int id) => '/news/$id';
 
   // Favorites
   static const String favorites = '/favorites';
@@ -47,6 +48,9 @@
 
   // Seller Request
   static const String sellerRequests = '/seller-requests';
+  static String sellerRequestById(int id) => '/seller-requests/$id';
+  static String sellerRequestApprove(int id) => '/seller-requests/$id/approve';
+  static String sellerRequestReject(int id) => '/seller-requests/$id/reject';
 
   // Upload
   static const String uploadSingle = '/upload/single';

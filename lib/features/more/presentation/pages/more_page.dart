@@ -22,6 +22,7 @@ import '../../../ai_ads/presentation/pages/ai_ads_page.dart';
 import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
 import '../../../seller_request/presentation/bloc/seller_request_state.dart';
 import '../../../seller_request/presentation/widgets/seller_request_tile.dart';
+import '../../../admin/presentation/pages/admin_panel_page.dart';
 
 class MorePage extends StatelessWidget {
   const MorePage({super.key});
@@ -385,6 +386,32 @@ class _MoreView extends StatelessWidget {
                       icon: Icons.add_box_outlined,
                       label: 'more.add_property'.tr(),
                       onTap: () => AddPropertyPage.push(context),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              },
+            ),
+
+            // Admin Side — visible to admin and super_admin only
+            BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, authState) {
+                final user = authState is AuthMeLoaded ? authState.user : null;
+                final isAdmin = user?.isAdmin ?? AppStorage.isAdmin;
+                if (!isAdmin) return const SizedBox.shrink();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _SectionHeader(title: 'admin.section_title'.tr()),
+                    _MoreTile(
+                      icon: Icons.admin_panel_settings_outlined,
+                      label: 'admin.title'.tr(),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AdminPanelPage(),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 16),
                   ],

@@ -44,8 +44,8 @@ class User extends Equatable {
   /// Returns true only when the user is a seller.
   bool get isSeller => userType == 'seller';
 
-  /// Returns true for admin users.
-  bool get isAdmin => userType == 'admin';
+  /// Returns true for admin and super_admin users.
+  bool get isAdmin => userType == 'admin' || userType == 'super_admin';
 
   /// Returns true for buyer users (or any non-seller, non-admin).
   bool get isBuyer => !isSeller && !isAdmin;

@@ -25,4 +25,40 @@ class NewsRepositoryImpl implements NewsRepository {
       return Left(ServerFailure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> createNews(Map<String, dynamic> body) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      await remoteDataSource.createNews(body);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateNews(
+    int id,
+    Map<String, dynamic> body,
+  ) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      await remoteDataSource.updateNews(id, body);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteNews(int id) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      await remoteDataSource.deleteNews(id);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 }

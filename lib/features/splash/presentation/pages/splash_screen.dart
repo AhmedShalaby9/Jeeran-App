@@ -74,9 +74,10 @@ class _SplashScreenState extends State<SplashScreen>
     _textSlideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
       CurvedAnimation(parent: _textController, curve: Curves.easeOutCubic),
     );
-    _textFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _textController, curve: Curves.easeIn),
-    );
+    _textFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _textController, curve: Curves.easeIn));
     _screenFadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
@@ -98,9 +99,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _refreshProfile() async {
     try {
-      await sl<AuthRepository>().getMe().timeout(
-            const Duration(seconds: 8),
-          );
+      await sl<AuthRepository>().getMe().timeout(const Duration(seconds: 8));
     } catch (_) {}
   }
 
@@ -112,10 +111,9 @@ class _SplashScreenState extends State<SplashScreen>
         if (_settingsFetch != null) _settingsFetch!,
       ];
       if (futures.isNotEmpty) {
-        await Future.wait(futures).timeout(
-          const Duration(seconds: 3),
-          onTimeout: () => [],
-        );
+        await Future.wait(
+          futures,
+        ).timeout(const Duration(seconds: 3), onTimeout: () => []);
       }
 
       if (!mounted) return;
@@ -158,7 +156,8 @@ class _SplashScreenState extends State<SplashScreen>
           if (!AppStorage.isLoggedIn) return const LoginPage();
           return const MainPage();
         },
-        transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+            child,
         transitionDuration: Duration.zero,
       ),
     );
@@ -378,7 +377,11 @@ class _ForceUpdateSheet extends StatelessWidget {
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) => Container(
                     color: AppColors.primary,
-                    child: const Icon(Icons.home, color: Colors.white, size: 36),
+                    child: const Icon(
+                      Icons.home,
+                      color: Colors.white,
+                      size: 36,
+                    ),
                   ),
                 ),
               ),
@@ -411,7 +414,9 @@ class _ForceUpdateSheet extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.grey.withValues(alpha: 0.3),
+                  disabledBackgroundColor: AppColors.grey.withValues(
+                    alpha: 0.3,
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),

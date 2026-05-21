@@ -24,3 +24,12 @@ class NewsError extends NewsState {
   @override
   List<Object?> get props => [message];
 }
+
+class NewsActionSuccess extends NewsState {}
+
+class NewsActionError extends NewsState {
+  final String message;
+  const NewsActionError(this.message);
+  @override
+  List<Object?> get props => [message];
+}

@@ -39,6 +39,12 @@ class AppStorage {
   /// Convenience — true only when the stored user type is 'seller'.
   static bool get isSeller => userType == 'seller';
 
+  /// Convenience — true when the stored user type is 'admin' or 'super_admin'.
+  static bool get isAdmin {
+    final type = userType;
+    return type == 'admin' || type == 'super_admin';
+  }
+
   static Future<void> saveAuthTokens({
     required String token,
     String? refreshToken,

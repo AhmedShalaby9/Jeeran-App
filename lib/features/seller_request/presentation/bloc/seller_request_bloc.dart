@@ -11,6 +11,9 @@ class SellerRequestBloc extends Bloc<SellerRequestEvent, SellerRequestState> {
 
   SellerRequestBloc({required this.repository}) : super(SellerRequestInitial()) {
     on<SubmitSellerRequestEvent>(_onSubmit);
+    on<FetchSellerRequestsEvent>(_onFetchSellerRequests);
+    on<ApproveSellerRequestEvent>(_onApprove);
+    on<RejectSellerRequestEvent>(_onReject);
   }
 
   Future<void> _onSubmit(
@@ -22,6 +25,42 @@ class SellerRequestBloc extends Bloc<SellerRequestEvent, SellerRequestState> {
     result.fold(
       (failure) => emit(SellerRequestError(_mapFailure(failure))),
       (_) => emit(SellerRequestSuccess()),
+    );
+  }
+
+  Future<void> _onFetchSellerRequests(
+    FetchSellerRequestsEvent event,
+    Emitter<SellerRequestState> emit,
+  ) async {
+    emit(SellerRequestLoading());
+    final result = await repository.getSellerRequests(status: event.status);
+    result.fold(
+      (failure) => emit(SellerRequestError(_mapFailure(failure))),
+      (requests) => emit(SellerRequestsLoaded(requests)),
+    );
+  }
+
+  Future<void> _onApprove(
+    ApproveSellerRequestEvent event,
+    Emitter<SellerRequestState> emit,
+  ) async {
+    emit(SellerRequestLoading());
+    final result = await repository.approveSellerRequest(event.id);
+    result.fold(
+      (failure) => emit(SellerRequestError(_mapFailure(failure))),
+      (_) => emit(SellerRequestActionSuccess()),
+    );
+  }
+
+  Future<void> _onReject(
+    RejectSellerRequestEvent event,
+    Emitter<SellerRequestState> emit,
+  ) async {
+    emit(SellerRequestLoading());
+    final result = await repository.rejectSellerRequest(event.id);
+    result.fold(
+      (failure) => emit(SellerRequestError(_mapFailure(failure))),
+      (_) => emit(SellerRequestActionSuccess()),
     );
   }
 
