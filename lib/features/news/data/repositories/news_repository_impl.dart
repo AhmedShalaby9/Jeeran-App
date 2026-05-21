@@ -61,4 +61,15 @@ class NewsRepositoryImpl implements NewsRepository {
       return Left(ServerFailure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, String>> uploadMedia(String filePath) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final url = await remoteDataSource.uploadMedia(filePath);
+      return Right(url);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 }

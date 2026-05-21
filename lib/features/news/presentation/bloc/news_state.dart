@@ -25,6 +25,14 @@ class NewsError extends NewsState {
   List<Object?> get props => [message];
 }
 
+class NewsUploading extends NewsState {
+  final int current;
+  final int total;
+  const NewsUploading({required this.current, required this.total});
+  @override
+  List<Object?> get props => [current, total];
+}
+
 class NewsActionSuccess extends NewsState {}
 
 class NewsActionError extends NewsState {

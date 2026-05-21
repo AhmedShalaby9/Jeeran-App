@@ -46,6 +46,20 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
     CreateNewsEvent event,
     Emitter<NewsState> emit,
   ) async {
+    // Upload new media files first
+    final uploadedUrls = <String>[];
+    for (int i = 0; i < event.newMedia.length; i++) {
+      emit(NewsUploading(current: i + 1, total: event.newMedia.length));
+      final uploadResult = await repository.uploadMedia(event.newMedia[i].path);
+      String? url;
+      uploadResult.fold((f) => url = null, (u) => url = u);
+      if (url == null) {
+        emit(NewsActionError('Failed to upload media ${i + 1}. Please try again.'));
+        return;
+      }
+      uploadedUrls.add(url!);
+    }
+
     emit(NewsLoading());
     final result = await repository.createNews({
       'title_ar': event.titleAr,
@@ -53,6 +67,7 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
       'content_ar': event.contentAr,
       if (event.contentEn != null) 'content_en': event.contentEn,
       'is_active': event.isActive,
+      if (uploadedUrls.isNotEmpty) 'media': uploadedUrls,
     });
     result.fold(
       (failure) => emit(NewsActionError(_mapFailure(failure))),
@@ -64,6 +79,20 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
     UpdateNewsEvent event,
     Emitter<NewsState> emit,
   ) async {
+    // Upload new media files first
+    final allMediaUrls = <String>[...event.existingMediaUrls];
+    for (int i = 0; i < event.newMedia.length; i++) {
+      emit(NewsUploading(current: i + 1, total: event.newMedia.length));
+      final uploadResult = await repository.uploadMedia(event.newMedia[i].path);
+      String? url;
+      uploadResult.fold((f) => url = null, (u) => url = u);
+      if (url == null) {
+        emit(NewsActionError('Failed to upload media ${i + 1}. Please try again.'));
+        return;
+      }
+      allMediaUrls.add(url!);
+    }
+
     emit(NewsLoading());
     final result = await repository.updateNews(event.id, {
       'title_ar': event.titleAr,
@@ -71,6 +100,7 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
       'content_ar': event.contentAr,
       if (event.contentEn != null) 'content_en': event.contentEn,
       'is_active': event.isActive,
+      'media': allMediaUrls,
     });
     result.fold(
       (failure) => emit(NewsActionError(_mapFailure(failure))),

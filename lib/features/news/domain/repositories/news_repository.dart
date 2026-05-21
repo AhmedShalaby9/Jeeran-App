@@ -7,4 +7,5 @@ abstract class NewsRepository {
   Future<Either<Failure, void>> createNews(Map<String, dynamic> body);
   Future<Either<Failure, void>> updateNews(int id, Map<String, dynamic> body);
   Future<Either<Failure, void>> deleteNews(int id);
+  Future<Either<Failure, String>> uploadMedia(String filePath);
 }

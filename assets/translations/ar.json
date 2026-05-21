@@ -394,7 +394,12 @@
     "upload_progress": "جارٍ رفع {current} من {total}...",
     "property_type": "نوع العقار",
     "property_status": "الغرض من الإعلان",
-    "inactive": "غير نشط"
+    "inactive": "غير نشط",
+    "media": "الوسائط",
+    "files": "ملفات",
+    "add_media": "إضافة صور / فيديو",
+    "pick_images": "اختر صوراً من المعرض",
+    "pick_video": "اختر فيديو من المعرض"
   },
   "profile": {
     "title": "ملفي الشخصي",

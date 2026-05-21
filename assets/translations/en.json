@@ -394,7 +394,12 @@
     "upload_progress": "Uploading {current} of {total}...",
     "property_type": "Property Type",
     "property_status": "Listing Purpose",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "media": "Media",
+    "files": "files",
+    "add_media": "Add Photos / Video",
+    "pick_images": "Choose Images from Gallery",
+    "pick_video": "Choose Video from Gallery"
   },
   "profile": {
     "title": "My Profile",

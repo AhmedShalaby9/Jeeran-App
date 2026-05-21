@@ -8,6 +8,7 @@ abstract class NewsRemoteDataSource {
   Future<void> createNews(Map<String, dynamic> body);
   Future<void> updateNews(int id, Map<String, dynamic> body);
   Future<void> deleteNews(int id);
+  Future<String> uploadMedia(String filePath);
 }
 
 class NewsRemoteDataSourceImpl implements NewsRemoteDataSource {
@@ -66,6 +67,37 @@ class NewsRemoteDataSourceImpl implements NewsRemoteDataSource {
     try {
       final response = await apiClient.delete(ApiEndpoints.newsById(id));
       if (response.statusCode == 200 || response.statusCode == 204) return;
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<String> uploadMedia(String filePath) async {
+    try {
+      final response = await apiClient.postMultipart(
+        ApiEndpoints.uploadSingle,
+        filePath: filePath,
+        queryParams: {'folder': 'news'},
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final body = response.data;
+        String? url;
+        if (body is Map<String, dynamic>) {
+          final data = body['data'];
+          if (data is String) {
+            url = data;
+          } else if (data is Map<String, dynamic>) {
+            url = data['url'] as String?;
+          } else {
+            url = body['url'] as String?;
+          }
+        }
+        if (url != null) return url;
+      }
       throw ServerException();
     } on ServerException {
       rethrow;
