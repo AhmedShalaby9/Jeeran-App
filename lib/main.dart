@@ -21,7 +21,7 @@ void main() async {
   AppConfig.setEnvironment(AppEnvironment.staging);
   await AppStorage.init();
   NotificationService.instance.init().catchError(
-    (e) => debugPrint('NotificationService init failed: $e'),
+    (e) => debugPrint('[FCM] NotificationService init failed: $e'),
   );
   await EasyLocalization.ensureInitialized();
   await di.init();
@@ -41,10 +41,22 @@ void main() async {
 }
 
 Future<void> _registerFcmToken() async {
+  if (!AppStorage.isLoggedIn) {
+    debugPrint('[FCM reg] not logged in — skipping startup registration');
+    return;
+  }
+  await NotificationService.instance.ready;
+  debugPrint('[FCM reg] _registerFcmToken: starting');
   final token = await NotificationService.instance.getToken();
-  if (token == null) return;
+  if (token == null) {
+    debugPrint('[FCM reg] token is null — skipping');
+    return;
+  }
   // Skip if this exact token was already registered
-  if (AppStorage.lastFcmToken == token) return;
+  if (AppStorage.lastFcmToken == token) {
+    debugPrint('[FCM reg] same token already registered — skipping');
+    return;
+  }
   String deviceId;
   String platform;
   try {
@@ -56,16 +68,27 @@ Future<void> _registerFcmToken() async {
       deviceId = (await info.iosInfo).identifierForVendor ?? '';
       platform = 'ios';
     }
-  } catch (_) {
+    debugPrint('[FCM reg] platform=$platform  deviceId=$deviceId');
+  } catch (e) {
+    debugPrint('[FCM reg] deviceInfo FAILED: $e — skipping');
     return;
   }
-  if (deviceId.isEmpty) return;
+  if (deviceId.isEmpty) {
+    debugPrint('[FCM reg] deviceId is empty — skipping');
+    return;
+  }
   final result = await sl<NotificationRepository>().registerFcmToken(
     token: token,
     deviceId: deviceId,
     platform: platform,
   );
-  if (result.isRight()) await AppStorage.saveLastFcmToken(token);
+  result.fold(
+    (failure) => debugPrint('[FCM reg] API FAILED: $failure'),
+    (_) {
+      debugPrint('[FCM reg] API success — token saved');
+      AppStorage.saveLastFcmToken(token);
+    },
+  );
 }
 
 class JeeranApp extends StatelessWidget {
