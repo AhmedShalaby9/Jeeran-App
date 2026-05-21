@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:translator/translator.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../news/domain/entities/news.dart';
 import '../../../news/presentation/bloc/news_bloc.dart';
@@ -21,16 +22,23 @@ class AdminNewsFormPage extends StatefulWidget {
 
 class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
   final _formKey = GlobalKey<FormState>();
+
   late final TextEditingController _titleArCtrl;
   late final TextEditingController _titleEnCtrl;
   late final TextEditingController _contentArCtrl;
   late final TextEditingController _contentEnCtrl;
   late bool _isActive;
 
-  // Media management
-  late List<String> _existingMediaUrls; // kept server URLs (edit mode)
-  final List<XFile> _newMediaFiles = [];  // newly picked local files
+  // Translation
+  final _translator = GoogleTranslator();
+  bool _translatingTitleAr = false;
+  bool _translatingTitleEn = false;
+  bool _translatingContentAr = false;
+  bool _translatingContentEn = false;
 
+  // Media management
+  late List<String> _existingMediaUrls;
+  final List<XFile> _newMediaFiles = [];
   final _picker = ImagePicker();
 
   bool get _isEditing => widget.news != null;
@@ -55,20 +63,37 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
     super.dispose();
   }
 
+  // ── Translation ───────────────────────────────────────────────────────────
+
+  Future<void> _translate({
+    required TextEditingController source,
+    required TextEditingController target,
+    required String targetLang,
+    required void Function(bool) setLoading,
+  }) async {
+    if (source.text.trim().isEmpty) return;
+    setState(() => setLoading(true));
+    try {
+      final result = await _translator.translate(source.text.trim(), to: targetLang);
+      if (!mounted) return;
+      setState(() => target.text = result.text);
+    } catch (_) {
+      // silent fail — user can tap again
+    } finally {
+      if (mounted) setState(() => setLoading(false));
+    }
+  }
+
   // ── Media picking ─────────────────────────────────────────────────────────
 
   Future<void> _pickImages() async {
     final picked = await _picker.pickMultiImage();
-    if (picked.isNotEmpty) {
-      setState(() => _newMediaFiles.addAll(picked));
-    }
+    if (picked.isNotEmpty) setState(() => _newMediaFiles.addAll(picked));
   }
 
   Future<void> _pickVideo() async {
     final picked = await _picker.pickVideo(source: ImageSource.gallery);
-    if (picked != null) {
-      setState(() => _newMediaFiles.add(picked));
-    }
+    if (picked != null) setState(() => _newMediaFiles.add(picked));
   }
 
   void _showMediaSourceSheet() {
@@ -92,8 +117,8 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
             ),
             const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined,
-                  color: AppColors.primary),
+              leading:
+                  const Icon(Icons.photo_library_outlined, color: AppColors.primary),
               title: Text('admin.pick_images'.tr()),
               onTap: () {
                 Navigator.pop(context);
@@ -101,8 +126,8 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.videocam_outlined,
-                  color: AppColors.primary),
+              leading:
+                  const Icon(Icons.videocam_outlined, color: AppColors.primary),
               title: Text('admin.pick_video'.tr()),
               onTap: () {
                 Navigator.pop(context);
@@ -125,13 +150,9 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
       bloc.add(UpdateNewsEvent(
         id: widget.news!.id,
         titleAr: _titleArCtrl.text.trim(),
-        titleEn: _titleEnCtrl.text.trim().isEmpty
-            ? null
-            : _titleEnCtrl.text.trim(),
+        titleEn: _titleEnCtrl.text.trim().isEmpty ? null : _titleEnCtrl.text.trim(),
         contentAr: _contentArCtrl.text.trim(),
-        contentEn: _contentEnCtrl.text.trim().isEmpty
-            ? null
-            : _contentEnCtrl.text.trim(),
+        contentEn: _contentEnCtrl.text.trim().isEmpty ? null : _contentEnCtrl.text.trim(),
         isActive: _isActive,
         existingMediaUrls: _existingMediaUrls,
         newMedia: _newMediaFiles,
@@ -139,13 +160,9 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
     } else {
       bloc.add(CreateNewsEvent(
         titleAr: _titleArCtrl.text.trim(),
-        titleEn: _titleEnCtrl.text.trim().isEmpty
-            ? null
-            : _titleEnCtrl.text.trim(),
+        titleEn: _titleEnCtrl.text.trim().isEmpty ? null : _titleEnCtrl.text.trim(),
         contentAr: _contentArCtrl.text.trim(),
-        contentEn: _contentEnCtrl.text.trim().isEmpty
-            ? null
-            : _contentEnCtrl.text.trim(),
+        contentEn: _contentEnCtrl.text.trim().isEmpty ? null : _contentEnCtrl.text.trim(),
         isActive: _isActive,
         newMedia: _newMediaFiles,
       ));
@@ -185,41 +202,91 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title AR
-                    _buildField(
-                      controller: _titleArCtrl,
+                    // ── Title Arabic ──────────────────────────────────
+                    _TranslateLabel(
                       label: 'admin.title_ar'.tr(),
                       required: true,
+                      buttonLabel: 'Translate from English',
+                      enabled: _titleEnCtrl.text.trim().isNotEmpty,
+                      translating: _translatingTitleAr,
+                      onTranslate: () => _translate(
+                        source: _titleEnCtrl,
+                        target: _titleArCtrl,
+                        targetLang: 'ar',
+                        setLoading: (v) => _translatingTitleAr = v,
+                      ),
+                    ),
+                    _buildField(
+                      controller: _titleArCtrl,
+                      required: true,
                       maxLines: 1,
+                      onChanged: (_) => setState(() {}),
                     ),
                     const SizedBox(height: 12),
 
-                    // Title EN
+                    // ── Title English ─────────────────────────────────
+                    _TranslateLabel(
+                      label: 'admin.title_en'.tr(),
+                      buttonLabel: 'Translate from Arabic',
+                      enabled: _titleArCtrl.text.trim().isNotEmpty,
+                      translating: _translatingTitleEn,
+                      onTranslate: () => _translate(
+                        source: _titleArCtrl,
+                        target: _titleEnCtrl,
+                        targetLang: 'en',
+                        setLoading: (v) => _translatingTitleEn = v,
+                      ),
+                    ),
                     _buildField(
                       controller: _titleEnCtrl,
-                      label: 'admin.title_en'.tr(),
                       maxLines: 1,
+                      onChanged: (_) => setState(() {}),
                     ),
                     const SizedBox(height: 12),
 
-                    // Content AR
-                    _buildField(
-                      controller: _contentArCtrl,
+                    // ── Content Arabic ────────────────────────────────
+                    _TranslateLabel(
                       label: 'admin.content_ar'.tr(),
                       required: true,
+                      buttonLabel: 'Translate from English',
+                      enabled: _contentEnCtrl.text.trim().isNotEmpty,
+                      translating: _translatingContentAr,
+                      onTranslate: () => _translate(
+                        source: _contentEnCtrl,
+                        target: _contentArCtrl,
+                        targetLang: 'ar',
+                        setLoading: (v) => _translatingContentAr = v,
+                      ),
+                    ),
+                    _buildField(
+                      controller: _contentArCtrl,
+                      required: true,
                       maxLines: 5,
+                      onChanged: (_) => setState(() {}),
                     ),
                     const SizedBox(height: 12),
 
-                    // Content EN
+                    // ── Content English ───────────────────────────────
+                    _TranslateLabel(
+                      label: 'admin.content_en'.tr(),
+                      buttonLabel: 'Translate from Arabic',
+                      enabled: _contentArCtrl.text.trim().isNotEmpty,
+                      translating: _translatingContentEn,
+                      onTranslate: () => _translate(
+                        source: _contentArCtrl,
+                        target: _contentEnCtrl,
+                        targetLang: 'en',
+                        setLoading: (v) => _translatingContentEn = v,
+                      ),
+                    ),
                     _buildField(
                       controller: _contentEnCtrl,
-                      label: 'admin.content_en'.tr(),
                       maxLines: 5,
+                      onChanged: (_) => setState(() {}),
                     ),
                     const SizedBox(height: 16),
 
-                    // ── Media section ─────────────────────────────────────
+                    // ── Media section ─────────────────────────────────
                     _MediaSection(
                       existingUrls: _existingMediaUrls,
                       newFiles: _newMediaFiles,
@@ -231,7 +298,7 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Active toggle
+                    // ── Active toggle ─────────────────────────────────
                     Container(
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -241,18 +308,16 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
                         title: Text('admin.active'.tr()),
                         value: _isActive,
                         activeColor: AppColors.success,
-                        onChanged: isLoading
-                            ? null
-                            : (v) => setState(() => _isActive = v),
+                        onChanged:
+                            isLoading ? null : (v) => setState(() => _isActive = v),
                       ),
                     ),
                     const SizedBox(height: 24),
 
-                    // Upload progress
+                    // ── Upload progress ───────────────────────────────
                     if (isUploading) ...[
                       LinearProgressIndicator(
-                        value: (state as NewsUploading).current /
-                            state.total,
+                        value: (state as NewsUploading).current / state.total,
                         color: AppColors.primary,
                         backgroundColor:
                             AppColors.primary.withValues(alpha: 0.15),
@@ -270,7 +335,7 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
                       const SizedBox(height: 16),
                     ],
 
-                    // Submit button
+                    // ── Submit button ─────────────────────────────────
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -278,8 +343,7 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
-                          padding:
-                              const EdgeInsets.symmetric(vertical: 14),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -317,15 +381,15 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
 
   Widget _buildField({
     required TextEditingController controller,
-    required String label,
     bool required = false,
     int maxLines = 1,
+    ValueChanged<String>? onChanged,
   }) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
+      onChanged: onChanged,
       decoration: InputDecoration(
-        labelText: label,
         filled: true,
         fillColor: Colors.white,
         border: OutlineInputBorder(
@@ -342,14 +406,97 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
         ),
       ),
       validator: required
-          ? (v) =>
-              (v == null || v.trim().isEmpty) ? '$label is required' : null
+          ? (v) => (v == null || v.trim().isEmpty) ? 'This field is required' : null
           : null,
     );
   }
 }
 
-// ── Media section widget ──────────────────────────────────────────────────────
+// ── Translate label row ───────────────────────────────────────────────────────
+
+class _TranslateLabel extends StatelessWidget {
+  final String label;
+  final bool required;
+  final String buttonLabel;
+  final bool enabled;
+  final bool translating;
+  final VoidCallback onTranslate;
+
+  const _TranslateLabel({
+    required this.label,
+    this.required = false,
+    required this.buttonLabel,
+    required this.enabled,
+    required this.translating,
+    required this.onTranslate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.ink,
+                letterSpacing: 0.1,
+              ),
+              children: required
+                  ? const [
+                      TextSpan(
+                        text: ' *',
+                        style: TextStyle(color: AppColors.danger),
+                      ),
+                    ]
+                  : null,
+            ),
+          ),
+          const Spacer(),
+          GestureDetector(
+            onTap: enabled && !translating ? onTranslate : null,
+            child: AnimatedOpacity(
+              opacity: enabled && !translating ? 1.0 : 0.35,
+              duration: const Duration(milliseconds: 150),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (translating)
+                    const SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 1.5,
+                        color: AppColors.secondary,
+                      ),
+                    )
+                  else
+                    const Icon(Icons.translate_rounded,
+                        size: 13, color: AppColors.secondary),
+                  const SizedBox(width: 4),
+                  Text(
+                    buttonLabel,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Media section ─────────────────────────────────────────────────────────────
 
 class _MediaSection extends StatelessWidget {
   final List<String> existingUrls;
@@ -403,8 +550,8 @@ class _MediaSection extends StatelessWidget {
               const Spacer(),
               Text(
                 '${existingUrls.length + newFiles.length} ${'admin.files'.tr()}',
-                style: const TextStyle(
-                    fontSize: 12, color: AppColors.inkMute),
+                style:
+                    const TextStyle(fontSize: 12, color: AppColors.inkMute),
               ),
             ],
           ),
@@ -414,15 +561,12 @@ class _MediaSection extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                // Existing server URLs
                 for (int i = 0; i < existingUrls.length; i++)
                   _MediaThumbNetwork(
                     url: existingUrls[i],
                     isVideo: _isVideo(existingUrls[i]),
                     onRemove: () => onRemoveExisting(i),
                   ),
-
-                // Newly picked local files
                 for (int i = 0; i < newFiles.length; i++)
                   _MediaThumbFile(
                     file: newFiles[i],
@@ -457,73 +601,8 @@ class _MediaThumbNetwork extends StatelessWidget {
   final bool isVideo;
   final VoidCallback onRemove;
 
-  const _MediaThumbNetwork({
-    required this.url,
-    required this.isVideo,
-    required this.onRemove,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: isVideo
-              ? _videoPlaceholder()
-              : Image.network(
-                  url,
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _videoPlaceholder(),
-                ),
-        ),
-        if (isVideo)
-          const Positioned.fill(
-            child: Center(
-              child: Icon(Icons.play_circle_fill,
-                  color: Colors.white, size: 28),
-            ),
-          ),
-        Positioned(
-          top: 2,
-          right: 2,
-          child: GestureDetector(
-            onTap: onRemove,
-            child: Container(
-              width: 22,
-              height: 22,
-              decoration: const BoxDecoration(
-                color: AppColors.danger,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.close, size: 14, color: Colors.white),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _videoPlaceholder() => Container(
-        width: 80,
-        height: 80,
-        color: AppColors.ink,
-        child: const Icon(Icons.videocam, color: Colors.white, size: 32),
-      );
-}
-
-class _MediaThumbFile extends StatelessWidget {
-  final XFile file;
-  final bool isVideo;
-  final VoidCallback onRemove;
-
-  const _MediaThumbFile({
-    required this.file,
-    required this.isVideo,
-    required this.onRemove,
-  });
+  const _MediaThumbNetwork(
+      {required this.url, required this.isVideo, required this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -536,11 +615,10 @@ class _MediaThumbFile extends StatelessWidget {
                   width: 80,
                   height: 80,
                   color: AppColors.ink,
-                  child:
-                      const Icon(Icons.videocam, color: Colors.white, size: 32),
+                  child: const Icon(Icons.videocam, color: Colors.white, size: 32),
                 )
-              : Image.file(
-                  File(file.path),
+              : Image.network(
+                  url,
                   width: 80,
                   height: 80,
                   fit: BoxFit.cover,
@@ -548,15 +626,15 @@ class _MediaThumbFile extends StatelessWidget {
                     width: 80,
                     height: 80,
                     color: AppColors.tagPrimaryBg,
-                    child: const Icon(Icons.broken_image,
-                        color: AppColors.inkMute),
+                    child: const Icon(Icons.broken_image, color: AppColors.inkMute),
                   ),
                 ),
         ),
         if (isVideo)
           const Positioned.fill(
-            child:
-                Center(child: Icon(Icons.play_circle_fill, color: Colors.white, size: 28)),
+            child: Center(
+              child: Icon(Icons.play_circle_fill, color: Colors.white, size: 28),
+            ),
           ),
         Positioned(
           top: 2,
@@ -567,9 +645,66 @@ class _MediaThumbFile extends StatelessWidget {
               width: 22,
               height: 22,
               decoration: const BoxDecoration(
-                color: AppColors.danger,
-                shape: BoxShape.circle,
-              ),
+                  color: AppColors.danger, shape: BoxShape.circle),
+              child: const Icon(Icons.close, size: 14, color: Colors.white),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MediaThumbFile extends StatelessWidget {
+  final XFile file;
+  final bool isVideo;
+  final VoidCallback onRemove;
+
+  const _MediaThumbFile(
+      {required this.file, required this.isVideo, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: isVideo
+              ? Container(
+                  width: 80,
+                  height: 80,
+                  color: AppColors.ink,
+                  child: const Icon(Icons.videocam, color: Colors.white, size: 32),
+                )
+              : Image.file(
+                  File(file.path),
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 80,
+                    height: 80,
+                    color: AppColors.tagPrimaryBg,
+                    child: const Icon(Icons.broken_image, color: AppColors.inkMute),
+                  ),
+                ),
+        ),
+        if (isVideo)
+          const Positioned.fill(
+            child: Center(
+              child: Icon(Icons.play_circle_fill, color: Colors.white, size: 28),
+            ),
+          ),
+        Positioned(
+          top: 2,
+          right: 2,
+          child: GestureDetector(
+            onTap: onRemove,
+            child: Container(
+              width: 22,
+              height: 22,
+              decoration: const BoxDecoration(
+                  color: AppColors.danger, shape: BoxShape.circle),
               child: const Icon(Icons.close, size: 14, color: Colors.white),
             ),
           ),

@@ -14,7 +14,7 @@ class SellerRequestTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (AppStorage.isSeller) return const SizedBox.shrink();
+    if (AppStorage.isSeller || AppStorage.isAdmin) return const SizedBox.shrink();
 
     return BlocBuilder<SellerRequestBloc, SellerRequestState>(
       builder: (context, state) {

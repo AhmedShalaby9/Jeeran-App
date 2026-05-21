@@ -39,7 +39,7 @@ class SellerRequestModel {
       id: json['id'] as int,
       status: json['status'] as String? ?? 'pending',
       user: SellerRequestUserSummary.fromJson(
-        json['User'] as Map<String, dynamic>? ?? {},
+        json['user'] as Map<String, dynamic>? ?? {},
       ),
       createdAt: json['created_at'] as String? ?? '',
     );
