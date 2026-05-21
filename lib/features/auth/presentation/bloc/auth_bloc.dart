@@ -26,7 +26,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     String? fcmToken;
     try {
       fcmToken = await NotificationService.instance.getToken();
-    } catch (_) {}
+      print('[FCM login] fcmToken at login = $fcmToken');
+    } catch (e) {
+      print('[FCM login] getToken FAILED: $e');
+    }
+
 
     final platform = Platform.isAndroid ? 'android' : 'ios';
     String? deviceId;

@@ -37,7 +37,10 @@
       "Bash(rmdir -p \"C:\\\\Users\\\\ahmed\\\\StudioProjects\\\\jeeran_flutter\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\com\\\\example\\\\jeeran_flutter\")",
       "Bash(dart run:*)",
       "Bash(xargs cat:*)",
-      "Bash(xargs ls)"
+      "Bash(xargs ls)",
+      "Bash(git fetch *)",
+      "Bash(git stash *)",
+      "Bash(git pull *)"
     ]
   }
 }
