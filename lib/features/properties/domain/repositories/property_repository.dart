@@ -18,4 +18,6 @@ abstract class PropertyRepository {
   Future<Either<Failure, String>> uploadImage(String filePath);
   Future<Either<Failure, void>> createProperty(Map<String, dynamic> data);
   Future<Either<Failure, void>> updateProperty(int id, Map<String, dynamic> data);
+  Future<Either<Failure, void>> approveProperty(int id);
+  Future<Either<Failure, void>> rejectProperty(int id, String rejectionReason);
 }

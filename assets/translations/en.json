@@ -373,7 +373,13 @@
     "approve": "Approve",
     "reject": "Reject",
     "approve_confirm": "Approve the seller request from {name}?",
-    "reject_confirm": "Reject the seller request from {name}?"
+    "reject_confirm": "Reject the seller request from {name}?",
+    "properties": "Properties",
+    "properties_subtitle": "Review and approve property listings",
+    "no_properties": "No properties found",
+    "approve_property_confirm": "Approve the property \"{title}\"?",
+    "reject_property_confirm": "Reject the property \"{title}\"?",
+    "rejection_reason": "Rejection reason"
   },
   "profile": {
     "title": "My Profile",

@@ -11,6 +11,8 @@ abstract class PropertyRemoteDataSource {
   Future<String> uploadImage(String filePath);
   Future<void> createProperty(Map<String, dynamic> data);
   Future<void> updateProperty(int id, Map<String, dynamic> data);
+  Future<void> approveProperty(int id);
+  Future<void> rejectProperty(int id, String rejectionReason);
 }
 
 class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
@@ -142,6 +144,35 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
         data: data,
       );
       if (response.statusCode == 200 || response.statusCode == 201) return;
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> approveProperty(int id) async {
+    try {
+      final response = await apiClient.patch(ApiEndpoints.propertyApprove(id));
+      if (response.statusCode == 200) return;
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> rejectProperty(int id, String rejectionReason) async {
+    try {
+      final response = await apiClient.patch(
+        ApiEndpoints.propertyReject(id),
+        data: {'rejection_reason': rejectionReason},
+      );
+      if (response.statusCode == 200) return;
       throw ServerException();
     } on ServerException {
       rethrow;

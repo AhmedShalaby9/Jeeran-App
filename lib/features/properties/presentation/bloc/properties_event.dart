@@ -22,3 +22,18 @@ class LoadMorePropertiesEvent extends PropertiesEvent {
 class ResetFiltersEvent extends PropertiesEvent {
   const ResetFiltersEvent();
 }
+
+class ApprovePropertyEvent extends PropertiesEvent {
+  final int id;
+  const ApprovePropertyEvent(this.id);
+  @override
+  List<Object?> get props => [id];
+}
+
+class RejectPropertyEvent extends PropertiesEvent {
+  final int id;
+  final String rejectionReason;
+  const RejectPropertyEvent(this.id, this.rejectionReason);
+  @override
+  List<Object?> get props => [id, rejectionReason];
+}

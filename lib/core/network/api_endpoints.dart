@@ -24,6 +24,8 @@
   // Properties
   static const String properties = '/properties';
   static String propertyById(int id) => '/properties/$id';
+  static String propertyApprove(int id) => '/properties/$id/approve';
+  static String propertyReject(int id) => '/properties/$id/reject';
   static const String featuredProperties = '/properties/featured';
   static const String searchProperties = '/properties/search';
   static String similarProperties(int id) => '/properties/$id/similar';

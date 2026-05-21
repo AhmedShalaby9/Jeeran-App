@@ -24,6 +24,8 @@ class Property extends Equatable {
   final String? videoUrl;
   final bool isFeatured;
   final bool isActive;
+  final bool isApproved;
+  final String? rejectionReason;
   final bool isFavorited;
   final String? publishedAt;
   final int? viewsCount;
@@ -60,6 +62,8 @@ class Property extends Equatable {
     this.videoUrl,
     this.isFeatured = false,
     this.isActive = true,
+    this.isApproved = false,
+    this.rejectionReason,
     this.isFavorited = false,
     this.publishedAt,
     this.viewsCount,
@@ -119,6 +123,8 @@ class Property extends Equatable {
         videoUrl,
         isFeatured,
         isActive,
+        isApproved,
+        rejectionReason,
         isFavorited,
         publishedAt,
         viewsCount,

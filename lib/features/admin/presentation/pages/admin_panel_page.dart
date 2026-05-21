@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 import 'admin_news_list_page.dart';
+import 'admin_properties_page.dart';
 import 'admin_seller_requests_page.dart';
 
 class AdminPanelPage extends StatelessWidget {
@@ -23,6 +24,17 @@ class AdminPanelPage extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AdminNewsListPage()),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _AdminCard(
+            icon: Icons.home_work_outlined,
+            title: 'admin.properties'.tr(),
+            subtitle: 'admin.properties_subtitle'.tr(),
+            color: AppColors.gold,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AdminPropertiesPage()),
             ),
           ),
           const SizedBox(height: 12),

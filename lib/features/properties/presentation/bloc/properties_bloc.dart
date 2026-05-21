@@ -14,6 +14,8 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
     on<FetchPropertiesEvent>(_onFetch);
     on<LoadMorePropertiesEvent>(_onLoadMore);
     on<ResetFiltersEvent>(_onResetFilters);
+    on<ApprovePropertyEvent>(_onApprove);
+    on<RejectPropertyEvent>(_onReject);
   }
 
   Future<void> _onFetch(
@@ -81,6 +83,28 @@ class PropertiesBloc extends Bloc<PropertiesEvent, PropertiesState> {
         hasReachedMax: properties.length < 20,
         params: const PropertyFilterParams(),
       )),
+    );
+  }
+
+  Future<void> _onApprove(
+    ApprovePropertyEvent event,
+    Emitter<PropertiesState> emit,
+  ) async {
+    final result = await repository.approveProperty(event.id);
+    result.fold(
+      (failure) => emit(PropertyActionError(_mapFailure(failure))),
+      (_) => emit(PropertyActionSuccess()),
+    );
+  }
+
+  Future<void> _onReject(
+    RejectPropertyEvent event,
+    Emitter<PropertiesState> emit,
+  ) async {
+    final result = await repository.rejectProperty(event.id, event.rejectionReason);
+    result.fold(
+      (failure) => emit(PropertyActionError(_mapFailure(failure))),
+      (_) => emit(PropertyActionSuccess()),
     );
   }
 

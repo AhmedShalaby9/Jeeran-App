@@ -373,7 +373,13 @@
     "approve": "قبول",
     "reject": "رفض",
     "approve_confirm": "هل تريد قبول طلب {name}؟",
-    "reject_confirm": "هل تريد رفض طلب {name}؟"
+    "reject_confirm": "هل تريد رفض طلب {name}؟",
+    "properties": "العقارات",
+    "properties_subtitle": "مراجعة إعلانات العقارات والموافقة عليها",
+    "no_properties": "لا توجد عقارات",
+    "approve_property_confirm": "هل تريد الموافقة على العقار \"{title}\"؟",
+    "reject_property_confirm": "هل تريد رفض العقار \"{title}\"؟",
+    "rejection_reason": "سبب الرفض"
   },
   "profile": {
     "title": "ملفي الشخصي",

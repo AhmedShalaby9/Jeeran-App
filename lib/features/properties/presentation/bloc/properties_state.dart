@@ -57,3 +57,12 @@ class PropertiesError extends PropertiesState {
   @override
   List<Object?> get props => [message];
 }
+
+class PropertyActionSuccess extends PropertiesState {}
+
+class PropertyActionError extends PropertiesState {
+  final String message;
+  const PropertyActionError(this.message);
+  @override
+  List<Object?> get props => [message];
+}
