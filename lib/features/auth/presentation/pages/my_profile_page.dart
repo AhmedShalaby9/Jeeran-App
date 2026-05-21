@@ -44,9 +44,7 @@ class _MyProfilePageState extends State<MyProfilePage>
   // ── helpers ─────────────────────────────────────────────────────
   bool get _canSave =>
       _nameCtrl.text.trim().length >= 2 &&
-      _emailCtrl.text.contains('@') &&
-      _gender.isNotEmpty &&
-      _dob != null;
+      _emailCtrl.text.contains('@');
 
   String get _formattedDob {
     if (_dob == null) return '';

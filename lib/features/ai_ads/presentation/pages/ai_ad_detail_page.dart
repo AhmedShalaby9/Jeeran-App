@@ -338,6 +338,27 @@ class _PaymentPendingBanner extends StatelessWidget {
 
 // ── Ad Result Card ───────────────────────────────────────────────────────────
 
+void _showFullScreenImage(BuildContext context, String url) {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
+        body: Center(
+          child: InteractiveViewer(
+            minScale: 1.0,
+            maxScale: 4.0,
+            child: Image.network(url, fit: BoxFit.contain),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 class _AdResultCard extends StatelessWidget {
   final AiAd ad;
   const _AdResultCard({required this.ad});
@@ -363,7 +384,7 @@ class _AdResultCard extends StatelessWidget {
           ClipRRect(
             borderRadius:
                 const BorderRadius.vertical(top: Radius.circular(16)),
-            child: _buildImage(),
+            child: _buildImage(context),
           ),
           Padding(
             padding: const EdgeInsets.all(16),
@@ -449,15 +470,18 @@ class _AdResultCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImage() {
+  Widget _buildImage(BuildContext context) {
     final url = ad.resultUrl ?? (ad.sourceImages.isNotEmpty ? ad.sourceImages.first : null);
     if (url == null) return _imagePlaceholder();
-    return Image.network(
-      url,
-      width: double.infinity,
-      height: ad.resultUrl != null ? 360 : 220,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => _imagePlaceholder(),
+    return GestureDetector(
+      onTap: () => _showFullScreenImage(context, url),
+      child: Image.network(
+        url,
+        width: double.infinity,
+        height: ad.resultUrl != null ? 360 : 220,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _imagePlaceholder(),
+      ),
     );
   }
 
@@ -569,7 +593,7 @@ class _TrialCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: _buildImage(),
+            child: _buildImage(context),
           ),
           Padding(
             padding: const EdgeInsets.all(12),
@@ -627,16 +651,19 @@ class _TrialCard extends StatelessWidget {
     );
   }
 
-  Widget _buildImage() {
+  Widget _buildImage(BuildContext context) {
     final url = trial.resultUrl ??
         (trial.sourceImages.isNotEmpty ? trial.sourceImages.first : null);
     if (url == null) return _placeholder();
-    return Image.network(
-      url,
-      width: double.infinity,
-      height: 200,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => _placeholder(),
+    return GestureDetector(
+      onTap: () => _showFullScreenImage(context, url),
+      child: Image.network(
+        url,
+        width: double.infinity,
+        height: 200,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _placeholder(),
+      ),
     );
   }
 

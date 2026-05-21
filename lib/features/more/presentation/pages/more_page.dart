@@ -354,6 +354,11 @@ class _MoreView extends StatelessWidget {
             ),
 
             const SellerRequestTile(),
+            _MoreTile(
+              icon: Icons.auto_awesome_outlined,
+              label: 'more.ai_ads'.tr(),
+              onTap: () => AiAdsPage.push(context),
+            ),
             // My Properties + Add Listing — sellers only
             BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
@@ -380,11 +385,6 @@ class _MoreView extends StatelessWidget {
                       icon: Icons.add_box_outlined,
                       label: 'more.add_property'.tr(),
                       onTap: () => AddPropertyPage.push(context),
-                    ),
-                    _MoreTile(
-                      icon: Icons.auto_awesome_outlined,
-                      label: 'more.ai_ads'.tr(),
-                      onTap: () => AiAdsPage.push(context),
                     ),
                     const SizedBox(height: 16),
                   ],

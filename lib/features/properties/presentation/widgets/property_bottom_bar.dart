@@ -9,14 +9,12 @@ class PropertyBottomBar extends StatelessWidget {
   final Property property;
   final bool saved;
   final VoidCallback onToggleSave;
-  final VoidCallback onShare;
 
   const PropertyBottomBar({
     super.key,
     required this.property,
     required this.saved,
     required this.onToggleSave,
-    required this.onShare,
   });
 
   Future<void> _call() async {
@@ -54,11 +52,6 @@ class PropertyBottomBar extends StatelessWidget {
               size: 20,
               color: saved ? AppColors.dangerPink : AppColors.inkSub,
             ),
-          ),
-          const SizedBox(width: 8),
-          SquareButton(
-            onTap: onShare,
-            child: const Icon(Icons.share_rounded, size: 18, color: AppColors.inkSub),
           ),
           const SizedBox(width: 8),
           if (property.agentWhatsapp?.isNotEmpty == true) ...[

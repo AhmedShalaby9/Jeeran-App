@@ -11,7 +11,6 @@ class PropertyGallery extends StatelessWidget {
   final ValueChanged<int> onPageChanged;
   final ValueChanged<int> onImageTap;
   final VoidCallback onToggleSave;
-  final VoidCallback onShare;
   final VoidCallback onBack;
 
   const PropertyGallery({
@@ -23,7 +22,6 @@ class PropertyGallery extends StatelessWidget {
     required this.onPageChanged,
     required this.onImageTap,
     required this.onToggleSave,
-    required this.onShare,
     required this.onBack,
   });
 
@@ -80,15 +78,6 @@ class PropertyGallery extends StatelessWidget {
                 ),
                 Row(
                   children: [
-                    GlassButton(
-                      onTap: onShare,
-                      child: const Icon(
-                        Icons.share_rounded,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
                     GlassButton(
                       onTap: onToggleSave,
                       child: Icon(
