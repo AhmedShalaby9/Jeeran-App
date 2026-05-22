@@ -64,9 +64,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final completer = Completer<void>();
 
     await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: _toE164(event.phone),
+      phoneNumber: event.phone,
       verificationCompleted: (credential) async {
-        // Android auto-reads the SMS — skip OTP entry
         await _signInWithCredential(credential, emit);
         if (!completer.isCompleted) completer.complete();
       },
@@ -89,7 +88,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onVerifyOtp(AuthVerifyOtpEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    if (_verificationId == null) {
+    if (_verificationId == null || _verificationId!.isEmpty) {
       emit(AuthError('Session expired. Please request a new code.'));
       return;
     }
@@ -106,7 +105,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     try {
       await FirebaseAuth.instance.signInWithCredential(credential);
-      final idToken = await FirebaseAuth.instance.currentUser!.getIdToken();
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      if (firebaseUser == null) {
+        emit(AuthError('Authentication failed. Please try again.'));
+        return;
+      }
+      final idToken = await firebaseUser.getIdToken();
 
       String? fcmToken;
       try { fcmToken = await NotificationService.instance.getToken(); } catch (_) {}
@@ -138,13 +142,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(AuthError(e.toString()));
     }
-  }
-
-  String _toE164(String phone) {
-    final digits = phone.replaceAll(RegExp(r'\D'), '');
-    if (digits.length == 11 && digits.startsWith('0')) return '+2$digits';
-    if (!phone.startsWith('+')) return '+$digits';
-    return phone;
   }
 
   Future<void> _onCompleteProfile(
