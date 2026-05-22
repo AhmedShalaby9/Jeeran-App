@@ -2,7 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:translator/translator.dart';
+
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../properties/domain/repositories/property_repository.dart';
 import '../../domain/repositories/ai_ads_repository.dart';
@@ -26,12 +29,17 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
   final _captionCtrl = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final _picker = ImagePicker();
+  final _translator = GoogleTranslator();
 
   static const int _maxImages = 5;
 
   bool _isLoading = false;
   String? _error;
   final List<XFile> _pickedImages = [];
+  String _language = 'ar';
+
+  static bool _containsArabic(String text) =>
+      RegExp(r'[\u0600-\u06FF]').hasMatch(text);
 
   @override
   void dispose() {
@@ -83,9 +91,27 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
       return;
     }
 
+    final isAdmin = AppStorage.isAdmin;
+
+    // Always send the caption in English so Gemini reasons consistently.
+    // Translate only if the caption contains Arabic characters.
+    String caption = _captionCtrl.text.trim();
+    if (_containsArabic(caption)) {
+      try {
+        final translated = await _translator.translate(caption, to: 'en');
+        if (translated.text.isNotEmpty) caption = translated.text;
+      } catch (_) {
+        // Translation failed — send original caption, Gemini handles it
+      }
+    }
+
+    if (!mounted) return;
+
     final result = await sl<AiAdsRepository>().generate(
-      caption: _captionCtrl.text.trim(),
+      caption: caption,
       sourceImages: imageUrls,
+      language: _language,
+      isAdmin: isAdmin,
     );
 
     if (!mounted) return;
@@ -104,7 +130,8 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
 
         setState(() => _isLoading = false);
 
-        if (paymentUrl != null && paymentUrl.isNotEmpty) {
+        // Admins use the no-payment endpoint — skip payment redirect
+        if (!isAdmin && paymentUrl != null && paymentUrl.isNotEmpty) {
           final uri = Uri.parse(paymentUrl);
           if (await canLaunchUrl(uri)) {
             await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -196,6 +223,89 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
 
             const SizedBox(height: 24),
 
+            // Ad Language
+            const Text(
+              'Ad Language',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.ink,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _language = 'ar'),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: _language == 'ar'
+                            ? AppColors.primary
+                            : Colors.white,
+                        borderRadius: const BorderRadius.horizontal(
+                          right: Radius.circular(10),
+                        ),
+                        border: Border.all(
+                          color: _language == 'ar'
+                              ? AppColors.primary
+                              : AppColors.grey.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Text(
+                        'العربية',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: _language == 'ar'
+                              ? Colors.white
+                              : AppColors.inkSub,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _language = 'en'),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: _language == 'en'
+                            ? AppColors.primary
+                            : Colors.white,
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(10),
+                        ),
+                        border: Border.all(
+                          color: _language == 'en'
+                              ? AppColors.primary
+                              : AppColors.grey.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Text(
+                        'English',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: _language == 'en'
+                              ? Colors.white
+                              : AppColors.inkSub,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
+
             // Source Images
             const Text(
               'Source Images',
@@ -274,9 +384,9 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'Generate & Pay',
-                        style: TextStyle(
+                    : Text(
+                        AppStorage.isAdmin ? 'Generate' : 'Generate & Pay',
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -285,11 +395,12 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
             ),
 
             const SizedBox(height: 12),
-            const Text(
-              'You will be redirected to a secure payment page. After payment the ad will start generating automatically.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: AppColors.inkSub),
-            ),
+            if (!AppStorage.isAdmin)
+              const Text(
+                'You will be redirected to a secure payment page. After payment the ad will start generating automatically.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: AppColors.inkSub),
+              ),
           ],
         ),
       ),

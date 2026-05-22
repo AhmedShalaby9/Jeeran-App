@@ -19,12 +19,16 @@ class AiAdsRepositoryImpl implements AiAdsRepository {
   Future<Either<Failure, Map<String, dynamic>>> generate({
     required String caption,
     required List<String> sourceImages,
+    required String language,
+    bool isAdmin = false,
   }) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
       final data = await remoteDataSource.generate(
         caption: caption,
         sourceImages: sourceImages,
+        language: language,
+        isAdmin: isAdmin,
       );
       return Right(data);
     } on ServerException catch (e) {

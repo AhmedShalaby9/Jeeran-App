@@ -7,6 +7,8 @@ abstract class AiAdsRepository {
   Future<Either<Failure, Map<String, dynamic>>> generate({
     required String caption,
     required List<String> sourceImages,
+    required String language,
+    bool isAdmin = false,
   });
 
   /// List the authenticated user's original (paid) ads.

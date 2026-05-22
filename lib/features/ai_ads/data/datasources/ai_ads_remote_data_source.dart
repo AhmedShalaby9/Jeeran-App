@@ -7,6 +7,8 @@ abstract class AiAdsRemoteDataSource {
   Future<Map<String, dynamic>> generate({
     required String caption,
     required List<String> sourceImages,
+    required String language,
+    bool isAdmin = false,
   });
   Future<List<AiAdModel>> listAds({int page = 1, int limit = 20});
   Future<AiAdModel> getAd(int id);
@@ -24,11 +26,16 @@ class AiAdsRemoteDataSourceImpl implements AiAdsRemoteDataSource {
   Future<Map<String, dynamic>> generate({
     required String caption,
     required List<String> sourceImages,
+    required String language,
+    bool isAdmin = false,
   }) async {
     try {
+      final endpoint = isAdmin
+          ? ApiEndpoints.aiAdsAdminGenerate
+          : ApiEndpoints.aiAdsGenerate;
       final response = await apiClient.post(
-        ApiEndpoints.aiAdsGenerate,
-        data: {'caption': caption, 'source_images': sourceImages},
+        endpoint,
+        data: {'caption': caption, 'source_images': sourceImages, 'language': language},
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return response.data['data'] as Map<String, dynamic>;
