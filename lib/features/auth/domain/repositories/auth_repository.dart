@@ -5,6 +5,9 @@ import '../entities/user.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, User>> login(String phone, {String? fcmToken, String? platform, String? deviceId});
+  Future<Either<Failure, bool>> sendOtp(String phone);
+  Future<Either<Failure, User>> verifyOtp(String phone, String otp, {String? fcmToken, String? platform, String? deviceId});
+  Future<Either<Failure, User>> firebaseVerify(String idToken, {String? fcmToken, String? platform, String? deviceId});
   Future<Either<Failure, User>> completeProfile(CompleteProfileParams params);
   Future<Either<Failure, User>> getMe();
 }

@@ -48,6 +48,14 @@ class AuthProfileUpdated extends AuthState {
   List<Object?> get props => [user];
 }
 
+class AuthOtpSent extends AuthState {
+  final String phone;
+  final bool isNewUser;
+  const AuthOtpSent({required this.phone, required this.isNewUser});
+  @override
+  List<Object?> get props => [phone, isNewUser];
+}
+
 class AuthError extends AuthState {
   final String message;
   const AuthError(this.message);

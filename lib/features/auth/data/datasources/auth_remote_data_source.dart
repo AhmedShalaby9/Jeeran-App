@@ -7,6 +7,9 @@ import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
   Future<UserModel> login(String phone, {String? fcmToken, String? platform, String? deviceId});
+  Future<bool> sendOtp(String phone);
+  Future<UserModel> verifyOtp(String phone, String otp, {String? fcmToken, String? platform, String? deviceId});
+  Future<UserModel> firebaseVerify(String idToken, {String? fcmToken, String? platform, String? deviceId});
   Future<UserModel> completeProfile(CompleteProfileParams params);
   Future<UserModel> getMe();
 }
@@ -32,6 +35,71 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return UserModel.fromJson(response.data as Map<String, dynamic>);
       }
       throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<bool> sendOtp(String phone) async {
+    try {
+      final response = await apiClient.post(
+        ApiEndpoints.sendOtp,
+        data: {'phone': phone},
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return (response.data['is_new_user'] as bool?) ?? false;
+      }
+      throw ServerException(response.data?['message'] as String? ?? '');
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<UserModel> verifyOtp(String phone, String otp, {String? fcmToken, String? platform, String? deviceId}) async {
+    try {
+      final response = await apiClient.post(
+        ApiEndpoints.verifyOtp,
+        data: <String, dynamic>{
+          'phone': phone,
+          'otp': otp,
+          if (fcmToken != null) 'fcm_token': fcmToken,
+          if (platform != null) 'platform': platform,
+          if (deviceId != null) 'device_id': deviceId,
+        },
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return UserModel.fromJson(response.data as Map<String, dynamic>);
+      }
+      throw ServerException(response.data?['message'] as String? ?? '');
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<UserModel> firebaseVerify(String idToken, {String? fcmToken, String? platform, String? deviceId}) async {
+    try {
+      final response = await apiClient.post(
+        ApiEndpoints.firebaseVerify,
+        data: <String, dynamic>{
+          'id_token': idToken,
+          if (fcmToken != null) 'fcm_token': fcmToken,
+          if (platform != null) 'platform': platform,
+          if (deviceId != null) 'device_id': deviceId,
+        },
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return UserModel.fromJson(response.data as Map<String, dynamic>);
+      }
+      throw ServerException(response.data?['message'] as String? ?? '');
     } on ServerException {
       rethrow;
     } catch (_) {

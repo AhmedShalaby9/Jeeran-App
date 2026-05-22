@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failures.dart';
@@ -12,9 +14,12 @@ import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository repository;
+  String? _verificationId;
 
   AuthBloc({required this.repository}) : super(AuthInitial()) {
     on<AuthLoginEvent>(_onLogin);
+    on<AuthSendOtpEvent>(_onSendOtp);
+    on<AuthVerifyOtpEvent>(_onVerifyOtp);
     on<AuthCompleteProfileEvent>(_onCompleteProfile);
     on<AuthLogoutEvent>(_onLogout);
     on<AuthGetMeEvent>(_onGetMe);
@@ -52,6 +57,94 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         ),
       );
     });
+  }
+
+  Future<void> _onSendOtp(AuthSendOtpEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final completer = Completer<void>();
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: _toE164(event.phone),
+      verificationCompleted: (credential) async {
+        // Android auto-reads the SMS — skip OTP entry
+        await _signInWithCredential(credential, emit);
+        if (!completer.isCompleted) completer.complete();
+      },
+      verificationFailed: (e) {
+        emit(AuthError(e.message ?? 'Phone verification failed'));
+        if (!completer.isCompleted) completer.complete();
+      },
+      codeSent: (verificationId, _) {
+        _verificationId = verificationId;
+        emit(AuthOtpSent(phone: event.phone, isNewUser: false));
+        if (!completer.isCompleted) completer.complete();
+      },
+      codeAutoRetrievalTimeout: (_) {
+        if (!completer.isCompleted) completer.complete();
+      },
+    );
+
+    await completer.future;
+  }
+
+  Future<void> _onVerifyOtp(AuthVerifyOtpEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    if (_verificationId == null) {
+      emit(AuthError('Session expired. Please request a new code.'));
+      return;
+    }
+    final credential = PhoneAuthProvider.credential(
+      verificationId: _verificationId!,
+      smsCode: event.otp,
+    );
+    await _signInWithCredential(credential, emit);
+  }
+
+  Future<void> _signInWithCredential(
+    PhoneAuthCredential credential,
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      final idToken = await FirebaseAuth.instance.currentUser!.getIdToken();
+
+      String? fcmToken;
+      try { fcmToken = await NotificationService.instance.getToken(); } catch (_) {}
+
+      final platform = Platform.isAndroid ? 'android' : 'ios';
+      String? deviceId;
+      try {
+        final info = DeviceInfoPlugin();
+        deviceId = Platform.isAndroid
+            ? (await info.androidInfo).id
+            : (await info.iosInfo).identifierForVendor;
+      } catch (_) {}
+
+      final result = await repository.firebaseVerify(
+        idToken!,
+        fcmToken: fcmToken,
+        platform: platform,
+        deviceId: deviceId,
+      );
+      result.fold(
+        (failure) => emit(AuthError(_mapFailure(failure))),
+        (user) => emit(AuthPhoneChecked(
+          user: user.isProfileComplete ? user : null,
+          isProfileComplete: user.isProfileComplete,
+        )),
+      );
+    } on FirebaseAuthException catch (e) {
+      emit(AuthError(e.message ?? 'Invalid verification code'));
+    } catch (e) {
+      emit(AuthError(e.toString()));
+    }
+  }
+
+  String _toE164(String phone) {
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    if (digits.length == 11 && digits.startsWith('0')) return '+2$digits';
+    if (!phone.startsWith('+')) return '+$digits';
+    return phone;
   }
 
   Future<void> _onCompleteProfile(

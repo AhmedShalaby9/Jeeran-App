@@ -52,7 +52,7 @@ class _LoginViewState extends State<_LoginView> {
                     isLoading: isLoading,
                     onContinue: (phone) {
                       setState(() => _lastPhone = phone);
-                      context.read<AuthBloc>().add(AuthLoginEvent(phone));
+                      context.read<AuthBloc>().add(AuthSendOtpEvent(phone));
                     },
                   );
                 },

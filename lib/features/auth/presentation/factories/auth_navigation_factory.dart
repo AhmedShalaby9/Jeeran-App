@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../main/presentation/pages/main_page.dart';
+import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
 import '../pages/complete_profile_page.dart';
+import '../pages/otp_page.dart';
 
 class AuthNavigationFactory {
   const AuthNavigationFactory._();
@@ -11,7 +14,9 @@ class AuthNavigationFactory {
     AuthState state, {
     required String lastPhone,
   }) {
-    if (state is AuthPhoneChecked) {
+    if (state is AuthOtpSent) {
+      _goToOtp(context, state.phone);
+    } else if (state is AuthPhoneChecked) {
       _navigateAfterPhoneCheck(context, state, lastPhone);
     } else if (state is AuthProfileCompleted) {
       _goToMain(context);
@@ -30,6 +35,19 @@ class AuthNavigationFactory {
     } else {
       _goToMain(context);
     }
+  }
+
+  static void _goToOtp(BuildContext context, String phone) {
+    final authBloc = context.read<AuthBloc>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: authBloc,
+          child: OtpPage(phone: phone),
+        ),
+      ),
+    );
   }
 
   static void _goToCompleteProfile(BuildContext context, String phone) {

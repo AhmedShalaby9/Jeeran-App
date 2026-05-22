@@ -15,6 +15,21 @@ class AuthLoginEvent extends AuthEvent {
   List<Object?> get props => [phone];
 }
 
+class AuthSendOtpEvent extends AuthEvent {
+  final String phone;
+  const AuthSendOtpEvent(this.phone);
+  @override
+  List<Object?> get props => [phone];
+}
+
+class AuthVerifyOtpEvent extends AuthEvent {
+  final String phone;
+  final String otp;
+  const AuthVerifyOtpEvent({required this.phone, required this.otp});
+  @override
+  List<Object?> get props => [phone, otp];
+}
+
 
 class AuthCompleteProfileEvent extends AuthEvent {
   final CompleteProfileParams params;

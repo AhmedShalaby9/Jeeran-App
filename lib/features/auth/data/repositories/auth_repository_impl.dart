@@ -34,6 +34,41 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, bool>> sendOtp(String phone) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final isNewUser = await remoteDataSource.sendOtp(phone);
+      return Right(isNewUser);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> verifyOtp(String phone, String otp, {String? fcmToken, String? platform, String? deviceId}) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final user = await remoteDataSource.verifyOtp(phone, otp, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
+      _saveToken(user);
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> firebaseVerify(String idToken, {String? fcmToken, String? platform, String? deviceId}) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final user = await remoteDataSource.firebaseVerify(idToken, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
+      _saveToken(user);
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, User>> completeProfile(CompleteProfileParams params) async {
     if (await networkInfo.isConnected) {
       try {

@@ -38,7 +38,7 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
   late int _bathrooms;
 
   late List<String> _existingImages; // server URLs to keep
-  final List<XFile> _newImages = [];  // newly picked files
+  final List<XFile> _newImages = []; // newly picked files
 
   late final TextEditingController _agentNameCtrl;
   late final TextEditingController _agentMobileCtrl;
@@ -127,13 +127,13 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
     };
 
     context.read<AddPropertyBloc>().add(
-          SubmitUpdateProperty(
-            propertyId: widget.property.id,
-            existingImageUrls: _existingImages,
-            newImages: _newImages,
-            body: body,
-          ),
-        );
+      SubmitUpdateProperty(
+        propertyId: widget.property.id,
+        existingImageUrls: _existingImages,
+        newImages: _newImages,
+        body: body,
+      ),
+    );
   }
 
   @override
@@ -141,14 +141,14 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
     return BlocListener<AddPropertyBloc, AddPropertyState>(
       listener: (context, state) {
         if (state is AddPropertySuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('admin.action_success'.tr())),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('admin.action_success'.tr())));
           Navigator.pop(context, true);
         } else if (state is AddPropertyFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
       },
       child: Scaffold(
@@ -156,8 +156,8 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
         appBar: AppBar(title: Text('admin.edit_property'.tr())),
         body: BlocBuilder<AddPropertyBloc, AddPropertyState>(
           builder: (context, state) {
-            final isLoading = state is AddPropertyUploading ||
-                state is AddPropertySubmitting;
+            final isLoading =
+                state is AddPropertyUploading || state is AddPropertySubmitting;
 
             return Stack(
               children: [
@@ -168,148 +168,159 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
                     children: [
                       // ── Section A: Listing Info ────────────────────────────
                       _sectionHeader('admin.listing_info'.tr()),
-                      _card(children: [
-                        // Property Type
-                        WizardLabel('admin.property_type'.tr()),
-                        DropdownButtonFormField<PropertyType>(
-                          value: _propertyType,
-                          decoration: _dropdownDecoration(),
-                          items: PropertyType.options
-                              .map((t) => DropdownMenuItem(
+                      _card(
+                        children: [
+                          // Property Type
+                          WizardLabel('admin.property_type'.tr()),
+                          DropdownButtonFormField<PropertyType>(
+                            value: _propertyType,
+                            decoration: _dropdownDecoration(),
+                            items: PropertyType.options
+                                .map(
+                                  (t) => DropdownMenuItem(
                                     value: t,
                                     child: Text(t.label()),
-                                  ))
-                              .toList(),
-                          onChanged: (v) =>
-                              setState(() => _propertyType = v),
-                        ),
-                        const SizedBox(height: 14),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) => setState(() => _propertyType = v),
+                          ),
+                          const SizedBox(height: 14),
 
-                        // Property Status
-                        WizardLabel('admin.property_status'.tr()),
-                        DropdownButtonFormField<PropertyStatus>(
-                          value: _propertyStatus,
-                          decoration: _dropdownDecoration(),
-                          items: PropertyStatus.options
-                              .map((s) => DropdownMenuItem(
+                          // Property Status
+                          WizardLabel('admin.property_status'.tr()),
+                          DropdownButtonFormField<PropertyStatus>(
+                            value: _propertyStatus,
+                            decoration: _dropdownDecoration(),
+                            items: PropertyStatus.options
+                                .map(
+                                  (s) => DropdownMenuItem(
                                     value: s,
                                     child: Text(s.label()),
-                                  ))
-                              .toList(),
-                          onChanged: (v) =>
-                              setState(() => _propertyStatus = v),
-                        ),
-                        const SizedBox(height: 14),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) =>
+                                setState(() => _propertyStatus = v),
+                          ),
+                          const SizedBox(height: 14),
 
-                        // State
-                        WizardLabel('property_details.city_state'.tr()),
-                        DropdownButtonFormField<PropertyState>(
-                          value: _propertyState,
-                          decoration: _dropdownDecoration(),
-                          items: PropertyState.options
-                              .map((s) => DropdownMenuItem(
+                          // State
+                          WizardLabel('property_details.city_state'.tr()),
+                          DropdownButtonFormField<PropertyState>(
+                            value: _propertyState,
+                            decoration: _dropdownDecoration(),
+                            items: PropertyState.options
+                                .map(
+                                  (s) => DropdownMenuItem(
                                     value: s,
                                     child: Text(s.label()),
-                                  ))
-                              .toList(),
-                          onChanged: (v) =>
-                              setState(() => _propertyState = v),
-                        ),
-                        const SizedBox(height: 14),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) =>
+                                setState(() => _propertyState = v),
+                          ),
+                          const SizedBox(height: 14),
 
-                        // Toggles
-                        _toggleRow(
-                          'admin.is_active'.tr(),
-                          _isActive,
-                          (v) => setState(() => _isActive = v),
-                        ),
-                        const SizedBox(height: 8),
-                        _toggleRow(
-                          'admin.is_featured'.tr(),
-                          _isFeatured,
-                          (v) => setState(() => _isFeatured = v),
-                        ),
-                      ]),
+                          // Toggles
+                          _toggleRow(
+                            'admin.is_active'.tr(),
+                            _isActive,
+                            (v) => setState(() => _isActive = v),
+                          ),
+                          const SizedBox(height: 8),
+                          _toggleRow(
+                            'admin.is_featured'.tr(),
+                            _isFeatured,
+                            (v) => setState(() => _isFeatured = v),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
 
                       // ── Section B: Titles & Descriptions ──────────────────
                       _sectionHeader('admin.titles_descriptions'.tr()),
-                      _card(children: [
-                        WizardLabel('admin.title_ar'.tr(), required: true),
-                        WizardTextArea(
-                          placeholder: '',
-                          value: '',
-                          controller: _titleArCtrl,
-                          onChanged: (_) {},
-                          rows: 2,
-                          // textDirection: TextDirection.rtl,
-                        ),
-                        const SizedBox(height: 14),
-                        WizardLabel('admin.title_en'.tr()),
-                        WizardTextArea(
-                          placeholder: '',
-                          value: '',
-                          controller: _titleEnCtrl,
-                          onChanged: (_) {},
-                          rows: 2,
-                        ),
-                        const SizedBox(height: 14),
-                        WizardLabel('admin.content_ar'.tr()),
-                        WizardTextArea(
-                          placeholder: '',
-                          value: '',
-                          controller: _contentArCtrl,
-                          onChanged: (_) {},
-                          rows: 4,
-                          // textDirection: TextDirection.rtl,
-                        ),
-                        const SizedBox(height: 14),
-                        WizardLabel('admin.content_en'.tr()),
-                        WizardTextArea(
-                          placeholder: '',
-                          value: '',
-                          controller: _contentEnCtrl,
-                          onChanged: (_) {},
-                          rows: 4,
-                        ),
-                      ]),
+                      _card(
+                        children: [
+                          WizardLabel('admin.title_ar'.tr(), required: true),
+                          WizardTextArea(
+                            placeholder: '',
+                            value: '',
+                            controller: _titleArCtrl,
+                            onChanged: (_) {},
+                            rows: 2,
+                            // textDirection: TextDirection.rtl,
+                          ),
+                          const SizedBox(height: 14),
+                          WizardLabel('admin.title_en'.tr()),
+                          WizardTextArea(
+                            placeholder: '',
+                            value: '',
+                            controller: _titleEnCtrl,
+                            onChanged: (_) {},
+                            rows: 2,
+                          ),
+                          const SizedBox(height: 14),
+                          WizardLabel('admin.content_ar'.tr()),
+                          WizardTextArea(
+                            placeholder: '',
+                            value: '',
+                            controller: _contentArCtrl,
+                            onChanged: (_) {},
+                            rows: 4,
+                            // textDirection: TextDirection.rtl,
+                          ),
+                          const SizedBox(height: 14),
+                          WizardLabel('admin.content_en'.tr()),
+                          WizardTextArea(
+                            placeholder: '',
+                            value: '',
+                            controller: _contentEnCtrl,
+                            onChanged: (_) {},
+                            rows: 4,
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
 
                       // ── Section C: Pricing & Specs ─────────────────────────
                       _sectionHeader('admin.pricing_specs'.tr()),
-                      _card(children: [
-                        WizardLabel('search.filters.price_range'.tr()),
-                        WizardTextArea(
-                          placeholder: '0',
-                          value: '',
-                          controller: _priceCtrl,
-                          onChanged: (_) {},
-                          rows: 1,
-                        ),
-                        const SizedBox(height: 14),
-                        WizardLabel('property_details.area'.tr()),
-                        WizardTextArea(
-                          placeholder: '0',
-                          value: '',
-                          controller: _sizeCtrl,
-                          onChanged: (_) {},
-                          rows: 1,
-                        ),
-                        const SizedBox(height: 14),
-                        WizardCounterRow(
-                          label: 'property_details.bedrooms'.tr(),
-                          value: _bedrooms,
-                          min: 1,
-                          onChanged: (v) => setState(() => _bedrooms = v),
-                        ),
-                        const SizedBox(height: 10),
-                        WizardCounterRow(
-                          label: 'property_details.bathrooms'.tr(),
-                          value: _bathrooms,
-                          min: 1,
-                          onChanged: (v) => setState(() => _bathrooms = v),
-                        ),
-                      ]),
+                      _card(
+                        children: [
+                          WizardLabel('search.filters.price_range'.tr()),
+                          WizardTextArea(
+                            placeholder: '0',
+                            value: '',
+                            controller: _priceCtrl,
+                            onChanged: (_) {},
+                            rows: 1,
+                          ),
+                          const SizedBox(height: 14),
+                          WizardLabel('property_details.area'.tr()),
+                          WizardTextArea(
+                            placeholder: '0',
+                            value: '',
+                            controller: _sizeCtrl,
+                            onChanged: (_) {},
+                            rows: 1,
+                          ),
+                          const SizedBox(height: 14),
+                          WizardCounterRow(
+                            label: 'property_details.bedrooms'.tr(),
+                            value: _bedrooms,
+                            min: 1,
+                            onChanged: (v) => setState(() => _bedrooms = v),
+                          ),
+                          const SizedBox(height: 10),
+                          WizardCounterRow(
+                            label: 'property_details.bathrooms'.tr(),
+                            value: _bathrooms,
+                            min: 1,
+                            onChanged: (v) => setState(() => _bathrooms = v),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 16),
 
                       // ── Section D: Images ──────────────────────────────────
@@ -324,11 +335,14 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             if (_existingImages.isNotEmpty) ...[
-                              Text('Existing',
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.inkMute,
-                                      fontWeight: FontWeight.w600)),
+                              Text(
+                                'Existing',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.inkMute,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                               const SizedBox(height: 8),
                               Wrap(
                                 spacing: 8,
@@ -344,11 +358,14 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
                               const SizedBox(height: 12),
                             ],
                             if (_newImages.isNotEmpty) ...[
-                              Text('New',
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.inkMute,
-                                      fontWeight: FontWeight.w600)),
+                              Text(
+                                'New',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.inkMute,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                               const SizedBox(height: 8),
                               Wrap(
                                 spacing: 8,
@@ -365,13 +382,18 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
                             ],
                             OutlinedButton.icon(
                               onPressed: _pickImages,
-                              icon: const Icon(Icons.add_photo_alternate_outlined),
+                              icon: const Icon(
+                                Icons.add_photo_alternate_outlined,
+                              ),
                               label: Text('admin.add_photos'.tr()),
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppColors.primary,
-                                side: const BorderSide(color: AppColors.primary),
+                                side: const BorderSide(
+                                  color: AppColors.primary,
+                                ),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                             ),
                           ],
@@ -381,43 +403,45 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
 
                       // ── Section E: Agent Info ──────────────────────────────
                       _sectionHeader('admin.agent_info'.tr()),
-                      _card(children: [
-                        WizardLabel('property_details.agent_label'.tr()),
-                        WizardTextArea(
-                          placeholder: '',
-                          value: '',
-                          controller: _agentNameCtrl,
-                          onChanged: (_) {},
-                          rows: 1,
-                        ),
-                        const SizedBox(height: 14),
-                        WizardLabel('auth.phone'.tr()),
-                        WizardTextArea(
-                          placeholder: '',
-                          value: '',
-                          controller: _agentMobileCtrl,
-                          onChanged: (_) {},
-                          rows: 1,
-                        ),
-                        const SizedBox(height: 14),
-                        WizardLabel('home.whatsapp'.tr()),
-                        WizardTextArea(
-                          placeholder: '',
-                          value: '',
-                          controller: _agentWhatsappCtrl,
-                          onChanged: (_) {},
-                          rows: 1,
-                        ),
-                        const SizedBox(height: 14),
-                        WizardLabel('auth.email'.tr()),
-                        WizardTextArea(
-                          placeholder: '',
-                          value: '',
-                          controller: _agentEmailCtrl,
-                          onChanged: (_) {},
-                          rows: 1,
-                        ),
-                      ]),
+                      _card(
+                        children: [
+                          WizardLabel('property_details.agent_label'.tr()),
+                          WizardTextArea(
+                            placeholder: '',
+                            value: '',
+                            controller: _agentNameCtrl,
+                            onChanged: (_) {},
+                            rows: 1,
+                          ),
+                          const SizedBox(height: 14),
+                          WizardLabel('auth.phone'.tr()),
+                          WizardTextArea(
+                            placeholder: '',
+                            value: '',
+                            controller: _agentMobileCtrl,
+                            onChanged: (_) {},
+                            rows: 1,
+                          ),
+                          const SizedBox(height: 14),
+                          WizardLabel('home.whatsapp'.tr()),
+                          WizardTextArea(
+                            placeholder: '',
+                            value: '',
+                            controller: _agentWhatsappCtrl,
+                            onChanged: (_) {},
+                            rows: 1,
+                          ),
+                          const SizedBox(height: 14),
+                          WizardLabel('auth.email'.tr()),
+                          WizardTextArea(
+                            placeholder: '',
+                            value: '',
+                            controller: _agentEmailCtrl,
+                            onChanged: (_) {},
+                            rows: 1,
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 32),
 
                       // Upload progress indicator
@@ -432,12 +456,16 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'admin.upload_progress'.tr(namedArgs: {
-                                  'current': '${state.current}',
-                                  'total': '${state.total}',
-                                }),
+                                'admin.upload_progress'.tr(
+                                  namedArgs: {
+                                    'current': '${state.current}',
+                                    'total': '${state.total}',
+                                  },
+                                ),
                                 style: const TextStyle(
-                                    fontSize: 12, color: AppColors.inkMute),
+                                  fontSize: 12,
+                                  color: AppColors.inkMute,
+                                ),
                               ),
                             ],
                           ),
@@ -452,10 +480,10 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 16),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
                           ),
                           child: isLoading
                               ? const SizedBox(
@@ -466,10 +494,13 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : Text('admin.save_changes'.tr(),
+                              : Text(
+                                  'admin.save_changes'.tr(),
                                   style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600)),
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -478,7 +509,10 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
                 ),
 
                 if (isLoading)
-                  const ModalBarrier(dismissible: false, color: Colors.transparent),
+                  const ModalBarrier(
+                    dismissible: false,
+                    color: Colors.transparent,
+                  ),
               ],
             );
           },
@@ -490,62 +524,60 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
   // ── UI helpers ────────────────────────────────────────────────────────────
 
   Widget _sectionHeader(String title) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: Text(
-          title.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: AppColors.inkMute,
-            letterSpacing: 0.8,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(
+      title.toUpperCase(),
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: AppColors.inkMute,
+        letterSpacing: 0.8,
+      ),
+    ),
+  );
 
   Widget _card({required List<Widget> children}) => Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children,
-        ),
-      );
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    ),
+  );
 
   InputDecoration _dropdownDecoration() => InputDecoration(
-        filled: true,
-        fillColor: const Color(0xFFF5F6F8),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.hairline),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.hairline),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-      );
+    filled: true,
+    fillColor: const Color(0xFFF5F6F8),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: AppColors.hairline),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: AppColors.hairline),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+    ),
+  );
 
-  Widget _toggleRow(
-    String label,
-    bool value,
-    ValueChanged<bool> onChanged,
-  ) =>
+  Widget _toggleRow(String label, bool value, ValueChanged<bool> onChanged) =>
       Row(
         children: [
           Expanded(
-            child: Text(label,
-                style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.ink)),
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.ink,
+              ),
+            ),
           ),
           Switch(
             value: value,
@@ -625,8 +657,11 @@ class _XFileThumb extends StatelessWidget {
               width: 80,
               height: 80,
               color: AppColors.tagSuccessBg,
-              child:
-                  const Icon(Icons.image, color: AppColors.success, size: 32),
+              child: const Icon(
+                Icons.image,
+                color: AppColors.success,
+                size: 32,
+              ),
             ),
           ),
         ),
