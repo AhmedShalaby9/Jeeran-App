@@ -31,6 +31,14 @@ class AuthVerifyOtpEvent extends AuthEvent {
 }
 
 
+class AuthSendOtpRestEvent extends AuthEvent {
+  final String phone;
+  final String recaptchaToken;
+  const AuthSendOtpRestEvent({required this.phone, required this.recaptchaToken});
+  @override
+  List<Object?> get props => [phone, recaptchaToken];
+}
+
 class AuthCompleteProfileEvent extends AuthEvent {
   final CompleteProfileParams params;
   final bool isStep1;

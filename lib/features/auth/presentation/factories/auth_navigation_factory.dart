@@ -5,6 +5,7 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
 import '../pages/complete_profile_page.dart';
 import '../pages/otp_page.dart';
+import '../pages/recaptcha_webview_page.dart';
 
 class AuthNavigationFactory {
   const AuthNavigationFactory._();
@@ -16,6 +17,8 @@ class AuthNavigationFactory {
   }) {
     if (state is AuthOtpSent) {
       _goToOtp(context, state.phone);
+    } else if (state is AuthRecaptchaRequired) {
+      _goToRecaptcha(context, state.phone);
     } else if (state is AuthPhoneChecked) {
       _navigateAfterPhoneCheck(context, state, lastPhone);
     } else if (state is AuthProfileCompleted) {
@@ -35,6 +38,19 @@ class AuthNavigationFactory {
     } else {
       _goToMain(context);
     }
+  }
+
+  static void _goToRecaptcha(BuildContext context, String phone) {
+    final authBloc = context.read<AuthBloc>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: authBloc,
+          child: RecaptchaWebViewPage(phone: phone),
+        ),
+      ),
+    );
   }
 
   static void _goToOtp(BuildContext context, String phone) {

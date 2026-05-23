@@ -15,10 +15,12 @@ import 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository repository;
   String? _verificationId;
+  String? _sessionInfo;
 
   AuthBloc({required this.repository}) : super(AuthInitial()) {
     on<AuthLoginEvent>(_onLogin);
     on<AuthSendOtpEvent>(_onSendOtp);
+    on<AuthSendOtpRestEvent>(_onSendOtpRest);
     on<AuthVerifyOtpEvent>(_onVerifyOtp);
     on<AuthCompleteProfileEvent>(_onCompleteProfile);
     on<AuthLogoutEvent>(_onLogout);
@@ -60,12 +62,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onSendOtp(AuthSendOtpEvent event, Emitter<AuthState> emit) async {
+    if (Platform.isIOS) {
+      emit(AuthRecaptchaRequired(event.phone));
+      return;
+    }
     emit(AuthLoading());
     final completer = Completer<void>();
 
     await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: event.phone,
+      phoneNumber: _toE164(event.phone),
       verificationCompleted: (credential) async {
+        // Android auto-reads the SMS — skip OTP entry
         await _signInWithCredential(credential, emit);
         if (!completer.isCompleted) completer.complete();
       },
@@ -86,9 +93,48 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     await completer.future;
   }
 
+  Future<void> _onSendOtpRest(AuthSendOtpRestEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final result = await repository.sendOtpRest(event.phone, event.recaptchaToken);
+    result.fold(
+      (failure) => emit(AuthError(_mapFailure(failure))),
+      (sessionInfo) {
+        _sessionInfo = sessionInfo;
+        emit(AuthOtpSent(phone: event.phone, isNewUser: false));
+      },
+    );
+  }
+
   Future<void> _onVerifyOtp(AuthVerifyOtpEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    if (_verificationId == null || _verificationId!.isEmpty) {
+    if (Platform.isIOS) {
+      if (_sessionInfo == null) {
+        emit(AuthError('Session expired. Please request a new code.'));
+        return;
+      }
+      String? fcmToken;
+      try { fcmToken = await NotificationService.instance.getToken(); } catch (_) {}
+      String? deviceId;
+      try {
+        deviceId = (await DeviceInfoPlugin().iosInfo).identifierForVendor;
+      } catch (_) {}
+      final result = await repository.verifyOtpRest(
+        _sessionInfo!,
+        event.otp,
+        fcmToken: fcmToken,
+        platform: 'ios',
+        deviceId: deviceId,
+      );
+      result.fold(
+        (failure) => emit(AuthError(_mapFailure(failure))),
+        (user) => emit(AuthPhoneChecked(
+          user: user.isProfileComplete ? user : null,
+          isProfileComplete: user.isProfileComplete,
+        )),
+      );
+      return;
+    }
+    if (_verificationId == null) {
       emit(AuthError('Session expired. Please request a new code.'));
       return;
     }
@@ -105,12 +151,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     try {
       await FirebaseAuth.instance.signInWithCredential(credential);
-      final firebaseUser = FirebaseAuth.instance.currentUser;
-      if (firebaseUser == null) {
-        emit(AuthError('Authentication failed. Please try again.'));
-        return;
-      }
-      final idToken = await firebaseUser.getIdToken();
+      final idToken = await FirebaseAuth.instance.currentUser!.getIdToken();
 
       String? fcmToken;
       try { fcmToken = await NotificationService.instance.getToken(); } catch (_) {}
@@ -142,6 +183,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } catch (e) {
       emit(AuthError(e.toString()));
     }
+  }
+
+  String _toE164(String phone) {
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    if (digits.length == 11 && digits.startsWith('0')) return '+2$digits';
+    if (!phone.startsWith('+')) return '+$digits';
+    return phone;
   }
 
   Future<void> _onCompleteProfile(

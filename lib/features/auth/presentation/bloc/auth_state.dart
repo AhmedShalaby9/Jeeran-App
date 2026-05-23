@@ -56,6 +56,13 @@ class AuthOtpSent extends AuthState {
   List<Object?> get props => [phone, isNewUser];
 }
 
+class AuthRecaptchaRequired extends AuthState {
+  final String phone;
+  const AuthRecaptchaRequired(this.phone);
+  @override
+  List<Object?> get props => [phone];
+}
+
 class AuthError extends AuthState {
   final String message;
   const AuthError(this.message);
