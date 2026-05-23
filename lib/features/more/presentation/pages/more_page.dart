@@ -376,18 +376,20 @@ class _MoreView extends StatelessWidget {
                       label: 'more.my_favorites'.tr(),
                       onTap: () => FavoritesPage.push(context),
                     ),
-                    _MoreTile(
-                      icon: Icons.home_work_outlined,
-                      label: 'more.my_properties'.tr(),
-                      onTap: () => MyPropertiesPage.push(context),
-                    ),
-                    const SizedBox(height: 16),
-                    _SectionHeader(title: 'more.add_listing'.tr()),
-                    _MoreTile(
-                      icon: Icons.add_box_outlined,
-                      label: 'more.add_property'.tr(),
-                      onTap: () => AddPropertyPage.push(context),
-                    ),
+                    if (!AppSettingsService.instance.inReview) ...[
+                      _MoreTile(
+                        icon: Icons.home_work_outlined,
+                        label: 'more.my_properties'.tr(),
+                        onTap: () => MyPropertiesPage.push(context),
+                      ),
+                      const SizedBox(height: 16),
+                      _SectionHeader(title: 'more.add_listing'.tr()),
+                      _MoreTile(
+                        icon: Icons.add_box_outlined,
+                        label: 'more.add_property'.tr(),
+                        onTap: () => AddPropertyPage.push(context),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                   ],
                 );
