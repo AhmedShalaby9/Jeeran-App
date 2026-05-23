@@ -19,6 +19,10 @@
   static const String profile = '/user/profile';
   static const String updateProfile = '/user/profile';
 
+  // Ads
+  static const String ads = '/ads';
+  static String adById(int id) => '/ads/$id';
+
   // Banners
   static const String banners = '/banners';
 

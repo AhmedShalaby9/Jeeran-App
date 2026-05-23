@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -51,12 +52,16 @@ class _MainPageState extends State<MainPage> {
     setState(() => _selectedIndex = 2);
   }
 
+  bool get _inReview => AppSettingsService.instance.inReview;
+
   void _buildNav() {
+    final showPackages = _isSeller && !_inReview;
+
     _pages = [
       HomePage(onSearchTap: _goToProjects),
       SearchPage(resetNotifier: _searchResetNotifier),
       const ProjectsPage(),
-      Tab4Destination.create(isSeller: _isSeller),
+      Tab4Destination.create(isSeller: showPackages),
       const MorePage(),
     ];
 
@@ -76,7 +81,7 @@ class _MainPageState extends State<MainPage> {
         activeIcon: Icons.business,
         label: 'bottom_nav.projects'.tr(),
       ),
-      if (_isSeller)
+      if (showPackages)
         _NavItem(
           icon: Icons.workspace_premium_outlined,
           activeIcon: Icons.workspace_premium,
@@ -198,6 +203,7 @@ class _MainPageState extends State<MainPage> {
           pages: _pages,
           navItems: _navItems,
           onTap: _onItemTapped,
+          showFab: !_inReview,
         ),
       ),
     );
@@ -209,12 +215,14 @@ class _MainScaffold extends StatelessWidget {
   final List<Widget> pages;
   final List<_NavItem> navItems;
   final ValueChanged<int> onTap;
+  final bool showFab;
 
   const _MainScaffold({
     required this.selectedIndex,
     required this.pages,
     required this.navItems,
     required this.onTap,
+    required this.showFab,
   });
 
   @override
@@ -226,7 +234,7 @@ class _MainScaffold extends StatelessWidget {
         items: navItems,
         onTap: onTap,
       ),
-      floatingActionButton: const _AiChatFab(),
+      floatingActionButton: showFab ? const _AiChatFab() : null,
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }

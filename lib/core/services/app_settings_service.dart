@@ -12,6 +12,7 @@ class AppSettings {
   final String? aboutUsAr;
   final String? adGenerationPrice;
   final int? adGenerationTrials;
+  final bool inReview;
 
   const AppSettings({
     this.minVersionIos,
@@ -24,6 +25,7 @@ class AppSettings {
     this.aboutUsAr,
     this.adGenerationPrice,
     this.adGenerationTrials,
+    this.inReview = false,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -37,6 +39,7 @@ class AppSettings {
         aboutUsAr: json['about_us_ar'] as String?,
         adGenerationPrice: json['ad_generation_price'] as String?,
         adGenerationTrials: json['ad_generation_trials'] as int?,
+        inReview: (json['in_review'] as bool?) ?? false,
       );
 }
 
@@ -58,6 +61,8 @@ class AppSettingsService {
       // Non-critical — app continues with null settings if offline or error.
     }
   }
+
+  bool get inReview => settings?.inReview ?? false;
 
   String? terms(String locale) =>
       locale == 'ar' ? settings?.termsAr : settings?.termsEn;
