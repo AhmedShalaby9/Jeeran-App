@@ -69,6 +69,29 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, String>> sendOtpRest(String phone, String recaptchaToken) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final sessionInfo = await remoteDataSource.sendOtpRest(phone, recaptchaToken);
+      return Right(sessionInfo);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, User>> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId}) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final user = await remoteDataSource.verifyOtpRest(sessionInfo, code, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
+      _saveToken(user);
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, User>> completeProfile(CompleteProfileParams params) async {
     if (await networkInfo.isConnected) {
       try {

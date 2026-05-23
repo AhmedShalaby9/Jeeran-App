@@ -10,6 +10,8 @@ abstract class AuthRemoteDataSource {
   Future<bool> sendOtp(String phone);
   Future<UserModel> verifyOtp(String phone, String otp, {String? fcmToken, String? platform, String? deviceId});
   Future<UserModel> firebaseVerify(String idToken, {String? fcmToken, String? platform, String? deviceId});
+  Future<String> sendOtpRest(String phone, String recaptchaToken);
+  Future<UserModel> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId});
   Future<UserModel> completeProfile(CompleteProfileParams params);
   Future<UserModel> getMe();
 }
@@ -91,6 +93,48 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         ApiEndpoints.firebaseVerify,
         data: <String, dynamic>{
           'id_token': idToken,
+          if (fcmToken != null) 'fcm_token': fcmToken,
+          if (platform != null) 'platform': platform,
+          if (deviceId != null) 'device_id': deviceId,
+        },
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return UserModel.fromJson(response.data as Map<String, dynamic>);
+      }
+      throw ServerException(response.data?['message'] as String? ?? '');
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<String> sendOtpRest(String phone, String recaptchaToken) async {
+    try {
+      final response = await apiClient.post(
+        ApiEndpoints.sendOtpRest,
+        data: {'phone': phone, 'recaptcha_token': recaptchaToken},
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data['session_info'] as String;
+      }
+      throw ServerException(response.data?['message'] as String? ?? '');
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<UserModel> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId}) async {
+    try {
+      final response = await apiClient.post(
+        ApiEndpoints.verifyOtpRest,
+        data: <String, dynamic>{
+          'session_info': sessionInfo,
+          'code': code,
           if (fcmToken != null) 'fcm_token': fcmToken,
           if (platform != null) 'platform': platform,
           if (deviceId != null) 'device_id': deviceId,
