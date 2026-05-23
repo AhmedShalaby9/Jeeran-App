@@ -6,6 +6,11 @@ import '../../../../core/utils/app_colors.dart';
 import '../../../news/presentation/bloc/news_bloc.dart';
 import '../../../news/presentation/bloc/news_event.dart';
 import '../../../news/presentation/widgets/news_carousel_widget.dart';
+import '../../../ads/presentation/bloc/ads_bloc.dart';
+import '../../../ads/presentation/bloc/ads_event.dart';
+import '../../../ads/presentation/bloc/ads_state.dart';
+import '../../../ads/presentation/pages/ads_page.dart';
+import '../../../ads/presentation/widgets/explore_ads_widget.dart';
 import '../../../projects/presentation/bloc/projects_bloc.dart';
 import '../../../projects/presentation/bloc/projects_event.dart';
 import '../../../projects/presentation/widgets/explore_projects_widget.dart';
@@ -40,6 +45,7 @@ class HomePage extends StatelessWidget {
     sl<BannersBloc>().add(const FetchBannersEvent());
     sl<ProjectsBloc>().add(const FetchProjectsEvent());
     sl<NewsBloc>().add(const FetchNewsEvent());
+    sl<AdsBloc>().add(const FetchAdsEvent());
     _propertiesBloc = sl<PropertiesBloc>();
     _propertiesBloc!.add(const FetchPropertiesEvent(PropertyFilterParams(isFeatured: true, perPage: 10)));
   }
@@ -52,6 +58,7 @@ class HomePage extends StatelessWidget {
         BlocProvider.value(value: sl<BannersBloc>()),
         BlocProvider.value(value: sl<ProjectsBloc>()),
         BlocProvider.value(value: sl<NewsBloc>()),
+        BlocProvider.value(value: sl<AdsBloc>()),
         BlocProvider.value(value: _propertiesBloc!),
       ],
       child: _HomeView(onSearchTap: onSearchTap),
@@ -108,11 +115,40 @@ class _HomeView extends StatelessWidget {
                 const SizedBox(height: 12),
                 const FeaturedPropertiesWidget(),
                 const SizedBox(height: 24),
+                _AdsSection(
+                  onSeeAll: () => AdsPage.push(context),
+                ),
+                const SizedBox(height: 24),
               ]),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Ads Section ───────────────────────────────────────────────────────────────
+class _AdsSection extends StatelessWidget {
+  final VoidCallback onSeeAll;
+  const _AdsSection({required this.onSeeAll});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AdsBloc, AdsState>(
+      builder: (context, state) {
+        final hasAds = state is AdsLoaded && state.ads.isNotEmpty;
+        final isLoading = state is AdsLoading;
+        if (!hasAds && !isLoading) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _SectionTitle(title: 'Ads', onTap: onSeeAll),
+            const SizedBox(height: 12),
+            const ExploreAdsWidget(),
+          ],
+        );
+      },
     );
   }
 }

@@ -60,6 +60,10 @@ import '../../features/ai_ads/data/repositories/ai_ads_repository_impl.dart';
 import '../../features/ai_ads/domain/repositories/ai_ads_repository.dart';
 import '../../features/ai_ads/presentation/bloc/ai_ads_bloc.dart';
 import '../../features/ai_ads/presentation/bloc/ai_ad_detail_bloc.dart';
+import '../../features/ads/data/datasources/ads_remote_data_source.dart';
+import '../../features/ads/data/repositories/ads_repository_impl.dart';
+import '../../features/ads/domain/repositories/ads_repository.dart';
+import '../../features/ads/presentation/bloc/ads_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -84,6 +88,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => UnreadCountCubit(repository: sl()));
   sl.registerFactory(() => AiAdsBloc(repository: sl()));
   sl.registerFactory(() => AiAdDetailBloc(repository: sl()));
+  sl.registerLazySingleton(() => AdsBloc(repository: sl()));
 
   // -- Repositories --------------------------------------
   sl.registerLazySingleton<HomeRepository>(
@@ -126,6 +131,9 @@ Future<void> init() async {
   sl.registerLazySingleton<AiAdsRepository>(
     () => AiAdsRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
+  sl.registerLazySingleton<AdsRepository>(
+    () => AdsRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  );
 
   // -- Data sources --------------------------------------
   sl.registerLazySingleton<ProjectRemoteDataSource>(
@@ -166,6 +174,9 @@ sl.registerLazySingleton<HomeLocalDataSource>(
   );
   sl.registerLazySingleton<AiAdsRemoteDataSource>(
     () => AiAdsRemoteDataSourceImpl(apiClient: sl()),
+  );
+  sl.registerLazySingleton<AdsRemoteDataSource>(
+    () => AdsRemoteDataSourceImpl(apiClient: sl()),
   );
 
 // -- Core ----------------------------------------------
