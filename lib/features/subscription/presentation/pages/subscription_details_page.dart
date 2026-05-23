@@ -204,7 +204,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
               SubscriptionSection(
                 title: 'subscription.plan'.tr(),
                 children: [
-                  DetailRow(label: 'subscription.tier'.tr(), value: plan.name),
+                  DetailRow(label: 'subscription.tier'.tr(), value: plan.localizedName(context.locale.languageCode)),
                   DetailRow(
                     label: 'subscription.monthly_listings'.tr(),
                     value: '${subscription.availableListings}',

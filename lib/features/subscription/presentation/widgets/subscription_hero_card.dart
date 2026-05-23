@@ -77,7 +77,7 @@ class _PendingPaymentCard extends StatelessWidget {
               ),
               const SizedBox(height: 14),
               Text(
-                '${subscription.package.name} plan',
+                '${subscription.package.localizedName(context.locale.languageCode)} plan',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -200,7 +200,7 @@ class _ActiveCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    '${plan.name} plan',
+                    '${plan.localizedName(context.locale.languageCode)} plan',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,

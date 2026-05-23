@@ -1,7 +1,9 @@
 import Flutter
 import UIKit
+import FirebaseCore
 import FirebaseAuth
 import FirebaseMessaging
+import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -9,6 +11,8 @@ import FirebaseMessaging
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    FirebaseApp.configure()
+    UNUserNotificationCenter.current().delegate = self
     application.registerForRemoteNotifications()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
@@ -27,6 +31,7 @@ import FirebaseMessaging
   override func application(_ application: UIApplication,
     didReceiveRemoteNotification userInfo: [AnyHashable: Any],
     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+    Messaging.messaging().appDidReceiveMessage(userInfo)
     if Auth.auth().canHandleNotification(userInfo) {
       completionHandler(.newData)
       return

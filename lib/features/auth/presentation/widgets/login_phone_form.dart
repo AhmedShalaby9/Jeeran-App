@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_html/flutter_html.dart';
+import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/utils/app_colors.dart';
 import 'auth_primary_button.dart';
-import 'auth_social_button.dart';
 
 class LoginPhoneForm extends StatefulWidget {
   final bool isLoading;
@@ -22,6 +23,7 @@ class LoginPhoneForm extends StatefulWidget {
 class _LoginPhoneFormState extends State<LoginPhoneForm> {
   final _phoneCtrl = TextEditingController();
   bool _valid = false;
+  bool _termsAccepted = false;
 
   @override
   void initState() {
@@ -40,9 +42,80 @@ class _LoginPhoneFormState extends State<LoginPhoneForm> {
   }
 
   void _onContinue() {
-    if (!_valid || widget.isLoading) return;
+    if (!_valid || !_termsAccepted || widget.isLoading) return;
     final digits = _phoneCtrl.text.replaceAll(RegExp(r'\D'), '');
     widget.onContinue('+20$digits');
+  }
+
+  void _showTermsDialog(BuildContext context) {
+    final lang = context.locale.languageCode;
+    final html = AppSettingsService.instance.terms(lang);
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 8, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'auth.terms_of_service'.tr(),
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: AppColors.inkSub),
+                    onPressed: () => Navigator.pop(dialogContext),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                child: html != null && html.isNotEmpty
+                    ? Html(
+                        data: html,
+                        style: {
+                          'body': Style(
+                            fontSize: FontSize(14),
+                            color: AppColors.inkSub,
+                            lineHeight: LineHeight(1.65),
+                            margin: Margins.zero,
+                            padding: HtmlPaddings.zero,
+                          ),
+                          'h1, h2, h3': Style(
+                            color: AppColors.ink,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          'a': Style(color: AppColors.secondary),
+                        },
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        child: Center(
+                          child: Text(
+                            'Content coming soon',
+                            style: TextStyle(fontSize: 14, color: AppColors.grey),
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -148,47 +221,43 @@ class _LoginPhoneFormState extends State<LoginPhoneForm> {
           const SizedBox(height: 28),
           AuthPrimaryButton(
             label: 'auth.continue'.tr(),
-            enabled: _valid && !widget.isLoading,
+            enabled: _valid && _termsAccepted && !widget.isLoading,
             onTap: _onContinue,
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 16),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Expanded(
-                child: Divider(thickness: 1, color: AppColors.hairline),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  'auth.or_sign_in_with'.tr(),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.inkMute,
-                    fontWeight: FontWeight.w500,
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: Checkbox(
+                  value: _termsAccepted,
+                  onChanged: (v) => setState(() => _termsAccepted = v ?? false),
+                  activeColor: AppColors.primary,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
                   ),
                 ),
               ),
-              const Expanded(
-                child: Divider(thickness: 1, color: AppColors.hairline),
+              const SizedBox(width: 10),
+              Text(
+                'auth.agree_terms_prefix'.tr(),
+                style: const TextStyle(fontSize: 13, color: AppColors.inkSub),
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: AuthSocialButton(
-                  label: 'auth.apple'.tr(),
-                  icon: Icons.apple_rounded,
-                  onTap: () {},
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AuthSocialButton(
-                  label: 'auth.google'.tr(),
-                  icon: Icons.g_mobiledata_rounded,
-                  onTap: () {},
+              GestureDetector(
+                onTap: () => _showTermsDialog(context),
+                child: Text(
+                  'auth.terms_of_service'.tr(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                    decorationColor: AppColors.primary,
+                  ),
                 ),
               ),
             ],

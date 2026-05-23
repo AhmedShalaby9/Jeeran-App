@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/utils/app_colors.dart';
 
 class ContactUsPage extends StatefulWidget {
@@ -196,14 +197,15 @@ class _ContactUsPageState extends State<ContactUsPage> {
                 runSpacing: 12,
                 children: [
                   _ContactChip(
-                    icon: Icons.email_outlined,
-                    label: 'support@jeeran.com',
-                    onTap: () {},
-                  ),
-                  _ContactChip(
-                    icon: Icons.phone_outlined,
-                    label: '+962 6 123 4567',
-                    onTap: () {},
+                    icon: Icons.chat_rounded,
+                    label: '+20 115 546 4666',
+                    color: const Color(0xFF25D366),
+                    onTap: () async {
+                      final uri = Uri.parse('https://wa.me/201155464666');
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    },
                   ),
                 ],
               ),
@@ -219,15 +221,18 @@ class _ContactChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final Color? color;
 
   const _ContactChip({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = color ?? AppColors.primary;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -240,7 +245,7 @@ class _ContactChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18, color: AppColors.primary),
+            Icon(icon, size: 18, color: iconColor),
             const SizedBox(width: 8),
             Text(
               label,

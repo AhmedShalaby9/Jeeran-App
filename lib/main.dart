@@ -18,7 +18,7 @@ import 'features/splash/presentation/pages/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  AppConfig.setEnvironment(AppEnvironment.staging);
+  AppConfig.setEnvironment(AppEnvironment.production);
   await AppStorage.init();
   NotificationService.instance.init().catchError(
     (e) => debugPrint('[FCM] NotificationService init failed: $e'),

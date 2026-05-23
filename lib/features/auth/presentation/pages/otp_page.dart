@@ -80,7 +80,7 @@ class _OtpViewState extends State<_OtpView> {
     if (state is AuthOtpSent) {
       // Resend succeeded — timer already restarted in _resend()
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('A new code was sent to your WhatsApp.')),
+        const SnackBar(content: Text('A new code was sent to your phone.')),
       );
     } else if (state is AuthPhoneChecked) {
       if (!state.isProfileComplete) {
@@ -136,7 +136,7 @@ class _OtpViewState extends State<_OtpView> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'We sent a 6-digit code to your WhatsApp\n${widget.phone}',
+                    'We sent a 6-digit code via SMS to\n${widget.phone}',
                     style: const TextStyle(
                       fontSize: 14,
                       color: AppColors.inkSub,

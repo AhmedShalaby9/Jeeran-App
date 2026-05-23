@@ -315,7 +315,9 @@
     "referral_hint": "أدخل الرمز (اختياري)",
     "referral_helper": "لديك رمز صديق؟ تحصلان معاً على مكافأة.",
     "skip": "تخطي",
-    "complete_setup": "إكمال الإعداد"
+    "complete_setup": "إكمال الإعداد",
+    "agree_terms_prefix": "أوافق على ",
+    "terms_dialog_close": "إغلاق"
   },
   "ai_chat": {
     "jeeran_ai": "جيران AI",
@@ -394,7 +396,6 @@
     "upload_progress": "جارٍ رفع {current} من {total}...",
     "property_type": "نوع العقار",
     "property_status": "الغرض من الإعلان",
-    "inactive": "غير نشط",
     "media": "الوسائط",
     "files": "ملفات",
     "add_media": "إضافة صور / فيديو",

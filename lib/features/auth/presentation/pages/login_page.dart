@@ -7,7 +7,6 @@ import '../bloc/auth_state.dart';
 import '../factories/auth_navigation_factory.dart';
 import '../widgets/login_header.dart';
 import '../widgets/login_phone_form.dart';
-import '../widgets/terms_footer.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -58,7 +57,6 @@ class _LoginViewState extends State<_LoginView> {
                 },
               ),
             ),
-            const TermsFooter(),
           ],
         ),
       ),

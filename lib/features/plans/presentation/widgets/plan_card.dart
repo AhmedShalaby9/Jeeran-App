@@ -76,26 +76,30 @@ class PlanCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          plan.name,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.ink,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            plan.localizedName(context.locale.languageCode),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.ink,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          plan.description,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppColors.inkSub,
+                          const SizedBox(height: 2),
+                          Text(
+                            plan.localizedDescription(context.locale.languageCode),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.inkSub,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                     AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
@@ -158,7 +162,10 @@ class PlanCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 ...plan.features.map(
-                  (f) => PlanFeatureItem(feature: f, selected: selected),
+                  (f) => PlanFeatureItem(
+                    feature: f.localized(context.locale.languageCode),
+                    selected: selected,
+                  ),
                 ),
               ],
             ),

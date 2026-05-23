@@ -315,7 +315,9 @@
     "referral_hint": "Enter code (optional)",
     "referral_helper": "Have a friend's code? You both get a reward.",
     "skip": "Skip",
-    "complete_setup": "Complete setup"
+    "complete_setup": "Complete setup",
+    "agree_terms_prefix": "I agree to the ",
+    "terms_dialog_close": "Close"
   },
   "ai_chat": {
     "jeeran_ai": "Jeeran AI",
@@ -394,7 +396,6 @@
     "upload_progress": "Uploading {current} of {total}...",
     "property_type": "Property Type",
     "property_status": "Listing Purpose",
-    "inactive": "Inactive",
     "media": "Media",
     "files": "files",
     "add_media": "Add Photos / Video",

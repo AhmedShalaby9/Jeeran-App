@@ -41,7 +41,7 @@ class _PlansPageState extends State<PlansPage> {
       );
     }
     return plans.firstWhere(
-      (p) => p.name.toLowerCase() == 'growth',
+      (p) => p.nameEn.toLowerCase().contains('growth'),
       orElse: () => plans.first,
     );
   }
@@ -142,7 +142,7 @@ class _PlansPageState extends State<PlansPage> {
                                 final defaultPlan = _selectDefault(state.plans);
                                 final selectedId = _selectedPlanId ?? defaultPlan?.id;
                                 final isSelected = selectedId == plan.id;
-                                final isRecommended = plan.name.toLowerCase() == 'growth';
+                                final isRecommended = plan.nameEn.toLowerCase().contains('growth');
                                 return PlanCard(
                                   plan: plan,
                                   selected: isSelected,

@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/user_subscription.dart';
 
@@ -187,7 +188,7 @@ class BillingRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${subscription.package.name} — monthly',
+                  '${subscription.package.localizedName(context.locale.languageCode)} — monthly',
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink),
                 ),
                 const SizedBox(height: 2),
