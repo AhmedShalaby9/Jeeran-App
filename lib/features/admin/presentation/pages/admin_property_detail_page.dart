@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/utils/format_utils.dart';
 import '../../../properties/domain/entities/property.dart';
 import '../../../properties/presentation/bloc/add_property_bloc.dart';
 import '../../../properties/presentation/bloc/properties_bloc.dart';
@@ -269,7 +270,7 @@ class _AdminPropertyDetailPageState extends State<AdminPropertyDetailPage> {
                       if (_property.price != null)
                         _InfoRow(
                             'search.filters.price_range'.tr(),
-                            '${_property.price} ${'currency'.tr()}'),
+                            '${formatPrice(_property.price)} ${'currency'.tr()}'),
                       if (_property.size != null)
                         _InfoRow('property_details.area'.tr(),
                             '${_property.size} m²'),

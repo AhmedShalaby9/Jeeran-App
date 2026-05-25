@@ -28,12 +28,16 @@ class _ExploreAdsViewState extends State<_ExploreAdsView> {
   bool _isUserScrolling = false;
   double _scrollPosition = 0;
   bool _scrollingForward = true;
+  bool _scrollStarted = false;
 
   void _startAutoScroll() {
+    if (_scrollStarted) return;
+    _scrollStarted = true;
     _autoScrollTimer?.cancel();
     _autoScrollTimer = Timer.periodic(const Duration(milliseconds: 50), (_) {
       if (!_isUserScrolling && _scrollController.hasClients) {
         final maxScroll = _scrollController.position.maxScrollExtent;
+        if (maxScroll <= 0) return;
         if (_scrollingForward) {
           _scrollPosition += 0.5;
           if (_scrollPosition >= maxScroll) {
@@ -52,6 +56,10 @@ class _ExploreAdsViewState extends State<_ExploreAdsView> {
     });
   }
 
+  void _scheduleAutoScroll() {
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startAutoScroll());
+  }
+
   @override
   void dispose() {
     _autoScrollTimer?.cancel();
@@ -64,9 +72,8 @@ class _ExploreAdsViewState extends State<_ExploreAdsView> {
     return BlocConsumer<AdsBloc, AdsState>(
       listener: (context, state) {
         if (state is AdsLoaded && state.ads.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback(
-            (_) => _startAutoScroll(),
-          );
+          _scrollStarted = false; // allow restart on reload
+          _scheduleAutoScroll();
         }
       },
       builder: (context, state) {
@@ -77,6 +84,7 @@ class _ExploreAdsViewState extends State<_ExploreAdsView> {
           );
         }
         if (state is AdsLoaded && state.ads.isNotEmpty) {
+          _scheduleAutoScroll(); // also triggers if state was already loaded on mount
           return _buildList(state.ads);
         }
         return const SizedBox.shrink();

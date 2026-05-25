@@ -23,9 +23,9 @@ class AddPropertyPage extends StatelessWidget {
   const AddPropertyPage({super.key});
 
   /// Push the wizard as a full-screen modal.
-  /// Silently no-ops if the current user is not a seller.
+  /// Silently no-ops if the current user is not a seller or admin.
   static Future<void> push(BuildContext context) async {
-    if (!AppStorage.isSeller) {
+    if (!AppStorage.isSeller && !AppStorage.isAdmin) {
       AppSnackbar.show(
         context,
         message: 'Only sellers can add listings',

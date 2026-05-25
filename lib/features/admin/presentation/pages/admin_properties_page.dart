@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/utils/format_utils.dart';
 import '../../../properties/domain/entities/property.dart';
 import '../../../properties/domain/entities/property_filter_params.dart';
 import '../../../properties/presentation/bloc/properties_bloc.dart';
@@ -204,7 +205,7 @@ class _PropertyAdminTile extends StatelessWidget {
                     if (property.price != null) ...[
                       const SizedBox(height: 4),
                       Text(
-                        '${property.price} ${'currency'.tr()}',
+                        '${formatPrice(property.price)} ${'currency'.tr()}',
                         style: const TextStyle(
                           fontSize: 13,
                           color: AppColors.secondary,

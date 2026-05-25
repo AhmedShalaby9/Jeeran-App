@@ -361,27 +361,34 @@ class _MoreView extends StatelessWidget {
                 label: 'more.ai_ads'.tr(),
                 onTap: () => AiAdsPage.push(context),
               ),
-            // My Properties + Add Listing — sellers only
+            // Seller section — favorites, my properties, add listing
             BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {
                 final user = authState is AuthMeLoaded ? authState.user : null;
                 final isSeller = user?.isSeller ?? AppStorage.isSeller;
-                if (!isSeller) return const SizedBox.shrink();
+                final isAdmin = user?.isAdmin ?? AppStorage.isAdmin;
+                if (!isSeller && !isAdmin) return const SizedBox.shrink();
+                final inReview = AppSettingsService.instance.inReview;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Favorites moved here for sellers (tab is replaced by Packages)
-                    _MoreTile(
-                      icon: Icons.favorite_border,
-                      label: 'more.my_favorites'.tr(),
-                      onTap: () => FavoritesPage.push(context),
-                    ),
-                    if (!AppSettingsService.instance.inReview) ...[
+                    // Favorites — sellers only (admins have their own panel)
+                    if (isSeller)
+                      _MoreTile(
+                        icon: Icons.favorite_border,
+                        label: 'more.my_favorites'.tr(),
+                        onTap: () => FavoritesPage.push(context),
+                      ),
+                    // My Properties — sellers only, hidden in review
+                    if (isSeller && !inReview) ...[
                       _MoreTile(
                         icon: Icons.home_work_outlined,
                         label: 'more.my_properties'.tr(),
                         onTap: () => MyPropertiesPage.push(context),
                       ),
+                    ],
+                    // Add Property — sellers (not in review) OR admins always
+                    if (!inReview || isAdmin) ...[
                       const SizedBox(height: 16),
                       _SectionHeader(title: 'more.add_listing'.tr()),
                       _MoreTile(

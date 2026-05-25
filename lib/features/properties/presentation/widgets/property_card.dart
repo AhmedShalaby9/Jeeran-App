@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/utils/format_utils.dart';
 import '../../../../core/widgets/app_image.dart';
 import '../../domain/entities/property.dart';
 
@@ -134,7 +135,7 @@ class _FeaturedCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    property.price ?? '',
+                    formatPrice(property.price),
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -282,7 +283,7 @@ class _HorizontalCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        property.price ?? '',
+                        formatPrice(property.price),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
@@ -386,7 +387,7 @@ class _VerticalCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    property.price ?? '',
+                    formatPrice(property.price),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
@@ -725,7 +726,7 @@ class _SimilarCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    property.price ?? '',
+                    formatPrice(property.price),
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,

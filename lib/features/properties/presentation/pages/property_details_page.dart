@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/utils/format_utils.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/widgets/app_snackbar.dart';
 import '../../../../features/favorites/presentation/bloc/favorites_bloc.dart';
@@ -41,21 +42,6 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-  String _formatPrice(String? raw) {
-    if (raw == null || raw.isEmpty) return '—';
-    final n = double.tryParse(raw.replaceAll(RegExp(r'[^0-9.]'), ''));
-    if (n == null) return raw;
-    if (n >= 1000000) {
-      final v = n / 1000000;
-      return '${v % 1 == 0 ? v.toInt() : v.toStringAsFixed(1)}M';
-    }
-    if (n >= 1000) {
-      final v = n / 1000;
-      return '${v % 1 == 0 ? v.toInt() : v.toStringAsFixed(1)}K';
-    }
-    return raw;
   }
 
   void _toggleSave() {
@@ -152,7 +138,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: PropertyPriceCard(
             property: _p,
-            formatPrice: _formatPrice,
+            formatPrice: formatPrice,
           ),
         ),
       ],

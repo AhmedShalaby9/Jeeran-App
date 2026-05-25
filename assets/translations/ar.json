@@ -1,5 +1,5 @@
 {
-  "app_name": "جيران",
+  "app_name": "چييران",
   "currency": "ج.م",
   "splash_tagline": "جد منزل أحلامك",
   "bottom_nav": {
@@ -126,7 +126,7 @@
     "dark_mode": "الوضع الداكن",
     "notifications": "الإشعارات",
     "support": "الدعم",
-    "about": "عن جيران",
+    "about": "عن چييران",
     "contact_us": "تواصل معنا",
     "privacy_policy": "سياسة الخصوصية",
     "terms_of_service": "شروط الخدمة",
@@ -134,7 +134,7 @@
     "logout_title": "تسجيل الخروج",
     "logout_confirm": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
     "join_as_seller_title": "انضم إلينا كبائع",
-    "join_as_seller_subtitle": "ابدأ بنشر عقاراتك على جيران",
+    "join_as_seller_subtitle": "ابدأ بنشر عقاراتك على چييران",
     "join_as_seller_button": "قدم الآن",
     "ai_ads": "إعلاناتي الذكية"
   },
@@ -145,7 +145,7 @@
     "got_it": "حسناً"
   },
   "onboarding": {
-    "welcome_title": "مرحباً بك في جيران",
+    "welcome_title": "مرحباً بك في چييران",
     "welcome_desc": "اكتشف العقار المثالي لك مع منصتنا الشاملة للعقارات",
     "find_home_title": "جد منزلك المثالي",
     "find_home_desc": "تصفح آلاف العقارات واعثر على ما يناسب احتياجاتك",
@@ -169,7 +169,7 @@
   },
   "plans": {
     "title": "فتح تحميلات القوائم",
-    "subtitle": "اختر خطة لبدء نشر العقارات على جيران. ترقية أو تخفيض أو إلغاء في أي وقت.",
+    "subtitle": "اختر خطة لبدء نشر العقارات على چييران. ترقية أو تخفيض أو إلغاء في أي وقت.",
     "restore": "استعادة",
     "monthly_plan": "الخطة الشهرية",
     "pay_as_you_go": "ادفع حسب استخدامك",
@@ -320,7 +320,7 @@
     "terms_dialog_close": "إغلاق"
   },
   "ai_chat": {
-    "jeeran_ai": "جيران AI",
+    "jeeran_ai": "چييران AI",
     "chat_history": "سجل المحادثات",
     "new_chat": "محادثة جديدة",
     "new_session": "جلسة جديدة",
@@ -328,12 +328,12 @@
     "online_status": "متصل — مساعد عقاري",
     "tap_to_continue": "اضغط لمتابعة المحادثة",
     "no_conversations": "لا توجد محادثات بعد",
-    "no_conversations_subtitle": "ابدأ محادثة جديدة ودع جيران AI\nيساعدك في إيجاد عقارك المثالي.",
+    "no_conversations_subtitle": "ابدأ محادثة جديدة ودع چييران AI\nيساعدك في إيجاد عقارك المثالي.",
     "start_new_chat": "ابدأ محادثة جديدة",
     "delete_conversation": "حذف المحادثة",
     "delete_confirm": "سيتم حذف \"{title}\" نهائياً.",
     "new_conversation": "محادثة جديدة",
-    "ask_hint": "اسأل جيران AI…",
+    "ask_hint": "اسأل چييران AI…",
     "go_back": "رجوع",
     "just_now": "الآن",
     "minutes_ago": "منذ {count} د",
