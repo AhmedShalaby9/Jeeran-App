@@ -50,14 +50,11 @@
   "type": {
     "villa": "فيلا",
     "apartment": "شقة",
-    "land": "أرض",
-    "studio": "ستوديو",
     "chalet": "شاليه",
-    "duplex": "دوبلكس",
-    "marina_apartment": "شقة مارينا",
+    "marina_apartment": "شقة بالمارينا",
     "clinic": "عيادة",
-    "office": "مكتب",
-    "shop": "محل تجاري"
+    "office": "مكتب إداري",
+    "shop": "محل"
   },
   "location": {
     "country": {

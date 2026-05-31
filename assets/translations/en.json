@@ -50,10 +50,7 @@
   "type": {
     "villa": "Villa",
     "apartment": "Apartment",
-    "land": "Land",
-    "studio": "Studio",
     "chalet": "Chalet",
-    "duplex": "Duplex",
     "marina_apartment": "Marina Apartment",
     "clinic": "Clinic",
     "office": "Office",

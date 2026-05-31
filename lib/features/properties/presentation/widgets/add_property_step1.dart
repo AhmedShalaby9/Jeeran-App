@@ -26,9 +26,6 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
     PropertyType.clinic: Icons.local_hospital_rounded,
     PropertyType.office: Icons.business_center_rounded,
     PropertyType.shop: Icons.storefront_rounded,
-    PropertyType.land: Icons.landscape_rounded,
-    PropertyType.studio: Icons.meeting_room_rounded,
-    PropertyType.duplex: Icons.layers_rounded,
   };
 
   static const _typeSubtitles = <PropertyType, String>{
@@ -39,9 +36,6 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
     PropertyType.clinic: 'Medical spaces',
     PropertyType.office: 'Commercial offices',
     PropertyType.shop: 'Shops & showrooms',
-    PropertyType.land: 'Plots & agricultural',
-    PropertyType.studio: 'Open-plan units',
-    PropertyType.duplex: 'Two-floor units',
   };
 
   void _update(VoidCallback fn) {

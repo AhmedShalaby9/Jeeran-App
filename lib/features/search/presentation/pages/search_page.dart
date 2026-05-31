@@ -47,10 +47,11 @@ class _SearchPageState extends State<SearchPage> {
   static const _types = [
     'villa',
     'apartment',
-    'land',
-    'studio',
     'chalet',
-    'duplex',
+    'marina_apartment',
+    'clinic',
+    'office',
+    'shop',
   ];
   static const _bedroomOptions = [1, 2, 3, 4, 5];
   static const _sortOptions = ['price', 'date', 'bedrooms'];
@@ -81,10 +82,11 @@ class _SearchPageState extends State<SearchPage> {
   String? _reverseMapType(String? value) => switch (value) {
     'فيلا' => 'villa',
     'شقة' => 'apartment',
-    'أرض' => 'land',
-    'ستوديو' => 'studio',
     'شاليه' => 'chalet',
-    'دوبلكس' => 'duplex',
+    'شقة بالمارينا' => 'marina_apartment',
+    'عيادة' => 'clinic',
+    'مكتب إداري' => 'office',
+    'محل' => 'shop',
     _ => value,
   };
 
@@ -151,10 +153,11 @@ class _SearchPageState extends State<SearchPage> {
   String? _mapType(String? value) => switch (value) {
     'villa' => 'فيلا',
     'apartment' => 'شقة',
-    'land' => 'أرض',
-    'studio' => 'ستوديو',
     'chalet' => 'شاليه',
-    'duplex' => 'دوبلكس',
+    'marina_apartment' => 'شقة بالمارينا',
+    'clinic' => 'عيادة',
+    'office' => 'مكتب إداري',
+    'shop' => 'محل',
     _ => value,
   };
 
