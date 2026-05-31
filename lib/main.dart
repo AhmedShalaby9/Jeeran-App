@@ -18,7 +18,7 @@ import 'features/splash/presentation/pages/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  AppConfig.setEnvironment(AppEnvironment.production);
+  AppConfig.setEnvironment(AppEnvironment.staging);
   await AppStorage.init();
   NotificationService.instance.init().catchError(
     (e) => debugPrint('[FCM] NotificationService init failed: $e'),
@@ -26,7 +26,9 @@ void main() async {
   await EasyLocalization.ensureInitialized();
   await di.init();
   Bloc.observer = AppBlocObserver();
-  _registerFcmToken().catchError((e) => debugPrint('FCM registration failed: $e'));
+  _registerFcmToken().catchError(
+    (e) => debugPrint('FCM registration failed: $e'),
+  );
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ar')],
@@ -82,13 +84,10 @@ Future<void> _registerFcmToken() async {
     deviceId: deviceId,
     platform: platform,
   );
-  result.fold(
-    (failure) => debugPrint('[FCM reg] API FAILED: $failure'),
-    (_) {
-      debugPrint('[FCM reg] API success — token saved');
-      AppStorage.saveLastFcmToken(token);
-    },
-  );
+  result.fold((failure) => debugPrint('[FCM reg] API FAILED: $failure'), (_) {
+    debugPrint('[FCM reg] API success — token saved');
+    AppStorage.saveLastFcmToken(token);
+  });
 }
 
 class JeeranApp extends StatelessWidget {
@@ -134,8 +133,7 @@ class JeeranApp extends StatelessWidget {
         filled: true,
         fillColor: AppColors.grey.withValues(alpha: 0.12),
         hintStyle: const TextStyle(color: AppColors.grey, fontSize: 14),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 1),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 1),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
