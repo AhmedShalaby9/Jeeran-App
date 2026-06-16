@@ -20,23 +20,17 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.setEnvironment(AppEnvironment.production);
   await AppStorage.init();
-  NotificationService.instance.init().catchError(
-    (e) => debugPrint('[FCM] NotificationService init failed: $e'),
-  );
+  NotificationService.instance.init().catchError((e) => debugPrint('[FCM] NotificationService init failed: $e'));
   await EasyLocalization.ensureInitialized();
   await di.init();
   Bloc.observer = AppBlocObserver();
-  _registerFcmToken().catchError(
-    (e) => debugPrint('FCM registration failed: $e'),
-  );
+  _registerFcmToken().catchError((e) => debugPrint('FCM registration failed: $e'));
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ar')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),
-      startLocale: AppStorage.language != null
-          ? Locale(AppStorage.language!)
-          : const Locale('en'),
+      startLocale: AppStorage.language != null ? Locale(AppStorage.language!) : const Locale('en'),
       child: const JeeranApp(),
     ),
   );
@@ -109,9 +103,7 @@ class JeeranApp extends StatelessWidget {
 
   ThemeData _buildTheme(BuildContext context) {
     final isArabic = context.locale.languageCode == 'ar';
-    final textTheme = isArabic
-        ? GoogleFonts.cairoTextTheme()
-        : GoogleFonts.ubuntuTextTheme();
+    final textTheme = isArabic ? GoogleFonts.cairoTextTheme() : GoogleFonts.ubuntuTextTheme();
 
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
@@ -134,14 +126,8 @@ class JeeranApp extends StatelessWidget {
         fillColor: AppColors.grey.withValues(alpha: 0.12),
         hintStyle: const TextStyle(color: AppColors.grey, fontSize: 14),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 1),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),

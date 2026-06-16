@@ -133,9 +133,7 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
         // Admins use the no-payment endpoint — skip payment redirect
         if (!isAdmin && paymentUrl != null && paymentUrl.isNotEmpty) {
           final uri = Uri.parse(paymentUrl);
-          if (await canLaunchUrl(uri)) {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
-          }
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
         }
 
         if (!mounted) return;
