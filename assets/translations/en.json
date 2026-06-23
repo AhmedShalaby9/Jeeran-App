@@ -18,7 +18,15 @@
     "featured_properties": "Featured Properties",
     "see_all": "See all",
     "phone_call": "Phone Call",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "promo_ai_ads_title": "Generate AI Ads",
+    "promo_ai_ads_subtitle": "Create stunning property ads with AI in seconds",
+    "promo_seller_title": "Join Us as a Seller",
+    "promo_seller_subtitle": "List your properties and reach thousands of buyers",
+    "promo_add_property_title": "Add Your Properties",
+    "promo_add_property_subtitle": "List a new property and reach more buyers",
+    "promo_get_subscription_title": "Unlock Listings",
+    "promo_get_subscription_subtitle": "Subscribe to start listing your properties"
   },
   "search": {
     "filters": {

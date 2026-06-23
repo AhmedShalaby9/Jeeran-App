@@ -26,6 +26,7 @@ import '../widgets/home_greeting_widget.dart';
 import '../widgets/home_search_bar_widget.dart';
 import '../widgets/home_sliver_app_bar.dart';
 import '../widgets/navigation_cards_grid.dart';
+import '../widgets/promo_banners_section_widget.dart'; // PromoBannerAtPosition
 
 class HomePage extends StatelessWidget {
   final VoidCallback? onSearchTap;
@@ -77,8 +78,10 @@ class _HomeView extends StatelessWidget {
       body: CustomScrollView(
         slivers: [
           const HomeSliverAppBar(),
+
+          // ── Greeting, search bar, image carousel ─────────────────────────
           SliverPadding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 const HomeGreetingWidget(),
@@ -86,11 +89,21 @@ class _HomeView extends StatelessWidget {
                 HomeSearchBarWidget(onTap: onSearchTap),
                 const SizedBox(height: 16),
                 const BannersCarouselWidget(),
+              ]),
+            ),
+          ),
+
+          // ── Promo banner slot 1 — full-width, after image carousel ───────
+          const SliverToBoxAdapter(child: PromoBannerAtPosition(position: 0)),
+
+          // ── Navigation cards + explore projects ──────────────────────────
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
                 const SizedBox(height: 16),
                 const NavigationCardsGrid(),
-
                 const SizedBox(height: 16),
-
                 // if (AppStorage.isSeller) ...[
                 //   const HomeSubscriptionCard(
                 //     state: HomeSubscriptionState.unsubscribed,
@@ -98,6 +111,18 @@ class _HomeView extends StatelessWidget {
                 //   const SizedBox(height: 8),
                 // ],
                 const ExploreProjectsWidget(),
+              ]),
+            ),
+          ),
+
+          // ── Promo banner slot 2 — full-width, after explore projects ─────
+          const SliverToBoxAdapter(child: PromoBannerAtPosition(position: 1)),
+
+          // ── News, featured properties, ads ───────────────────────────────
+          SliverPadding(
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
                 const SizedBox(height: 8),
                 const NewsCarouselWidget(),
                 const SizedBox(height: 24),
@@ -115,9 +140,7 @@ class _HomeView extends StatelessWidget {
                 const SizedBox(height: 12),
                 const FeaturedPropertiesWidget(),
                 const SizedBox(height: 24),
-                _AdsSection(
-                  onSeeAll: () => AdsPage.push(context),
-                ),
+                _AdsSection(onSeeAll: () => AdsPage.push(context)),
                 const SizedBox(height: 24),
               ]),
             ),

@@ -13,6 +13,10 @@ class AppSettings {
   final String? adGenerationPrice;
   final int? adGenerationTrials;
   final bool inReview;
+  final bool promoAiAdsVisible;
+  final bool promoSellerVisible;
+  final int promoAiAdsOrder;
+  final int promoSellerOrder;
 
   const AppSettings({
     this.minVersionIos,
@@ -26,6 +30,10 @@ class AppSettings {
     this.adGenerationPrice,
     this.adGenerationTrials,
     this.inReview = false,
+    this.promoAiAdsVisible = true,
+    this.promoSellerVisible = true,
+    this.promoAiAdsOrder = 1,
+    this.promoSellerOrder = 2,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -40,6 +48,10 @@ class AppSettings {
         adGenerationPrice: json['ad_generation_price'] as String?,
         adGenerationTrials: json['ad_generation_trials'] as int?,
         inReview: (json['in_review'] as bool?) ?? false,
+        promoAiAdsVisible: (json['promo_ai_ads_visible'] as bool?) ?? true,
+        promoSellerVisible: (json['promo_seller_visible'] as bool?) ?? true,
+        promoAiAdsOrder: (json['promo_ai_ads_order'] as int?) ?? 1,
+        promoSellerOrder: (json['promo_seller_order'] as int?) ?? 2,
       );
 }
 
@@ -69,4 +81,19 @@ class AppSettingsService {
 
   String? about(String locale) =>
       locale == 'ar' ? settings?.aboutUsAr : settings?.aboutUsEn;
+
+  /// Returns the visible promo banner types sorted by their configured order.
+  /// Each entry is either `'ai_ads'` or `'seller'`.
+  List<String> get promoBannersOrdered {
+    final s = settings;
+    final entries = <(int, String)>[];
+    if (s == null || s.promoAiAdsVisible) {
+      entries.add((s?.promoAiAdsOrder ?? 1, 'ai_ads'));
+    }
+    if (s == null || s.promoSellerVisible) {
+      entries.add((s?.promoSellerOrder ?? 2, 'seller'));
+    }
+    entries.sort((a, b) => a.$1.compareTo(b.$1));
+    return entries.map((e) => e.$2).toList();
+  }
 }

@@ -18,7 +18,15 @@
     "featured_properties": "عقارات مميزة",
     "see_all": "عرض الكل",
     "phone_call": "اتصال هاتفي",
-    "whatsapp": "واتساب"
+    "whatsapp": "واتساب",
+    "promo_ai_ads_title": "أنشئ إعلانات بالذكاء الاصطناعي",
+    "promo_ai_ads_subtitle": "اصنع إعلانات عقارية مذهلة بالذكاء الاصطناعي في ثوانٍ",
+    "promo_seller_title": "انضم إلينا كبائع",
+    "promo_seller_subtitle": "أضف عقاراتك وتواصل مع آلاف المشترين",
+    "promo_add_property_title": "أضف عقاراتك",
+    "promo_add_property_subtitle": "أضف عقاراً جديداً وتواصل مع المزيد من المشترين",
+    "promo_get_subscription_title": "افتح إمكانية الإدراج",
+    "promo_get_subscription_subtitle": "اشترك لتبدأ في إدراج عقاراتك"
   },
   "search": {
     "filters": {
