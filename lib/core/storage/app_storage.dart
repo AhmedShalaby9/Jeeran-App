@@ -92,6 +92,15 @@ class AppStorage {
   static Future<void> saveLastFcmToken(String token) =>
       _box.put(_keyLastFcmToken, token);
 
+  // AI Ad guide video
+  static const String _keyAiAdGuideViewed = 'ai_ad_guide_viewed';
+
+  static bool get aiAdGuideViewed =>
+      _box.get(_keyAiAdGuideViewed, defaultValue: false) as bool;
+
+  static Future<void> setAiAdGuideViewed(bool value) =>
+      _box.put(_keyAiAdGuideViewed, value);
+
   // Language
   static String? get language => _box.get(_keyLanguage) as String?;
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/ai_ad.dart';
 import '../bloc/ai_ad_detail_bloc.dart';
@@ -513,6 +514,10 @@ class _TrialsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final maxTrials = AppSettingsService.instance.settings?.adGenerationTrials;
+    final trialsExhausted = maxTrials != null && trials.length >= maxTrials;
+    final canAddTrial = ad.isDone && !trialsExhausted;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -527,7 +532,7 @@ class _TrialsSection extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            if (ad.isDone)
+            if (canAddTrial)
               isCreating
                   ? const SizedBox(
                       width: 20,
@@ -554,7 +559,7 @@ class _TrialsSection extends StatelessWidget {
                   const TextStyle(fontSize: 13, color: AppColors.inkSub),
             ),
           )
-        else if (trials.isEmpty)
+        else if (trials.isEmpty && !trialsExhausted)
           const Padding(
             padding: EdgeInsets.only(top: 12),
             child: Text(

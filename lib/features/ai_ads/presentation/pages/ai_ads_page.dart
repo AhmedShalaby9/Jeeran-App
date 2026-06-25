@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/app_settings_service.dart';
+import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/ai_ad.dart';
 import '../bloc/ai_ads_bloc.dart';
@@ -8,6 +10,7 @@ import '../bloc/ai_ads_event.dart';
 import '../bloc/ai_ads_state.dart';
 import 'ai_ad_detail_page.dart';
 import 'ai_ad_generate_page.dart';
+import 'ai_ad_guide_page.dart';
 
 class AiAdsPage extends StatelessWidget {
   const AiAdsPage({super.key});
@@ -38,6 +41,15 @@ class _AiAdsView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('My AI Ads'),
         actions: [
+          Builder(builder: (ctx) {
+            final url = AppSettingsService.instance.settings?.aiGuideVideoUrl;
+            final hasVideo = url != null && url.isNotEmpty;
+            if (!hasVideo) return const SizedBox.shrink();
+            return TextButton(
+              onPressed: () => AiAdGuidePage.push(ctx, url!),
+              child: const Text('Watch Guide'),
+            );
+          }),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () =>
@@ -46,12 +58,7 @@ class _AiAdsView extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await AiAdGeneratePage.push(context);
-          if (context.mounted) {
-            context.read<AiAdsBloc>().add(const LoadAiAds());
-          }
-        },
+        onPressed: () => _openGeneratePage(context),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.auto_awesome, color: Colors.white),
         label: const Text(
@@ -101,6 +108,25 @@ class _AiAdsView extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _openGeneratePage(BuildContext context) async {
+    final settings = AppSettingsService.instance.settings;
+    final url = settings?.aiGuideVideoUrl;
+    final shouldShow = (settings?.aiGuideVideoVisible ?? false) &&
+        !AppStorage.aiAdGuideViewed &&
+        url != null &&
+        url.isNotEmpty;
+
+    if (shouldShow) {
+      await AiAdGuidePage.push(context, url!);
+    }
+
+    if (!context.mounted) return;
+    await AiAdGeneratePage.push(context);
+    if (context.mounted) {
+      context.read<AiAdsBloc>().add(const LoadAiAds());
+    }
   }
 
   void _confirmDelete(BuildContext context, AiAd ad) {

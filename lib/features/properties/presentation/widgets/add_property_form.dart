@@ -130,6 +130,7 @@ class WizardInput extends StatelessWidget {
   final TextInputType keyboardType;
   final ValueChanged<String> onChanged;
   final TextDirection? textDirection;
+  final TextEditingController? controller;
 
   const WizardInput({
     super.key,
@@ -139,12 +140,14 @@ class WizardInput extends StatelessWidget {
     this.suffix,
     this.keyboardType = TextInputType.text,
     this.textDirection,
+    this.controller,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
-      initialValue: value,
+      controller: controller,
+      initialValue: controller == null ? value : null,
       onChanged: onChanged,
       keyboardType: keyboardType,
       textDirection: textDirection,

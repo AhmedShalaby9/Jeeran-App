@@ -9,7 +9,7 @@ class AddPropertyStep4 extends StatefulWidget {
   final AddPropertyForm form;
   final VoidCallback onChanged;
 
-  const AddPropertyStep4({
+  const  AddPropertyStep4({
     super.key,
     required this.form,
     required this.onChanged,
@@ -25,21 +25,29 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
   final _picker = ImagePicker();
   final _translator = GoogleTranslator();
 
+  late final TextEditingController _arTitleCtrl;
+  late final TextEditingController _enTitleCtrl;
   late final TextEditingController _arDescCtrl;
   late final TextEditingController _enDescCtrl;
 
+  bool _translatingTitleAr = false;
+  bool _translatingTitleEn = false;
   bool _translatingAr = false;
   bool _translatingEn = false;
 
   @override
   void initState() {
     super.initState();
+    _arTitleCtrl = TextEditingController(text: widget.form.titleAr);
+    _enTitleCtrl = TextEditingController(text: widget.form.titleEn);
     _arDescCtrl = TextEditingController(text: widget.form.contentAr);
     _enDescCtrl = TextEditingController(text: widget.form.contentEn);
   }
 
   @override
   void dispose() {
+    _arTitleCtrl.dispose();
+    _enTitleCtrl.dispose();
     _arDescCtrl.dispose();
     _enDescCtrl.dispose();
     super.dispose();
@@ -67,6 +75,35 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
   }
 
   // ── Translation ────────────────────────────────────────────────
+
+  Future<void> _translateTitleTo(String targetLang) async {
+    final src = targetLang == 'en' ? widget.form.titleAr : widget.form.titleEn;
+    if (src.trim().isEmpty) return;
+    setState(() =>
+        targetLang == 'en' ? _translatingTitleEn = true : _translatingTitleAr = true);
+    try {
+      final result = await _translator.translate(src, to: targetLang);
+      if (!mounted) return;
+      setState(() {
+        if (targetLang == 'en') {
+          widget.form.titleEn = result.text;
+          _enTitleCtrl.text = result.text;
+        } else {
+          widget.form.titleAr = result.text;
+          _arTitleCtrl.text = result.text;
+        }
+        widget.onChanged();
+      });
+    } catch (_) {
+      // silent fail — user can retry by tapping the button again
+    } finally {
+      if (mounted) {
+        setState(() => targetLang == 'en'
+            ? _translatingTitleEn = false
+            : _translatingTitleAr = false);
+      }
+    }
+  }
 
   Future<void> _translateTo(String targetLang) async {
     final src =
@@ -174,10 +211,18 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
         const SizedBox(height: 22),
 
         // ── Title (Arabic) ─────────────────────────────────────────
-        const WizardLabel('Title (Arabic)', required: true),
+        _DescLabelRow(
+          label: 'Title (Arabic)',
+          required: true,
+          buttonLabel: 'Translate from English',
+          enabled: widget.form.titleEn.trim().isNotEmpty,
+          translating: _translatingTitleAr,
+          onTranslate: () => _translateTitleTo('ar'),
+        ),
         WizardInput(
           placeholder: 'عنوان العقار بالعربية',
           value: widget.form.titleAr,
+          controller: _arTitleCtrl,
           textDirection: TextDirection.rtl,
           onChanged: (v) {
             widget.form.titleAr = v;
@@ -187,10 +232,18 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
         const SizedBox(height: 14),
 
         // ── Title (English) ────────────────────────────────────────
-        const WizardLabel('Title (English)', required: true),
+        _DescLabelRow(
+          label: 'Title (English)',
+          required: true,
+          buttonLabel: 'Translate from Arabic',
+          enabled: widget.form.titleAr.trim().isNotEmpty,
+          translating: _translatingTitleEn,
+          onTranslate: () => _translateTitleTo('en'),
+        ),
         WizardInput(
           placeholder: 'Property title in English',
           value: widget.form.titleEn,
+          controller: _enTitleCtrl,
           onChanged: (v) {
             widget.form.titleEn = v;
             widget.onChanged();

@@ -17,6 +17,8 @@ class AppSettings {
   final bool promoSellerVisible;
   final int promoAiAdsOrder;
   final int promoSellerOrder;
+  final String? aiGuideVideoUrl;
+  final bool aiGuideVideoVisible;
 
   const AppSettings({
     this.minVersionIos,
@@ -34,6 +36,8 @@ class AppSettings {
     this.promoSellerVisible = true,
     this.promoAiAdsOrder = 1,
     this.promoSellerOrder = 2,
+    this.aiGuideVideoUrl,
+    this.aiGuideVideoVisible = false,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -52,6 +56,8 @@ class AppSettings {
         promoSellerVisible: (json['promo_seller_visible'] as bool?) ?? true,
         promoAiAdsOrder: (json['promo_ai_ads_order'] as int?) ?? 1,
         promoSellerOrder: (json['promo_seller_order'] as int?) ?? 2,
+        aiGuideVideoUrl: json['ai_guide_video_url'] as String?,
+        aiGuideVideoVisible: (json['ai_guide_video_visible'] as bool?) ?? false,
       );
 }
 

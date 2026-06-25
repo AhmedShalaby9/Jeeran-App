@@ -19,6 +19,7 @@ import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../../properties/presentation/pages/my_properties_page.dart';
 import '../../../ai_ads/presentation/pages/ai_ads_page.dart';
+import '../../../ai_ads/presentation/pages/ai_ad_guide_page.dart';
 import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
 import '../../../seller_request/presentation/bloc/seller_request_state.dart';
 import '../../../seller_request/presentation/widgets/seller_request_tile.dart';
@@ -361,6 +362,18 @@ class _MoreView extends StatelessWidget {
                 label: 'more.ai_ads'.tr(),
                 onTap: () => AiAdsPage.push(context),
               ),
+            if (!AppSettingsService.instance.inReview) ...[
+              Builder(builder: (context) {
+                final url = AppSettingsService.instance.settings?.aiGuideVideoUrl;
+                final hasVideo = url != null && url.isNotEmpty;
+                if (!hasVideo) return const SizedBox.shrink();
+                return _MoreTile(
+                  icon: Icons.play_circle_outline_rounded,
+                  label: 'more.ai_ads_guide'.tr(),
+                  onTap: () => AiAdGuidePage.push(context, url!),
+                );
+              }),
+            ],
             // Seller section — favorites, my properties, add listing
             BlocBuilder<AuthBloc, AuthState>(
               builder: (context, authState) {

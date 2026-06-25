@@ -141,7 +141,8 @@
     "join_as_seller_title": "Join us as a Seller",
     "join_as_seller_subtitle": "Start listing your properties on Jeeran",
     "join_as_seller_button": "Apply Now",
-    "ai_ads": "Create Ad with AI"
+    "ai_ads": "Create Ad with AI",
+    "ai_ads_guide": "Watch AI Ad Guide"
   },
   "seller_request": {
     "success_title": "Request Submitted!",

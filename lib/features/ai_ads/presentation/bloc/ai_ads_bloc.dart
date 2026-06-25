@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/error/failures.dart';
 import '../../domain/repositories/ai_ads_repository.dart';
 import 'ai_ads_event.dart';
 import 'ai_ads_state.dart';
@@ -34,8 +35,11 @@ class AiAdsBloc extends Bloc<AiAdsEvent, AiAdsState> {
     );
   }
 
-  String _mapFailure(dynamic failure) {
-    final msg = (failure?.message as String?) ?? '';
-    return msg.isNotEmpty ? msg : 'Something went wrong. Please try again.';
+  String _mapFailure(Failure failure) {
+    return switch (failure) {
+      NetworkFailure() => 'No internet connection.',
+      ServerFailure(:final message) when (message ?? '').isNotEmpty => message!,
+      _ => 'Something went wrong. Please try again.',
+    };
   }
 }
