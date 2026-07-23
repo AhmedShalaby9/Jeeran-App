@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failures.dart';
@@ -12,6 +14,12 @@ import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository repository;
+
+  // Firebase SDK phone auth
+  String? _verificationId;
+  String? _autoVerifiedIdToken; // set when Android auto-verifies SMS
+
+  // Firebase REST fallback (iOS reCAPTCHA path — kept for backward compat)
   String? _sessionInfo;
 
   AuthBloc({required this.repository}) : super(AuthInitial()) {
@@ -35,7 +43,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       print('[FCM login] getToken FAILED: $e');
     }
 
-
     final platform = Platform.isAndroid ? 'android' : 'ios';
     String? deviceId;
     try {
@@ -58,28 +65,79 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 
+  // ─── Send OTP via Firebase Auth SDK (no reCAPTCHA WebView) ───────────────
   Future<void> _onSendOtp(AuthSendOtpEvent event, Emitter<AuthState> emit) async {
-    emit(AuthRecaptchaRequired(event.phone));
-  }
-
-  Future<void> _onSendOtpRest(AuthSendOtpRestEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    final result = await repository.sendOtpRest(event.phone, event.recaptchaToken);
-    result.fold(
-      (failure) => emit(AuthError(_mapFailure(failure))),
-      (sessionInfo) {
-        _sessionInfo = sessionInfo;
-        emit(AuthOtpSent(phone: event.phone, isNewUser: false));
+
+    _verificationId = null;
+    _autoVerifiedIdToken = null;
+
+    final completer = Completer<AuthState>();
+
+    fb.FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: event.phone,
+
+      // Android: SMS auto-read succeeded — sign in immediately, skip OTP screen
+      verificationCompleted: (fb.PhoneAuthCredential credential) async {
+        if (completer.isCompleted) return;
+        try {
+          final uc = await fb.FirebaseAuth.instance.signInWithCredential(credential);
+          final idToken = await uc.user?.getIdToken();
+          if (idToken == null) {
+            completer.complete(AuthError('Auto-verification failed'));
+            return;
+          }
+          String? fcmToken;
+          try { fcmToken = await NotificationService.instance.getToken(); } catch (_) {}
+          String? deviceId;
+          try { deviceId = (await DeviceInfoPlugin().androidInfo).id; } catch (_) {}
+
+          final result = await repository.firebaseVerify(
+            idToken,
+            fcmToken: fcmToken,
+            platform: 'android',
+            deviceId: deviceId,
+          );
+          completer.complete(result.fold(
+            (f) => AuthError(_mapFailure(f)),
+            (user) => AuthPhoneChecked(
+              user: user.isProfileComplete ? user : null,
+              isProfileComplete: user.isProfileComplete,
+            ),
+          ));
+        } catch (_) {
+          if (!completer.isCompleted) completer.complete(AuthError('Auto-verification failed'));
+        }
       },
+
+      // SMS sent — show OTP input screen
+      codeSent: (String verificationId, int? resendToken) {
+        _verificationId = verificationId;
+        if (!completer.isCompleted) {
+          completer.complete(AuthOtpSent(phone: event.phone, isNewUser: false));
+        }
+      },
+
+      verificationFailed: (fb.FirebaseAuthException e) {
+        if (!completer.isCompleted) {
+          completer.complete(AuthError(e.message ?? 'SMS verification failed'));
+        }
+      },
+
+      codeAutoRetrievalTimeout: (String verificationId) {
+        _verificationId = verificationId;
+      },
+
+      timeout: const Duration(seconds: 60),
     );
+
+    emit(await completer.future);
   }
 
+  // ─── Verify OTP ───────────────────────────────────────────────────────────
   Future<void> _onVerifyOtp(AuthVerifyOtpEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
-    if (_sessionInfo == null) {
-      emit(AuthError('Session expired. Please request a new code.'));
-      return;
-    }
+
     String? fcmToken;
     try { fcmToken = await NotificationService.instance.getToken(); } catch (_) {}
     final platform = Platform.isAndroid ? 'android' : 'ios';
@@ -90,19 +148,91 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           ? (await info.androidInfo).id
           : (await info.iosInfo).identifierForVendor;
     } catch (_) {}
-    final result = await repository.verifyOtpRest(
-      _sessionInfo!,
-      event.otp,
-      fcmToken: fcmToken,
-      platform: platform,
-      deviceId: deviceId,
-    );
+
+    // Auto-verified path (Android SMS Retriever already completed sign-in)
+    if (_autoVerifiedIdToken != null) {
+      final result = await repository.firebaseVerify(
+        _autoVerifiedIdToken!,
+        fcmToken: fcmToken,
+        platform: platform,
+        deviceId: deviceId,
+      );
+      result.fold(
+        (f) => emit(AuthError(_mapFailure(f))),
+        (user) => emit(AuthPhoneChecked(
+          user: user.isProfileComplete ? user : null,
+          isProfileComplete: user.isProfileComplete,
+        )),
+      );
+      return;
+    }
+
+    // Manual OTP entry path
+    if (_verificationId == null) {
+      // Fallback: old Firebase REST session (iOS reCAPTCHA path)
+      if (_sessionInfo == null) {
+        emit(AuthError('Session expired. Please request a new code.'));
+        return;
+      }
+      final result = await repository.verifyOtpRest(
+        _sessionInfo!,
+        event.otp,
+        fcmToken: fcmToken,
+        platform: platform,
+        deviceId: deviceId,
+      );
+      result.fold(
+        (f) => emit(AuthError(_mapFailure(f))),
+        (user) => emit(AuthPhoneChecked(
+          user: user.isProfileComplete ? user : null,
+          isProfileComplete: user.isProfileComplete,
+        )),
+      );
+      return;
+    }
+
+    // Firebase SDK credential verify
+    try {
+      final credential = fb.PhoneAuthProvider.credential(
+        verificationId: _verificationId!,
+        smsCode: event.otp,
+      );
+      final uc = await fb.FirebaseAuth.instance.signInWithCredential(credential);
+      final idToken = await uc.user?.getIdToken();
+      if (idToken == null) {
+        emit(AuthError('Authentication failed'));
+        return;
+      }
+      final result = await repository.firebaseVerify(
+        idToken,
+        fcmToken: fcmToken,
+        platform: platform,
+        deviceId: deviceId,
+      );
+      result.fold(
+        (f) => emit(AuthError(_mapFailure(f))),
+        (user) => emit(AuthPhoneChecked(
+          user: user.isProfileComplete ? user : null,
+          isProfileComplete: user.isProfileComplete,
+        )),
+      );
+    } on fb.FirebaseAuthException catch (e) {
+      emit(AuthError(e.message ?? 'Invalid verification code'));
+    } catch (_) {
+      emit(AuthError('Verification failed. Please try again.'));
+    }
+  }
+
+  // ─── iOS reCAPTCHA REST path (kept for backward compat) ──────────────────
+  Future<void> _onSendOtpRest(AuthSendOtpRestEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    final result = await repository.sendOtpRest(event.phone, event.recaptchaToken);
     result.fold(
       (failure) => emit(AuthError(_mapFailure(failure))),
-      (user) => emit(AuthPhoneChecked(
-        user: user.isProfileComplete ? user : null,
-        isProfileComplete: user.isProfileComplete,
-      )),
+      (sessionInfo) {
+        _sessionInfo = sessionInfo;
+        emit(AuthOtpSent(phone: event.phone, isNewUser: false));
+      },
     );
   }
 
