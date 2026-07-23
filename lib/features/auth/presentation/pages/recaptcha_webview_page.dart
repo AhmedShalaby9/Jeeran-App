@@ -17,6 +17,7 @@ class RecaptchaWebViewPage extends StatefulWidget {
 class _RecaptchaWebViewPageState extends State<RecaptchaWebViewPage> {
   late final WebViewController _controller;
   bool _isLoading = true;
+  bool _tokenSent = false;
 
   static const _apiKey = 'AIzaSyA2wFEmMGKxs82LHlFUwa4bztB5HHYFKx0';
   static const _authDomain = 'studio-6503153993-be5d6.firebaseapp.com';
@@ -81,7 +82,8 @@ class _RecaptchaWebViewPageState extends State<RecaptchaWebViewPage> {
 ''';
 
   void _onRecaptchaToken(String token) {
-    if (!mounted) return;
+    if (!mounted || _tokenSent) return;
+    _tokenSent = true;
     context.read<AuthBloc>().add(
       AuthSendOtpRestEvent(phone: widget.phone, recaptchaToken: token),
     );

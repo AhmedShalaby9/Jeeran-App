@@ -11,8 +11,8 @@ class ApiClient {
     _dio = Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 15),
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 35),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -114,7 +114,7 @@ class ApiClient {
     if (data == null) return null;
     if (data is String && data.isNotEmpty) return data;
     if (data is Map<String, dynamic>) {
-      final msg = data['chat'] ?? data['error'] ?? data['msg'];
+      final msg = data['message'] ?? data['chat'] ?? data['error'] ?? data['msg'];
       if (msg is String && msg.isNotEmpty) return msg;
       if (msg is List && msg.isNotEmpty) {
         return msg.whereType<String>().join('\n');
