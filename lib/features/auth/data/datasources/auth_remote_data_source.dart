@@ -12,6 +12,7 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> firebaseVerify(String idToken, {String? fcmToken, String? platform, String? deviceId});
   Future<String> sendOtpRest(String phone, String recaptchaToken);
   Future<UserModel> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId});
+  Future<UserModel> socialLogin(String provider, String idToken, {String? name, String? fcmToken, String? platform, String? deviceId});
   Future<UserModel> completeProfile(CompleteProfileParams params);
   Future<UserModel> getMe();
 }
@@ -135,6 +136,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         data: <String, dynamic>{
           'session_info': sessionInfo,
           'code': code,
+          if (fcmToken != null) 'fcm_token': fcmToken,
+          if (platform != null) 'platform': platform,
+          if (deviceId != null) 'device_id': deviceId,
+        },
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return UserModel.fromJson(response.data as Map<String, dynamic>);
+      }
+      throw ServerException(response.data?['message'] as String? ?? '');
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<UserModel> socialLogin(String provider, String idToken, {String? name, String? fcmToken, String? platform, String? deviceId}) async {
+    try {
+      final response = await apiClient.post(
+        ApiEndpoints.socialLogin,
+        data: <String, dynamic>{
+          'provider': provider,
+          'id_token': idToken,
+          if (name != null) 'name': name,
           if (fcmToken != null) 'fcm_token': fcmToken,
           if (platform != null) 'platform': platform,
           if (deviceId != null) 'device_id': deviceId,

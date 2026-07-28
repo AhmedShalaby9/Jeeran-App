@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../data/datasources/social_auth_provider.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../factories/auth_navigation_factory.dart';
 import '../widgets/login_header.dart';
 import '../widgets/login_phone_form.dart';
+import '../widgets/social_login_section.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -29,15 +31,63 @@ class _LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<_LoginView> {
   String _lastPhone = '';
+  bool _socialLoading = false;
+
+  Future<void> _onGoogleTap() async {
+    if (_socialLoading) return;
+    setState(() => _socialLoading = true);
+    try {
+      final result = await SocialAuthProvider.signInWithGoogle();
+      if (!mounted) return;
+      context.read<AuthBloc>().add(AuthSocialLoginEvent(
+        provider: 'google',
+        idToken: result.idToken,
+        name: result.name,
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _socialLoading = false);
+    }
+  }
+
+  Future<void> _onAppleTap() async {
+    if (_socialLoading) return;
+    setState(() => _socialLoading = true);
+    try {
+      final result = await SocialAuthProvider.signInWithApple();
+      if (!mounted) return;
+      context.read<AuthBloc>().add(AuthSocialLoginEvent(
+        provider: 'apple',
+        idToken: result.idToken,
+        name: result.name,
+      ));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) setState(() => _socialLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) => AuthNavigationFactory.handleState(
-        context,
-        state,
-        lastPhone: _lastPhone,
-      ),
+      listener: (context, state) {
+        if (state is! AuthLoading) {
+          setState(() => _socialLoading = false);
+        }
+        AuthNavigationFactory.handleState(
+          context,
+          state,
+          lastPhone: _lastPhone,
+        );
+      },
       child: Scaffold(
         backgroundColor: Colors.white,
         body: Column(
@@ -47,12 +97,24 @@ class _LoginViewState extends State<_LoginView> {
               child: BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {
                   final isLoading = state is AuthLoading;
-                  return LoginPhoneForm(
-                    isLoading: isLoading,
-                    onContinue: (phone) {
-                      setState(() => _lastPhone = phone);
-                      context.read<AuthBloc>().add(AuthSendOtpEvent(phone));
-                    },
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    child: Column(
+                      children: [
+                        LoginPhoneForm(
+                          isLoading: isLoading || _socialLoading,
+                          onContinue: (phone) {
+                            setState(() => _lastPhone = phone);
+                            context.read<AuthBloc>().add(AuthSendOtpEvent(phone));
+                          },
+                        ),
+                        SocialLoginSection(
+                          isLoading: isLoading || _socialLoading,
+                          onGoogleTap: _onGoogleTap,
+                          onAppleTap: _onAppleTap,
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),

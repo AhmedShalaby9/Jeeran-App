@@ -19,6 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSendOtpEvent>(_onSendOtp);
     on<AuthSendOtpRestEvent>(_onSendOtpRest);
     on<AuthVerifyOtpEvent>(_onVerifyOtp);
+    on<AuthSocialLoginEvent>(_onSocialLogin);
     on<AuthCompleteProfileEvent>(_onCompleteProfile);
     on<AuthLogoutEvent>(_onLogout);
     on<AuthGetMeEvent>(_onGetMe);
@@ -93,6 +94,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final result = await repository.verifyOtpRest(
       _sessionInfo!,
       event.otp,
+      fcmToken: fcmToken,
+      platform: platform,
+      deviceId: deviceId,
+    );
+    result.fold(
+      (failure) => emit(AuthError(_mapFailure(failure))),
+      (user) => emit(AuthPhoneChecked(
+        user: user.isProfileComplete ? user : null,
+        isProfileComplete: user.isProfileComplete,
+      )),
+    );
+  }
+
+  Future<void> _onSocialLogin(AuthSocialLoginEvent event, Emitter<AuthState> emit) async {
+    emit(AuthLoading());
+    String? fcmToken;
+    try { fcmToken = await NotificationService.instance.getToken(); } catch (_) {}
+    final platform = Platform.isAndroid ? 'android' : 'ios';
+    String? deviceId;
+    try {
+      final info = DeviceInfoPlugin();
+      deviceId = Platform.isAndroid
+          ? (await info.androidInfo).id
+          : (await info.iosInfo).identifierForVendor;
+    } catch (_) {}
+    final result = await repository.socialLogin(
+      event.provider,
+      event.idToken,
+      name: event.name,
       fcmToken: fcmToken,
       platform: platform,
       deviceId: deviceId,

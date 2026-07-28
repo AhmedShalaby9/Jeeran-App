@@ -17,6 +17,8 @@ class User extends Equatable {
   final bool isActive;
   final String? fcmToken;
   final int? subscriptionId;
+  final String? authProvider;
+  final bool isSocialLogin;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -37,6 +39,8 @@ class User extends Equatable {
     this.isActive = true,
     this.fcmToken,
     this.subscriptionId,
+    this.authProvider,
+    this.isSocialLogin = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -68,6 +72,8 @@ class User extends Equatable {
     isActive,
     fcmToken,
     subscriptionId,
+    authProvider,
+    isSocialLogin,
     createdAt,
     updatedAt,
   ];
