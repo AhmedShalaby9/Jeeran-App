@@ -39,6 +39,15 @@ class AuthSendOtpRestEvent extends AuthEvent {
   List<Object?> get props => [phone, recaptchaToken];
 }
 
+class AuthSocialLoginEvent extends AuthEvent {
+  final String provider;
+  final String idToken;
+  final String? name;
+  const AuthSocialLoginEvent({required this.provider, required this.idToken, this.name});
+  @override
+  List<Object?> get props => [provider, idToken, name];
+}
+
 class AuthCompleteProfileEvent extends AuthEvent {
   final CompleteProfileParams params;
   final bool isStep1;

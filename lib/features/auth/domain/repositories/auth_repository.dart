@@ -10,6 +10,7 @@ abstract class AuthRepository {
   Future<Either<Failure, User>> firebaseVerify(String idToken, {String? fcmToken, String? platform, String? deviceId});
   Future<Either<Failure, String>> sendOtpRest(String phone, String recaptchaToken);
   Future<Either<Failure, User>> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId});
+  Future<Either<Failure, User>> socialLogin(String provider, String idToken, {String? name, String? fcmToken, String? platform, String? deviceId});
   Future<Either<Failure, User>> completeProfile(CompleteProfileParams params);
   Future<Either<Failure, User>> getMe();
 }
