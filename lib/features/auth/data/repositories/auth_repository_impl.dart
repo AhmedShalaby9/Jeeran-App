@@ -92,6 +92,18 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, User>> socialLogin(String provider, String idToken, {String? name, String? fcmToken, String? platform, String? deviceId}) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final user = await remoteDataSource.socialLogin(provider, idToken, name: name, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
+      _saveToken(user);
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, User>> completeProfile(CompleteProfileParams params) async {
     if (await networkInfo.isConnected) {
       try {

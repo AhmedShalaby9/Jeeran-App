@@ -34,7 +34,8 @@ class AuthNavigationFactory {
     String lastPhone,
   ) {
     if (!state.isProfileComplete) {
-      _goToCompleteProfile(context, lastPhone);
+      final phone = state.user?.phone ?? lastPhone;
+      _goToCompleteProfile(context, phone);
     } else {
       _goToMain(context);
     }
