@@ -12,7 +12,44 @@
           "package_name": "com.jeeran.realestate"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "844365789676-929mc1ov9nj11ann27pdm7ubla77kt2c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jeeran.realestate",
+            "certificate_hash": "9c740890823c9f44845e6f7c005e774959bb9ff4"
+          }
+        },
+        {
+          "client_id": "844365789676-cgu9i0mlehsvtvmddeg25vftq6io2qhe.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jeeran.realestate",
+            "certificate_hash": "d7b6ea451622ae272fb13c8c762333fe37182454"
+          }
+        },
+        {
+          "client_id": "844365789676-motnp623ot5nfls3ourqoiv3qscdifir.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jeeran.realestate",
+            "certificate_hash": "24457051690cdc15dee30a6b8fd219f66c048c32"
+          }
+        },
+        {
+          "client_id": "844365789676-tm1b6lm4ipouoeqvbqf4f292dem4kniq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jeeran.realestate",
+            "certificate_hash": "86769bbc472a28dd91112c3c8b6630646cd7cdef"
+          }
+        },
+        {
+          "client_id": "844365789676-lesjtdo83nke3em235ajc4nauonjhqgr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyA2wFEmMGKxs82LHlFUwa4bztB5HHYFKx0"
@@ -20,7 +57,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "844365789676-lesjtdo83nke3em235ajc4nauonjhqgr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "844365789676-09gv14011brhrvj26m9m8ikc0p48ide2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.jeeran.realestate"
+              }
+            }
+          ]
         }
       }
     }
