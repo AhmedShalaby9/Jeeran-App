@@ -30,11 +30,11 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
   String _gender = '';
   DateTime? _dob;
-  final String _country = 'Egypt';
-  String _city = '';
-  final _referralCtrl = TextEditingController();
+  String _country = 'Egypt';
+  String _countryCode = '+20';
 
   bool get _step1Valid =>
       _nameCtrl.text.trim().length >= 2 && _emailCtrl.text.contains('@');
@@ -58,8 +58,14 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
       if (user.dob != null) {
         _dob = user.dob;
       }
-      if (user.city != null && user.city!.isNotEmpty) {
-        _city = user.city!;
+      if (user.country != null && user.country!.isNotEmpty) {
+        _country = user.country!;
+      }
+      if (user.phoneNumber != null && user.phoneNumber!.isNotEmpty) {
+        _phoneCtrl.text = user.phoneNumber!;
+      }
+      if (user.countryCode != null && user.countryCode!.isNotEmpty) {
+        _countryCode = user.countryCode!;
       }
     }
   }
@@ -68,7 +74,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
-    _referralCtrl.dispose();
+    _phoneCtrl.dispose();
     super.dispose();
   }
 
@@ -95,6 +101,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
   void _completeStep2(BuildContext context) {
     if (!_step2Valid) return;
+    final phone = _phoneCtrl.text.trim();
     context.read<AuthBloc>().add(
       AuthCompleteProfileEvent(
         CompleteProfileParams(
@@ -104,8 +111,8 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
           dob: _dob,
           preferredLanguage: context.locale.languageCode,
           country: _country,
-          city: _city.isEmpty ? null : _city,
-          referralCode: _referralCtrl.text.isEmpty ? null : _referralCtrl.text,
+          countryCode: phone.isNotEmpty ? _countryCode : null,
+          phoneNumber: phone.isNotEmpty ? phone : null,
         ),
         isStep1: false,
       ),
@@ -344,9 +351,24 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
         ),
         ProfileFieldWrapper(
           label: 'auth.country'.tr(),
+          child: ProfileSelectField(
+            value: _country,
+            placeholder: 'auth.select_country'.tr(),
+            onTap: () => _showPicker(
+              title: 'auth.country'.tr(),
+              options: [
+                'auth.egypt'.tr(),
+              ],
+              current: _country,
+              onSelect: (v) => setState(() => _country = v),
+            ),
+          ),
+        ),
+        ProfileFieldWrapper(
+          label: 'auth.phone_number'.tr(),
+          helper: 'auth.phone_optional_helper'.tr(),
           child: Container(
             height: 52,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: const Color(0xFFF5F6F8),
               borderRadius: BorderRadius.circular(12),
@@ -354,58 +376,34 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             ),
             child: Row(
               children: [
-                Expanded(
-                  child: Text(
-                    _country,
-                    style: const TextStyle(fontSize: 16, color: AppColors.ink),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        ProfileFieldWrapper(
-          label: 'auth.city'.tr(),
-          child: ProfileSelectField(
-            value: _city.isEmpty ? null : _city,
-            placeholder: 'auth.select_city'.tr(),
-            onTap: () => _showPicker(
-              title: 'auth.city'.tr(),
-              options: [
-                'auth.cairo'.tr(),
-                'auth.north_coast'.tr(),
-                'auth.sharm_el_sheikh'.tr(),
-              ],
-              current: _city,
-              onSelect: (v) => setState(() => _city = v),
-            ),
-          ),
-        ),
-        ProfileFieldWrapper(
-          label: 'auth.referral_code'.tr(),
-          helper: 'auth.referral_helper'.tr(),
-          child: Stack(
-            children: [
-              ProfileTextInput(
-                controller: _referralCtrl,
-                hint: 'auth.referral_hint'.tr(),
-                onChanged: (_) => setState(() {}),
-              ),
-              if (_referralCtrl.text.isNotEmpty)
-                Positioned(
-                  right: 14,
-                  top: 0,
-                  bottom: 0,
-                  child: Center(
-                    child: Container(
-                      width: 22,
-                      height: 22,
-                      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.success),
-                      child: const Icon(Icons.check_rounded, size: 12, color: Colors.white),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      right: BorderSide(color: AppColors.hairline, width: 1.5),
                     ),
                   ),
+                  child: Text(
+                    '$_countryCode',
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
+                  ),
                 ),
-            ],
+                Expanded(
+                  child: TextField(
+                    controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      hintText: 'auth.phone_hint'.tr(),
+                      hintStyle: const TextStyle(color: AppColors.inkMute, fontSize: 15),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    style: const TextStyle(fontSize: 16, color: AppColors.ink),
+                    onChanged: (_) => setState(() {}),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 8),

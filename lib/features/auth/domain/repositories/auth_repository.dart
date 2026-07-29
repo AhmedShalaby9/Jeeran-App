@@ -22,8 +22,8 @@ class CompleteProfileParams {
   final DateTime? dob;
   final String? preferredLanguage;
   final String? country;
-  final String? city;
-  final String? referralCode;
+  final String? countryCode;
+  final String? phoneNumber;
 
   const CompleteProfileParams({
     required this.name,
@@ -32,7 +32,7 @@ class CompleteProfileParams {
     this.dob,
     this.preferredLanguage,
     this.country,
-    this.city,
-    this.referralCode,
+    this.countryCode,
+    this.phoneNumber,
   });
 }

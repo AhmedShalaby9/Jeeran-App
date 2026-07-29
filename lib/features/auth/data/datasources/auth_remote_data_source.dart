@@ -189,8 +189,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           if (params.dob != null) 'date_of_birth': params.dob!.toIso8601String(),
           if (params.preferredLanguage != null) 'preferred_language': params.preferredLanguage,
           if (params.country != null) 'country': params.country,
-          if (params.city != null) 'city': params.city,
-          if (params.referralCode != null) 'referral_code': params.referralCode,
+          if (params.countryCode != null) 'country_code': params.countryCode,
+          if (params.phoneNumber != null) 'phone_number': params.phoneNumber,
         },
       );
       if (response.statusCode == 200 || response.statusCode == 201) {

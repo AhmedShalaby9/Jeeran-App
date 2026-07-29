@@ -5,6 +5,8 @@ class User extends Equatable {
   final String? name;
   final String? email;
   final String? phone;
+  final String? countryCode;
+  final String? phoneNumber;
   final String? avatar;
   final String? gender;
   final DateTime? dob;
@@ -27,6 +29,8 @@ class User extends Equatable {
     this.name,
     this.email,
     this.phone,
+    this.countryCode,
+    this.phoneNumber,
     this.avatar,
     this.gender,
     this.dob,
@@ -60,6 +64,8 @@ class User extends Equatable {
     name,
     email,
     phone,
+    countryCode,
+    phoneNumber,
     avatar,
     gender,
     dob,
