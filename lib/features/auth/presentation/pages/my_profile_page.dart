@@ -9,6 +9,7 @@ import '../../domain/repositories/auth_repository.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../utils/country_codes.dart';
 import '../widgets/profile_avatar_picker.dart';
 import '../widgets/profile_field_wrapper.dart';
 import '../widgets/profile_select_field.dart';
@@ -27,11 +28,13 @@ class _MyProfilePageState extends State<MyProfilePage>
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _referralCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
 
   // ── form state ──────────────────────────────────────────────────
   String _gender = '';
   DateTime? _dob;
-  final String _country = 'Egypt';
+  String _country = 'Egypt';
+  String _countryCode = '+20';
   User? _user;
 
   // ── view / edit toggle ──────────────────────────────────────────
@@ -59,6 +62,9 @@ class _MyProfilePageState extends State<MyProfilePage>
     _gender = user.gender ?? '';
     _dob = user.dob;
     _referralCtrl.text = user.referralCode ?? '';
+    _country = user.country ?? 'Egypt';
+    _countryCode = user.countryCode ?? kCountryCodeMap[_country] ?? '+20';
+    _phoneCtrl.text = user.phoneNumber ?? '';
   }
 
   void _enterEdit() {
@@ -89,6 +95,7 @@ class _MyProfilePageState extends State<MyProfilePage>
     _nameCtrl.dispose();
     _emailCtrl.dispose();
     _referralCtrl.dispose();
+    _phoneCtrl.dispose();
     super.dispose();
   }
 
@@ -119,78 +126,117 @@ class _MyProfilePageState extends State<MyProfilePage>
     await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.hairline,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.ink,
+      builder: (_) => StatefulBuilder(
+        builder: (_, __) {
+          var query = '';
+          var filtered = options;
+          return DraggableScrollableSheet(
+            initialChildSize: options.length > 5 ? 0.6 : 0.4,
+            minChildSize: 0.3,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (_, scrollController) => StatefulBuilder(
+              builder: (_, setInner) => Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 36,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.hairline,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            ...options.map((opt) {
-              final selected = opt == current;
-              return InkWell(
-                onTap: () {
-                  onSelect(opt);
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  color: selected
-                      ? AppColors.primary.withValues(alpha: 0.06)
-                      : Colors.transparent,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 14,
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          opt,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: AppColors.ink,
-                          ),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
                         ),
                       ),
-                      if (selected)
-                        const Icon(
-                          Icons.check_rounded,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                    ],
+                    ),
                   ),
-                ),
-              );
-            }),
-            const SizedBox(height: 8),
-          ],
-        ),
+                  if (options.length > 5) ...[
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: TextField(
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          hintText: 'Search...',
+                          hintStyle: const TextStyle(color: AppColors.inkMute, fontSize: 14),
+                          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.inkSub, size: 20),
+                          filled: true,
+                          fillColor: const Color(0xFFF5F6F8),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppColors.hairline, width: 1.5),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppColors.hairline, width: 1.5),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                          ),
+                        ),
+                        onChanged: (v) => setInner(() {
+                          query = v;
+                          filtered = options.where((o) => o.toLowerCase().contains(query.toLowerCase())).toList();
+                        }),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: filtered.length,
+                      itemBuilder: (_, i) {
+                        final opt = filtered[i];
+                        final selected = opt == current;
+                        return InkWell(
+                          onTap: () {
+                            onSelect(opt);
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            color: selected
+                                ? AppColors.primary.withValues(alpha: 0.06)
+                                : Colors.transparent,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(opt, style: const TextStyle(fontSize: 15, color: AppColors.ink)),
+                                ),
+                                if (selected)
+                                  const Icon(Icons.check_rounded, size: 18, color: AppColors.primary),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -198,6 +244,7 @@ class _MyProfilePageState extends State<MyProfilePage>
   // ── save ────────────────────────────────────────────────────────
   void _save(BuildContext context) {
     if (!_canSave) return;
+    final phone = _phoneCtrl.text.trim();
     context.read<AuthBloc>().add(
       AuthUpdateProfileEvent(
         CompleteProfileParams(
@@ -207,6 +254,8 @@ class _MyProfilePageState extends State<MyProfilePage>
           dob: _dob,
           preferredLanguage: context.locale.languageCode,
           country: _country,
+          countryCode: phone.isNotEmpty ? _countryCode : null,
+          phoneNumber: phone.isNotEmpty ? phone : null,
         ),
       ),
     );
@@ -254,10 +303,12 @@ class _MyProfilePageState extends State<MyProfilePage>
                             nameCtrl: _nameCtrl,
                             emailCtrl: _emailCtrl,
                             referralCtrl: _referralCtrl,
+                            phoneCtrl: _phoneCtrl,
                             gender: _gender,
                             dob: _dob,
                             formattedDob: _formattedDob,
                             country: _country,
+                            countryCode: _countryCode,
                             user: _user,
                             canSave: _canSave,
                             isLoading: isLoading,
@@ -270,6 +321,15 @@ class _MyProfilePageState extends State<MyProfilePage>
                               ],
                               current: _gender,
                               onSelect: (v) => setState(() => _gender = v),
+                            ),
+                            onCountryTap: () => _showPicker(
+                              title: 'auth.country'.tr(),
+                              options: kCountryCodeMap.keys.toList(),
+                              current: _country,
+                              onSelect: (v) => setState(() {
+                                _country = v;
+                                _countryCode = kCountryCodeMap[v] ?? _countryCode;
+                              }),
                             ),
                             onDobTap: _pickDate,
                             onChanged: () => setState(() {}),
@@ -712,14 +772,17 @@ class _EditForm extends StatelessWidget {
   final TextEditingController nameCtrl;
   final TextEditingController emailCtrl;
   final TextEditingController referralCtrl;
+  final TextEditingController phoneCtrl;
   final String gender;
   final DateTime? dob;
   final String formattedDob;
   final String country;
+  final String countryCode;
   final User? user;
   final bool canSave;
   final bool isLoading;
   final VoidCallback onGenderTap;
+  final VoidCallback onCountryTap;
   final VoidCallback onDobTap;
   final VoidCallback onChanged;
   final VoidCallback onSave;
@@ -729,14 +792,17 @@ class _EditForm extends StatelessWidget {
     required this.nameCtrl,
     required this.emailCtrl,
     required this.referralCtrl,
+    required this.phoneCtrl,
     required this.gender,
     required this.dob,
     required this.formattedDob,
     required this.country,
+    required this.countryCode,
     required this.user,
     required this.canSave,
     required this.isLoading,
     required this.onGenderTap,
+    required this.onCountryTap,
     required this.onDobTap,
     required this.onChanged,
     required this.onSave,
@@ -744,6 +810,7 @@ class _EditForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loginPhone = user?.phone ?? AppStorage.userName ?? '';
 
     return Column(
       children: [
@@ -778,24 +845,56 @@ class _EditForm extends StatelessWidget {
                   ),
                 ),
 
-                // Phone — read-only
+                // Country — editable picker (directly above phone number)
                 ProfileFieldWrapper(
-                  label: 'auth.phone'.tr(),
+                  label: 'auth.country'.tr(),
+                  child: ProfileSelectField(
+                    value: country,
+                    placeholder: 'auth.select_country'.tr(),
+                    onTap: onCountryTap,
+                  ),
+                ),
+
+                // Phone number — editable with country code prefix
+                ProfileFieldWrapper(
+                  label: 'auth.phone_number'.tr(),
+                  helper: 'auth.phone_optional_helper'.tr(),
                   child: Container(
                     height: 52,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF5F6F8),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppColors.hairline, width: 1.5),
                     ),
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      user?.phone ?? AppStorage.userName ?? '',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: AppColors.inkMute,
-                      ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              right: BorderSide(color: AppColors.hairline, width: 1.5),
+                            ),
+                          ),
+                          child: Text(
+                            countryCode,
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
+                          ),
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: phoneCtrl,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration(
+                              hintText: 'auth.phone_hint'.tr(),
+                              hintStyle: const TextStyle(color: AppColors.inkMute, fontSize: 15),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                            ),
+                            style: const TextStyle(fontSize: 16, color: AppColors.ink),
+                            onChanged: (_) => onChanged(),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -821,52 +920,27 @@ class _EditForm extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5F6F8),
                         borderRadius: BorderRadius.circular(12),
-                        border:
-                            Border.all(color: AppColors.hairline, width: 1.5),
+                        border: Border.all(color: AppColors.hairline, width: 1.5),
                       ),
                       child: Row(
                         children: [
                           Expanded(
                             child: Text(
-                              dob == null
-                                  ? 'auth.select_date'.tr()
-                                  : formattedDob,
+                              dob == null ? 'auth.select_date'.tr() : formattedDob,
                               style: TextStyle(
                                 fontSize: 16,
-                                color: dob == null
-                                    ? AppColors.inkMute
-                                    : AppColors.ink,
+                                color: dob == null ? AppColors.inkMute : AppColors.ink,
                               ),
                             ),
                           ),
-                          const Icon(
-                            Icons.calendar_today_rounded,
-                            size: 16,
-                            color: AppColors.inkSub,
-                          ),
+                          const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.inkSub),
                         ],
                       ),
                     ),
                   ),
                 ),
 
-                ProfileFieldWrapper(
-                  label: 'auth.country'.tr(),
-                  child: Container(
-                    height: 52,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F6F8),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.hairline, width: 1.5),
-                    ),
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      country,
-                      style: const TextStyle(fontSize: 16, color: AppColors.ink),
-                    ),
-                  ),
-                ),
+
 
                 const SizedBox(height: 8),
               ],

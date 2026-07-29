@@ -13,6 +13,7 @@ import '../widgets/profile_avatar_picker.dart';
 import '../widgets/profile_cta_bar.dart';
 import '../widgets/profile_field_wrapper.dart';
 import '../widgets/profile_header.dart';
+import '../utils/country_codes.dart';
 import '../widgets/profile_select_field.dart';
 import '../widgets/profile_text_input.dart';
 
@@ -35,6 +36,8 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   DateTime? _dob;
   String _country = 'Egypt';
   String _countryCode = '+20';
+
+  bool get _isSocialLogin => widget.initialUser?.isSocialLogin ?? false;
 
   bool get _step1Valid =>
       _nameCtrl.text.trim().length >= 2 && _emailCtrl.text.contains('@');
@@ -101,7 +104,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
   void _completeStep2(BuildContext context) {
     if (!_step2Valid) return;
-    final phone = _phoneCtrl.text.trim();
+    final phone = _isSocialLogin ? _phoneCtrl.text.trim() : null;
     context.read<AuthBloc>().add(
       AuthCompleteProfileEvent(
         CompleteProfileParams(
@@ -110,9 +113,9 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
           gender: _gender.isEmpty ? null : _gender,
           dob: _dob,
           preferredLanguage: context.locale.languageCode,
-          country: _country,
-          countryCode: phone.isNotEmpty ? _countryCode : null,
-          phoneNumber: phone.isNotEmpty ? phone : null,
+          country: _isSocialLogin ? _country : null,
+          countryCode: (phone != null && phone.isNotEmpty) ? _countryCode : null,
+          phoneNumber: (phone != null && phone.isNotEmpty) ? phone : null,
         ),
         isStep1: false,
       ),
@@ -144,45 +147,96 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
     await showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(width: 36, height: 4, decoration: BoxDecoration(color: AppColors.hairline, borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
-              ),
+      builder: (_) => StatefulBuilder(
+        builder: (_, setState) {
+          var query = '';
+          var filtered = options;
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            expand: false,
+            builder: (_, scrollController) => StatefulBuilder(
+              builder: (_, setInner) {
+                return Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    Container(width: 36, height: 4, decoration: BoxDecoration(color: AppColors.hairline, borderRadius: BorderRadius.circular(2))),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.ink)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: TextField(
+                        autofocus: options.length > 5,
+                        decoration: InputDecoration(
+                          hintText: 'Search...',
+                          hintStyle: const TextStyle(color: AppColors.inkMute, fontSize: 14),
+                          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.inkSub, size: 20),
+                          filled: true,
+                          fillColor: const Color(0xFFF5F6F8),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppColors.hairline, width: 1.5),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppColors.hairline, width: 1.5),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+                          ),
+                        ),
+                        onChanged: (v) => setInner(() {
+                          query = v;
+                          filtered = options.where((o) => o.toLowerCase().contains(query.toLowerCase())).toList();
+                        }),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: filtered.length,
+                        itemBuilder: (_, i) {
+                          final opt = filtered[i];
+                          final selected = opt == current;
+                          return InkWell(
+                            onTap: () {
+                              onSelect(opt);
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              color: selected ? AppColors.primary.withValues(alpha: 0.06) : Colors.transparent,
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                              child: Row(
+                                children: [
+                                  Expanded(child: Text(opt, style: const TextStyle(fontSize: 15, color: AppColors.ink))),
+                                  if (selected) const Icon(Icons.check_rounded, size: 18, color: AppColors.primary),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                );
+              },
             ),
-            const SizedBox(height: 8),
-            ...List.generate(options.length, (i) {
-              final opt = options[i];
-              final selected = opt == current;
-              return InkWell(
-                onTap: () {
-                  onSelect(opt);
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  color: selected ? AppColors.primary.withValues(alpha: 0.06) : Colors.transparent,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  child: Row(
-                    children: [
-                      Expanded(child: Text(opt, style: const TextStyle(fontSize: 15, color: AppColors.ink))),
-                      if (selected) const Icon(Icons.check_rounded, size: 18, color: AppColors.primary),
-                    ],
-                  ),
-                ),
-              );
-            }),
-            const SizedBox(height: 8),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -245,7 +299,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   }
 
   Widget _buildStep1() {
-    final isSocialLogin = widget.initialUser?.isSocialLogin ?? false;
     final hasPhone = widget.phone.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +325,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             onChanged: (_) => setState(() {}),
           ),
         ),
-        if (!isSocialLogin && hasPhone)
+        if (!_isSocialLogin && hasPhone)
           ProfileFieldWrapper(
             label: 'auth.phone'.tr(),
             child: Container(
@@ -349,63 +402,66 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             ),
           ),
         ),
-        ProfileFieldWrapper(
-          label: 'auth.country'.tr(),
-          child: ProfileSelectField(
-            value: _country,
-            placeholder: 'auth.select_country'.tr(),
-            onTap: () => _showPicker(
-              title: 'auth.country'.tr(),
-              options: [
-                'auth.egypt'.tr(),
-              ],
-              current: _country,
-              onSelect: (v) => setState(() => _country = v),
+        if (_isSocialLogin) ...[
+          ProfileFieldWrapper(
+            label: 'auth.country'.tr(),
+            child: ProfileSelectField(
+              value: _country,
+              placeholder: 'auth.select_country'.tr(),
+              onTap: () => _showPicker(
+                title: 'auth.country'.tr(),
+                options: kCountryCodeMap.keys.toList(),
+                current: _country,
+                onSelect: (v) => setState(() {
+                  _country = v;
+                  _countryCode = kCountryCodeMap[v] ?? _countryCode;
+                }),
+              ),
             ),
           ),
-        ),
-        ProfileFieldWrapper(
-          label: 'auth.phone_number'.tr(),
-          helper: 'auth.phone_optional_helper'.tr(),
-          child: Container(
-            height: 52,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F6F8),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.hairline, width: 1.5),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      right: BorderSide(color: AppColors.hairline, width: 1.5),
+          ProfileFieldWrapper(
+            label: 'auth.phone_number'.tr(),
+            helper: 'auth.phone_optional_helper'.tr(),
+            child: Container(
+              height: 52,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F6F8),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.hairline, width: 1.5),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: const BoxDecoration(
+                      border: Border(
+                        right: BorderSide(color: AppColors.hairline, width: 1.5),
+                      ),
+                    ),
+                    child: Text(
+                      _countryCode,
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
                     ),
                   ),
-                  child: Text(
-                    '$_countryCode',
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
-                  ),
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: _phoneCtrl,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      hintText: 'auth.phone_hint'.tr(),
-                      hintStyle: const TextStyle(color: AppColors.inkMute, fontSize: 15),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _phoneCtrl,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        hintText: 'auth.phone_hint'.tr(),
+                        hintStyle: const TextStyle(color: AppColors.inkMute, fontSize: 15),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      style: const TextStyle(fontSize: 16, color: AppColors.ink),
+                      onChanged: (_) => setState(() {}),
                     ),
-                    style: const TextStyle(fontSize: 16, color: AppColors.ink),
-                    onChanged: (_) => setState(() {}),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
+        ],
         const SizedBox(height: 8),
       ],
     );

@@ -30,6 +30,26 @@ class SocialAuthProvider {
       throw Exception('Failed to get Google ID token');
     }
 
+    try {
+      final parts = idToken.split('.');
+      if (parts.length == 3) {
+        var payload = parts[1];
+        // Base64url → Base64
+        payload = payload.replaceAll('-', '+').replaceAll('_', '/');
+        switch (payload.length % 4) {
+          case 2: payload += '=='; break;
+          case 3: payload += '='; break;
+        }
+        final decoded = utf8.decode(base64Decode(payload));
+        final json = const JsonDecoder().convert(decoded);
+        print('=== Google ID Token Payload ===');
+        print(const JsonEncoder.withIndent('  ').convert(json));
+        print('===============================');
+      }
+    } catch (e) {
+      print('Failed to decode ID token: $e');
+    }
+
     return SocialAuthResult(idToken: idToken, name: account.displayName);
   }
 
