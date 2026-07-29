@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../main/presentation/pages/main_page.dart';
+import '../../domain/entities/user.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
 import '../pages/complete_profile_page.dart';
@@ -35,7 +36,7 @@ class AuthNavigationFactory {
   ) {
     if (!state.isProfileComplete) {
       final phone = state.user?.phone ?? lastPhone;
-      _goToCompleteProfile(context, phone);
+      _goToCompleteProfile(context, phone, user: state.user);
     } else {
       _goToMain(context);
     }
@@ -67,11 +68,11 @@ class AuthNavigationFactory {
     );
   }
 
-  static void _goToCompleteProfile(BuildContext context, String phone) {
+  static void _goToCompleteProfile(BuildContext context, String phone, {User? user}) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => CompleteProfilePage(phone: phone),
+        builder: (_) => CompleteProfilePage(phone: phone, initialUser: user),
       ),
     );
   }
