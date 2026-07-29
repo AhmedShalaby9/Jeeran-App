@@ -52,7 +52,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold((failure) => emit(AuthError(_mapFailure(failure))), (user) {
       emit(
         AuthPhoneChecked(
-          user: user.isProfileComplete ? user : null,
+          user: user,
           isProfileComplete: user.isProfileComplete,
         ),
       );
@@ -101,7 +101,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(AuthError(_mapFailure(failure))),
       (user) => emit(AuthPhoneChecked(
-        user: user.isProfileComplete ? user : null,
+        user: user,
         isProfileComplete: user.isProfileComplete,
       )),
     );
@@ -130,7 +130,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     result.fold(
       (failure) => emit(AuthError(_mapFailure(failure))),
       (user) => emit(AuthPhoneChecked(
-        user: user.isProfileComplete ? user : null,
+        user: user,
         isProfileComplete: user.isProfileComplete,
       )),
     );

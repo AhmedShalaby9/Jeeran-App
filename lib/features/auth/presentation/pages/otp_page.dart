@@ -86,7 +86,7 @@ class _OtpViewState extends State<_OtpView> {
       if (!state.isProfileComplete) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => CompleteProfilePage(phone: widget.phone)),
+          MaterialPageRoute(builder: (_) => CompleteProfilePage(phone: widget.phone, initialUser: state.user)),
           (_) => false,
         );
       } else {

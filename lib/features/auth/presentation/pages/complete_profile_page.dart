@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -17,7 +18,8 @@ import '../widgets/profile_text_input.dart';
 
 class CompleteProfilePage extends StatefulWidget {
   final String phone;
-  const CompleteProfilePage({super.key, required this.phone});
+  final User? initialUser;
+  const CompleteProfilePage({super.key, required this.phone, this.initialUser});
 
   @override
   State<CompleteProfilePage> createState() => _CompleteProfilePageState();
@@ -31,12 +33,36 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   String _gender = '';
   DateTime? _dob;
   final String _country = 'Egypt';
+  String _city = '';
   final _referralCtrl = TextEditingController();
 
   bool get _step1Valid =>
       _nameCtrl.text.trim().length >= 2 && _emailCtrl.text.contains('@');
 
   bool get _step2Valid => _gender.isNotEmpty && _dob != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = widget.initialUser;
+    if (user != null) {
+      if (user.name != null && user.name!.isNotEmpty) {
+        _nameCtrl.text = user.name!;
+      }
+      if (user.email != null && user.email!.isNotEmpty) {
+        _emailCtrl.text = user.email!;
+      }
+      if (user.gender != null && user.gender!.isNotEmpty) {
+        _gender = user.gender!;
+      }
+      if (user.dob != null) {
+        _dob = user.dob;
+      }
+      if (user.city != null && user.city!.isNotEmpty) {
+        _city = user.city!;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -78,6 +104,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
           dob: _dob,
           preferredLanguage: context.locale.languageCode,
           country: _country,
+          city: _city.isEmpty ? null : _city,
           referralCode: _referralCtrl.text.isEmpty ? null : _referralCtrl.text,
         ),
         isStep1: false,
@@ -211,6 +238,8 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   }
 
   Widget _buildStep1() {
+    final isSocialLogin = widget.initialUser?.isSocialLogin ?? false;
+    final hasPhone = widget.phone.isNotEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -236,6 +265,26 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             onChanged: (_) => setState(() {}),
           ),
         ),
+        if (!isSocialLogin && hasPhone)
+          ProfileFieldWrapper(
+            label: 'auth.phone'.tr(),
+            child: Container(
+              height: 52,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F6F8),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.hairline, width: 1.5),
+              ),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(
+                  widget.phone,
+                  style: const TextStyle(fontSize: 16, color: AppColors.inkSub),
+                ),
+              ),
+            ),
+          ),
         const SizedBox(height: 8),
       ],
     );
@@ -312,6 +361,23 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                   ),
                 ),
               ],
+            ),
+          ),
+        ),
+        ProfileFieldWrapper(
+          label: 'auth.city'.tr(),
+          child: ProfileSelectField(
+            value: _city.isEmpty ? null : _city,
+            placeholder: 'auth.select_city'.tr(),
+            onTap: () => _showPicker(
+              title: 'auth.city'.tr(),
+              options: [
+                'auth.cairo'.tr(),
+                'auth.north_coast'.tr(),
+                'auth.sharm_el_sheikh'.tr(),
+              ],
+              current: _city,
+              onSelect: (v) => setState(() => _city = v),
             ),
           ),
         ),
