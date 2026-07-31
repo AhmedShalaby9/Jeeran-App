@@ -21,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthVerifyOtpEvent>(_onVerifyOtp);
     on<AuthSocialLoginEvent>(_onSocialLogin);
     on<AuthCompleteProfileEvent>(_onCompleteProfile);
+    on<AuthSendProfileOtpEvent>(_onSendProfileOtp);
     on<AuthLogoutEvent>(_onLogout);
     on<AuthGetMeEvent>(_onGetMe);
     on<AuthUpdateProfileEvent>(_onUpdateProfile);
@@ -151,6 +152,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthProfileCompleted(user));
         }
       },
+    );
+  }
+
+  Future<void> _onSendProfileOtp(
+    AuthSendProfileOtpEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+    final result = await repository.sendProfileOtp(event.phone);
+    result.fold(
+      (failure) => emit(AuthError(_mapFailure(failure))),
+      (_) => emit(AuthProfileOtpSent(event.phone)),
     );
   }
 

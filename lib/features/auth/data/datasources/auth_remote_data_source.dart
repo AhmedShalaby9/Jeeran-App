@@ -14,6 +14,7 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId});
   Future<UserModel> socialLogin(String provider, String idToken, {String? name, String? fcmToken, String? platform, String? deviceId});
   Future<UserModel> completeProfile(CompleteProfileParams params);
+  Future<bool> sendProfileOtp(String phone);
   Future<UserModel> getMe();
 }
 
@@ -191,12 +192,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           if (params.country != null) 'country': params.country,
           if (params.countryCode != null) 'country_code': params.countryCode,
           if (params.phoneNumber != null) 'phone_number': params.phoneNumber,
+          if (params.otp != null) 'otp': params.otp,
         },
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return UserModel.fromJson(response.data as Map<String, dynamic>);
       }
       throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<bool> sendProfileOtp(String phone) async {
+    try {
+      final response = await apiClient.post(
+        ApiEndpoints.profileSendOtp,
+        data: {'phone': phone},
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+      throw ServerException(response.data?['message'] as String? ?? '');
     } on ServerException {
       rethrow;
     } catch (_) {

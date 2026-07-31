@@ -7,6 +7,7 @@ class ProfileCTABar extends StatelessWidget {
   final int step;
   final bool step1Valid;
   final bool step2Valid;
+  final bool showSkip;
   final VoidCallback onContinue;
   final VoidCallback onSkip;
   final VoidCallback onComplete;
@@ -16,6 +17,7 @@ class ProfileCTABar extends StatelessWidget {
     required this.step,
     required this.step1Valid,
     this.step2Valid = false,
+    this.showSkip = true,
     required this.onContinue,
     required this.onSkip,
     required this.onComplete,
@@ -36,36 +38,42 @@ class ProfileCTABar extends StatelessWidget {
               enabled: step1Valid,
               onTap: onContinue,
             )
-          : Row(
-              children: [
-                GestureDetector(
-                  onTap: onSkip,
-                  child: Container(
-                    height: 54,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: AppColors.hairline, width: 1.5),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'auth.skip'.tr(),
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkSub),
+          : showSkip
+              ? Row(
+                  children: [
+                    GestureDetector(
+                      onTap: onSkip,
+                      child: Container(
+                        height: 54,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: AppColors.hairline, width: 1.5),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'auth.skip'.tr(),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkSub),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: AuthPrimaryButton(
+                        label: 'auth.complete_setup'.tr(),
+                        enabled: step2Valid,
+                        onTap: onComplete,
+                      ),
+                    ),
+                  ],
+                )
+              : AuthPrimaryButton(
+                  label: 'auth.complete_setup'.tr(),
+                  enabled: step2Valid,
+                  onTap: onComplete,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: AuthPrimaryButton(
-                    label: 'auth.complete_setup'.tr(),
-                    enabled: step2Valid,
-                    onTap: onComplete,
-                  ),
-                ),
-              ],
-            ),
     );
   }
 }

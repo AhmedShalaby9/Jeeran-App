@@ -12,6 +12,7 @@ abstract class AuthRepository {
   Future<Either<Failure, User>> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId});
   Future<Either<Failure, User>> socialLogin(String provider, String idToken, {String? name, String? fcmToken, String? platform, String? deviceId});
   Future<Either<Failure, User>> completeProfile(CompleteProfileParams params);
+  Future<Either<Failure, bool>> sendProfileOtp(String phone);
   Future<Either<Failure, User>> getMe();
 }
 
@@ -24,6 +25,7 @@ class CompleteProfileParams {
   final String? country;
   final String? countryCode;
   final String? phoneNumber;
+  final String? otp;
 
   const CompleteProfileParams({
     required this.name,
@@ -34,5 +36,6 @@ class CompleteProfileParams {
     this.country,
     this.countryCode,
     this.phoneNumber,
+    this.otp,
   });
 }
