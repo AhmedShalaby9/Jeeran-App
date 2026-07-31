@@ -56,6 +56,13 @@ class AuthCompleteProfileEvent extends AuthEvent {
   List<Object?> get props => [params, isStep1];
 }
 
+class AuthSendProfileOtpEvent extends AuthEvent {
+  final String phone;
+  const AuthSendProfileOtpEvent(this.phone);
+  @override
+  List<Object?> get props => [phone];
+}
+
 class AuthLogoutEvent extends AuthEvent {
   const AuthLogoutEvent();
 }

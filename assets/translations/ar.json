@@ -320,6 +320,13 @@
     "phone_optional_helper": "اختياري — أضف رقم تواصل.",
     "skip": "تخطي",
     "complete_setup": "إكمال الإعداد",
+    "phone_required_helper": "مطلوب — أضف رقم تواصلك.",
+    "verify_phone": "تحقق من رقم الهاتف",
+    "otp_subtitle": "أدخل الرمز المكون من 6 أرقام المرسل إلى هاتفك عبر واتساب",
+    "otp_hint": "000000",
+    "verify": "تحقق",
+    "resend_code": "إعادة إرسال الرمز",
+    "otp_sent": "تم إرسال رمز التحقق",
     "agree_terms_prefix": "أوافق على ",
     "terms_dialog_close": "إغلاق"
   },

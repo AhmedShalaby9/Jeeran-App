@@ -119,6 +119,17 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, bool>> sendProfileOtp(String phone) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      final result = await remoteDataSource.sendProfileOtp(phone);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
   Future<Either<Failure, User>> getMe() async {
     if (await networkInfo.isConnected) {
       try {
