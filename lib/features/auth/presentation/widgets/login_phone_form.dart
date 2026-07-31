@@ -24,11 +24,15 @@ const _egypt = _CountryInfo('Egypt', '\u{1F1EA}\u{1F1EC}', '+20', IsoCode.EG);
 
 class LoginPhoneForm extends StatefulWidget {
   final bool isLoading;
+  final bool termsAccepted;
+  final ValueChanged<bool> onTermsChanged;
   final ValueChanged<String> onContinue;
 
   const LoginPhoneForm({
     super.key,
     required this.isLoading,
+    required this.termsAccepted,
+    required this.onTermsChanged,
     required this.onContinue,
   });
 
@@ -39,7 +43,6 @@ class LoginPhoneForm extends StatefulWidget {
 class _LoginPhoneFormState extends State<LoginPhoneForm> {
   final _phoneCtrl = TextEditingController();
   bool _valid = false;
-  bool _termsAccepted = false;
   final _CountryInfo _selectedCountry = _egypt;
 
   @override
@@ -75,7 +78,7 @@ class _LoginPhoneFormState extends State<LoginPhoneForm> {
   }
 
   void _onContinue() {
-    if (!_valid || !_termsAccepted || widget.isLoading) return;
+    if (!_valid || !widget.termsAccepted || widget.isLoading) return;
     final digits = _phoneCtrl.text.replaceAll(RegExp(r'\D'), '');
     try {
       final parsed = PhoneNumber.parse(digits, callerCountry: _selectedCountry.isoCode);
@@ -267,7 +270,7 @@ class _LoginPhoneFormState extends State<LoginPhoneForm> {
           const SizedBox(height: 28),
           AuthPrimaryButton(
             label: 'auth.continue'.tr(),
-            enabled: _valid && _termsAccepted && !widget.isLoading,
+            enabled: _valid && widget.termsAccepted && !widget.isLoading,
             onTap: _onContinue,
           ),
           const SizedBox(height: 16),
@@ -278,8 +281,8 @@ class _LoginPhoneFormState extends State<LoginPhoneForm> {
                 width: 24,
                 height: 24,
                 child: Checkbox(
-                  value: _termsAccepted,
-                  onChanged: (v) => setState(() => _termsAccepted = v ?? false),
+                  value: widget.termsAccepted,
+                  onChanged: (v) => widget.onTermsChanged(v ?? false),
                   activeColor: AppColors.primary,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   visualDensity: VisualDensity.compact,

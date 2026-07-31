@@ -327,6 +327,7 @@
     "verify": "تحقق",
     "resend_code": "إعادة إرسال الرمز",
     "otp_sent": "تم إرسال رمز التحقق",
+    "accept_terms_first": "يرجى الموافقة على شروط الخدمة للمتابعة",
     "agree_terms_prefix": "أوافق على ",
     "terms_dialog_close": "إغلاق"
   },

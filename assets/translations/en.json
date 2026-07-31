@@ -327,6 +327,7 @@
     "verify": "Verify",
     "resend_code": "Resend Code",
     "otp_sent": "Verification code sent",
+    "accept_terms_first": "Please accept the Terms of Service to continue",
     "agree_terms_prefix": "I agree to the ",
     "terms_dialog_close": "Close"
   },

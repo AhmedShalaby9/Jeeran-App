@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
@@ -32,8 +33,15 @@ class _LoginView extends StatefulWidget {
 class _LoginViewState extends State<_LoginView> {
   String _lastPhone = '';
   bool _socialLoading = false;
+  bool _termsAccepted = false;
 
   Future<void> _onGoogleTap() async {
+    if (!_termsAccepted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('auth.accept_terms_first'.tr())),
+      );
+      return;
+    }
     if (_socialLoading) return;
     setState(() => _socialLoading = true);
     try {
@@ -55,6 +63,12 @@ class _LoginViewState extends State<_LoginView> {
   }
 
   Future<void> _onAppleTap() async {
+    if (!_termsAccepted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('auth.accept_terms_first'.tr())),
+      );
+      return;
+    }
     if (_socialLoading) return;
     setState(() => _socialLoading = true);
     try {
@@ -103,6 +117,8 @@ class _LoginViewState extends State<_LoginView> {
                       children: [
                         LoginPhoneForm(
                           isLoading: isLoading || _socialLoading,
+                          termsAccepted: _termsAccepted,
+                          onTermsChanged: (v) => setState(() => _termsAccepted = v),
                           onContinue: (phone) {
                             setState(() => _lastPhone = phone);
                             context.read<AuthBloc>().add(AuthSendOtpEvent(phone));
