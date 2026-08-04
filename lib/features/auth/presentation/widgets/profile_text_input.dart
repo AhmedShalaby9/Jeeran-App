@@ -6,6 +6,7 @@ class ProfileTextInput extends StatelessWidget {
   final String hint;
   final TextInputType type;
   final ValueChanged<String>? onChanged;
+  final bool readOnly;
 
   const ProfileTextInput({
     super.key,
@@ -13,6 +14,7 @@ class ProfileTextInput extends StatelessWidget {
     required this.hint,
     this.type = TextInputType.text,
     this.onChanged,
+    this.readOnly = false,
   });
 
   @override
@@ -23,18 +25,27 @@ class ProfileTextInput extends StatelessWidget {
         controller: controller,
         keyboardType: type,
         onChanged: onChanged,
-        style: const TextStyle(fontSize: 16, color: AppColors.ink),
+        readOnly: readOnly,
+        enabled: !readOnly,
+        style: TextStyle(
+          fontSize: 16,
+          color: readOnly ? AppColors.inkSub : AppColors.ink,
+        ),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: AppColors.inkMute, fontSize: 16),
           filled: true,
-          fillColor: const Color(0xFFF5F6F8),
+          fillColor: readOnly ? const Color(0xFFECEDF0) : const Color(0xFFF5F6F8),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: AppColors.hairline, width: 1.5),
           ),
           enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.hairline, width: 1.5),
+          ),
+          disabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: AppColors.hairline, width: 1.5),
           ),
