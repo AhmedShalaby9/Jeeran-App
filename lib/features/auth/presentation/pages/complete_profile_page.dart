@@ -357,6 +357,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
           child: ProfileTextInput(
             controller: _nameCtrl,
             hint: 'auth.name_hint'.tr(),
+            readOnly: _isSocialLogin && _nameCtrl.text.trim().isNotEmpty,
             onChanged: (_) => setState(() {}),
           ),
         ),
@@ -368,6 +369,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
             controller: _emailCtrl,
             hint: 'auth.email_hint'.tr(),
             type: TextInputType.emailAddress,
+            readOnly: _isSocialLogin && _emailCtrl.text.trim().isNotEmpty,
             onChanged: (_) => setState(() {}),
           ),
         ),
