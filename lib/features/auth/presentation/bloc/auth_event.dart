@@ -58,9 +58,10 @@ class AuthCompleteProfileEvent extends AuthEvent {
 
 class AuthSendProfileOtpEvent extends AuthEvent {
   final String phone;
-  const AuthSendProfileOtpEvent(this.phone);
+  final String recaptchaToken;
+  const AuthSendProfileOtpEvent(this.phone, this.recaptchaToken);
   @override
-  List<Object?> get props => [phone];
+  List<Object?> get props => [phone, recaptchaToken];
 }
 
 class AuthLogoutEvent extends AuthEvent {

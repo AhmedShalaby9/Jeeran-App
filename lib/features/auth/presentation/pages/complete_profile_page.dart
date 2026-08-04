@@ -18,6 +18,7 @@ import '../widgets/profile_header.dart';
 import '../utils/country_codes.dart';
 import '../widgets/profile_select_field.dart';
 import '../widgets/profile_text_input.dart';
+import 'recaptcha_webview_page.dart';
 
 class CompleteProfilePage extends StatefulWidget {
   final String phone;
@@ -38,6 +39,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   DateTime? _dob;
   String _country = 'Egypt';
   String _countryCode = '+20';
+  bool _otpSheetOpen = false;
 
   bool get _isSocialLogin => widget.initialUser?.isSocialLogin ?? false;
 
@@ -114,10 +116,26 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
     if (_isSocialLogin && _countryCode == '+20') {
       final phone = '$_countryCode${_phoneCtrl.text.trim()}';
-      context.read<AuthBloc>().add(AuthSendProfileOtpEvent(phone));
+      _requestProfileOtp(context, phone);
     } else {
       _submitProfile(context, null);
     }
+  }
+
+  void _requestProfileOtp(BuildContext context, String phone) {
+    final authBloc = context.read<AuthBloc>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: authBloc,
+          child: RecaptchaWebViewPage(
+            phone: phone,
+            onToken: (token) => authBloc.add(AuthSendProfileOtpEvent(phone, token)),
+          ),
+        ),
+      ),
+    );
   }
 
   void _submitProfile(BuildContext context, String? otp) {
@@ -144,6 +162,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
     final bloc = context.read<AuthBloc>();
     final phone = '$_countryCode${_phoneCtrl.text.trim()}';
 
+    _otpSheetOpen = true;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -162,7 +181,7 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
           },
         ),
       ),
-    );
+    ).whenComplete(() => _otpSheetOpen = false);
   }
 
   Future<void> _pickDate() async {
@@ -293,7 +312,13 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
           if (state is AuthProfileStep1Completed) {
             setState(() => _step = 2);
           } else if (state is AuthProfileOtpSent) {
-            _showOtpBottomSheet(context);
+            if (_otpSheetOpen) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('auth.otp_sent'.tr())),
+              );
+            } else {
+              _showOtpBottomSheet(context);
+            }
           } else if (state is AuthProfileCompleted) {
             Navigator.pushAndRemoveUntil(
               context,
@@ -565,11 +590,20 @@ class _OtpVerificationSheetState extends State<_OtpVerificationSheet> {
   }
 
   void _resendOtp() {
-    context.read<AuthBloc>().add(AuthSendProfileOtpEvent(widget.phone));
-    _startTimer();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('auth.otp_sent'.tr())),
+    final authBloc = context.read<AuthBloc>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: authBloc,
+          child: RecaptchaWebViewPage(
+            phone: widget.phone,
+            onToken: (token) => authBloc.add(AuthSendProfileOtpEvent(widget.phone, token)),
+          ),
+        ),
+      ),
     );
+    _startTimer();
   }
 
   @override

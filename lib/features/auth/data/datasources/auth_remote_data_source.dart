@@ -14,7 +14,7 @@ abstract class AuthRemoteDataSource {
   Future<UserModel> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId});
   Future<UserModel> socialLogin(String provider, String idToken, {String? name, String? fcmToken, String? platform, String? deviceId});
   Future<UserModel> completeProfile(CompleteProfileParams params);
-  Future<bool> sendProfileOtp(String phone);
+  Future<bool> sendProfileOtp(String phone, String recaptchaToken);
   Future<UserModel> getMe();
 }
 
@@ -207,11 +207,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<bool> sendProfileOtp(String phone) async {
+  Future<bool> sendProfileOtp(String phone, String recaptchaToken) async {
     try {
       final response = await apiClient.post(
         ApiEndpoints.profileSendOtp,
-        data: {'phone': phone},
+        data: {'phone': phone, 'recaptcha_token': recaptchaToken},
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;

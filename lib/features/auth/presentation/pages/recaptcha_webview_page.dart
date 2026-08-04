@@ -8,7 +8,11 @@ import '../bloc/auth_event.dart';
 
 class RecaptchaWebViewPage extends StatefulWidget {
   final String phone;
-  const RecaptchaWebViewPage({super.key, required this.phone});
+  /// When provided, called with the recaptcha token instead of dispatching
+  /// [AuthSendOtpRestEvent] — lets callers other than phone login (e.g.
+  /// profile phone verification) reuse this same challenge screen.
+  final ValueChanged<String>? onToken;
+  const RecaptchaWebViewPage({super.key, required this.phone, this.onToken});
 
   @override
   State<RecaptchaWebViewPage> createState() => _RecaptchaWebViewPageState();
@@ -84,9 +88,13 @@ class _RecaptchaWebViewPageState extends State<RecaptchaWebViewPage> {
   void _onRecaptchaToken(String token) {
     if (!mounted || _tokenSent) return;
     _tokenSent = true;
-    context.read<AuthBloc>().add(
-      AuthSendOtpRestEvent(phone: widget.phone, recaptchaToken: token),
-    );
+    if (widget.onToken != null) {
+      widget.onToken!(token);
+    } else {
+      context.read<AuthBloc>().add(
+        AuthSendOtpRestEvent(phone: widget.phone, recaptchaToken: token),
+      );
+    }
     Navigator.pop(context);
   }
 

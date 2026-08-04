@@ -119,10 +119,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> sendProfileOtp(String phone) async {
+  Future<Either<Failure, bool>> sendProfileOtp(String phone, String recaptchaToken) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      final result = await remoteDataSource.sendProfileOtp(phone);
+      final result = await remoteDataSource.sendProfileOtp(phone, recaptchaToken);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

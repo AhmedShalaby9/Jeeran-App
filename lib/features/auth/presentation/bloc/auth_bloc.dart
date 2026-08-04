@@ -160,7 +160,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
-    final result = await repository.sendProfileOtp(event.phone);
+    final result = await repository.sendProfileOtp(event.phone, event.recaptchaToken);
     result.fold(
       (failure) => emit(AuthError(_mapFailure(failure))),
       (_) => emit(AuthProfileOtpSent(event.phone)),
