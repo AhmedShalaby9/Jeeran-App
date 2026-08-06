@@ -25,7 +25,6 @@ class CompleteProfileParams {
   final String? country;
   final String? countryCode;
   final String? phoneNumber;
-  final String? otp;
 
   const CompleteProfileParams({
     required this.name,
@@ -36,6 +35,5 @@ class CompleteProfileParams {
     this.country,
     this.countryCode,
     this.phoneNumber,
-    this.otp,
   });
 }

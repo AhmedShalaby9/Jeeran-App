@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
@@ -18,7 +16,6 @@ import '../widgets/profile_header.dart';
 import '../utils/country_codes.dart';
 import '../widgets/profile_select_field.dart';
 import '../widgets/profile_text_input.dart';
-import 'recaptcha_webview_page.dart';
 
 class CompleteProfilePage extends StatefulWidget {
   final String phone;
@@ -39,7 +36,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
   DateTime? _dob;
   String _country = 'Egypt';
   String _countryCode = '+20';
-  bool _otpSheetOpen = false;
 
   bool get _isSocialLogin => widget.initialUser?.isSocialLogin ?? false;
 
@@ -113,32 +109,10 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
 
   void _completeStep2(BuildContext context) {
     if (!_step2Valid) return;
-
-    if (_isSocialLogin && _countryCode == '+20') {
-      final phone = '$_countryCode${_phoneCtrl.text.trim()}';
-      _requestProfileOtp(context, phone);
-    } else {
-      _submitProfile(context, null);
-    }
+    _submitProfile(context);
   }
 
-  void _requestProfileOtp(BuildContext context, String phone) {
-    final authBloc = context.read<AuthBloc>();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: authBloc,
-          child: RecaptchaWebViewPage(
-            phone: phone,
-            onToken: (token) => authBloc.add(AuthSendProfileOtpEvent(phone, token)),
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _submitProfile(BuildContext context, String? otp) {
+  void _submitProfile(BuildContext context) {
     final phone = _isSocialLogin ? _phoneCtrl.text.trim() : null;
     context.read<AuthBloc>().add(
       AuthCompleteProfileEvent(
@@ -151,37 +125,10 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
           country: _isSocialLogin ? _country : null,
           countryCode: (phone != null && phone.isNotEmpty) ? _countryCode : null,
           phoneNumber: (phone != null && phone.isNotEmpty) ? phone : null,
-          otp: otp,
         ),
         isStep1: false,
       ),
     );
-  }
-
-  void _showOtpBottomSheet(BuildContext context) {
-    final bloc = context.read<AuthBloc>();
-    final phone = '$_countryCode${_phoneCtrl.text.trim()}';
-
-    _otpSheetOpen = true;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      isScrollControlled: true,
-      isDismissible: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => BlocProvider.value(
-        value: bloc,
-        child: _OtpVerificationSheet(
-          phone: phone,
-          onVerified: (otp) {
-            Navigator.pop(context);
-            _submitProfile(context, otp);
-          },
-        ),
-      ),
-    ).whenComplete(() => _otpSheetOpen = false);
   }
 
   Future<void> _pickDate() async {
@@ -311,14 +258,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
         listener: (context, state) {
           if (state is AuthProfileStep1Completed) {
             setState(() => _step = 2);
-          } else if (state is AuthProfileOtpSent) {
-            if (_otpSheetOpen) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('auth.otp_sent'.tr())),
-              );
-            } else {
-              _showOtpBottomSheet(context);
-            }
           } else if (state is AuthProfileCompleted) {
             Navigator.pushAndRemoveUntil(
               context,
@@ -539,226 +478,6 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
         ],
         const SizedBox(height: 8),
       ],
-    );
-  }
-}
-
-class _OtpVerificationSheet extends StatefulWidget {
-  final String phone;
-  final ValueChanged<String> onVerified;
-
-  const _OtpVerificationSheet({
-    required this.phone,
-    required this.onVerified,
-  });
-
-  @override
-  State<_OtpVerificationSheet> createState() => _OtpVerificationSheetState();
-}
-
-class _OtpVerificationSheetState extends State<_OtpVerificationSheet> {
-  final _otpCtrl = TextEditingController();
-  Timer? _timer;
-  int _countdown = 60;
-
-  bool get _canVerify => _otpCtrl.text.trim().length == 6;
-
-  @override
-  void initState() {
-    super.initState();
-    _startTimer();
-  }
-
-  @override
-  void dispose() {
-    _otpCtrl.dispose();
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  void _startTimer() {
-    _countdown = 60;
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (_countdown <= 1) {
-        t.cancel();
-        setState(() => _countdown = 0);
-      } else {
-        setState(() => _countdown--);
-      }
-    });
-  }
-
-  void _resendOtp() {
-    final authBloc = context.read<AuthBloc>();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => BlocProvider.value(
-          value: authBloc,
-          child: RecaptchaWebViewPage(
-            phone: widget.phone,
-            onToken: (token) => authBloc.add(AuthSendProfileOtpEvent(widget.phone, token)),
-          ),
-        ),
-      ),
-    );
-    _startTimer();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    final bottomPad = MediaQuery.of(context).padding.bottom;
-
-    return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
-        }
-      },
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20, 0, 20, bottomInset + bottomPad + 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.hairline,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'auth.verify_phone'.tr(),
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.ink,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'auth.otp_subtitle'.tr(),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.inkSub,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              widget.phone,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: AppColors.ink,
-              ),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _otpCtrl,
-              keyboardType: TextInputType.number,
-              textAlign: TextAlign.center,
-              maxLength: 6,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 12,
-                color: AppColors.ink,
-              ),
-              decoration: InputDecoration(
-                counterText: '',
-                hintText: 'auth.otp_hint'.tr(),
-                hintStyle: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 12,
-                  color: AppColors.inkMute.withValues(alpha: 0.4),
-                ),
-                filled: true,
-                fillColor: const Color(0xFFF5F6F8),
-                contentPadding: const EdgeInsets.symmetric(vertical: 16),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.hairline, width: 1.5),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.hairline, width: 1.5),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-                ),
-              ),
-              autofocus: true,
-              onChanged: (_) => setState(() {}),
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: _countdown == 0 ? _resendOtp : null,
-              child: Text(
-                _countdown > 0
-                    ? '${'auth.resend_code'.tr()} (${_countdown}s)'
-                    : 'auth.resend_code'.tr(),
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: _countdown > 0 ? AppColors.inkMute : AppColors.primary,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            BlocBuilder<AuthBloc, AuthState>(
-              builder: (context, state) {
-                final isLoading = state is AuthLoading;
-                return SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: ElevatedButton(
-                    onPressed: _canVerify && !isLoading
-                        ? () => widget.onVerified(_otpCtrl.text.trim())
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.4),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: isLoading
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(
-                            'auth.verify'.tr(),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -192,7 +192,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           if (params.country != null) 'country': params.country,
           if (params.countryCode != null) 'country_code': params.countryCode,
           if (params.phoneNumber != null) 'phone_number': params.phoneNumber,
-          if (params.otp != null) 'otp': params.otp,
         },
       );
       if (response.statusCode == 200 || response.statusCode == 201) {

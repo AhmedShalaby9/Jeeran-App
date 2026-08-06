@@ -321,12 +321,6 @@
     "skip": "Skip",
     "complete_setup": "Complete setup",
     "phone_required_helper": "Required — add your contact number.",
-    "verify_phone": "Verify Phone Number",
-    "otp_subtitle": "Enter the 6-digit code sent to your phone via WhatsApp",
-    "otp_hint": "000000",
-    "verify": "Verify",
-    "resend_code": "Resend Code",
-    "otp_sent": "Verification code sent",
     "accept_terms_first": "Please accept the Terms of Service to continue",
     "agree_terms_prefix": "I agree to the ",
     "terms_dialog_close": "Close"
