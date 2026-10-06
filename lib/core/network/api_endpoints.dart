@@ -63,6 +63,13 @@
   static const String sellerRequests = '/seller-requests';
   static const String sellerRequestMy = '/seller-requests/my';
   static const String home = '/home';
+  static const String savedCounts = '/saved/counts';
+  static const String savedCompounds = '/saved/compounds';
+  static const String savedDevelopers = '/saved/developers';
+  static const String follow = '/user-subscriptions/follow';
+  static const String unfollow = '/user-subscriptions/unfollow';
+  static const String followCheck = '/user-subscriptions/check';
+  static String developerById(int id) => '/developers/$id';
   static String sellerRequestById(int id) => '/seller-requests/$id';
   static String sellerRequestApprove(int id) => '/seller-requests/$id/approve';
   static String sellerRequestReject(int id) => '/seller-requests/$id/reject';

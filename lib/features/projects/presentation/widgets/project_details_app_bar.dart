@@ -1,3 +1,5 @@
+import '../../../follow/data/follow_service.dart';
+import '../../../follow/presentation/follow_pill.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
@@ -26,6 +28,22 @@ class ProjectDetailsAppBar extends StatelessWidget {
           ),
         ),
       ),
+      actions: [
+        // Follow = save this compound + get its updates (appears under Saved → Compounds)
+        Padding(
+          padding: const EdgeInsetsDirectional.only(end: 12),
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: FollowButton(type: FollowType.project, id: project.id),
+            ),
+          ),
+        ),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
           project.name,

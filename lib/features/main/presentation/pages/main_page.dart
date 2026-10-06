@@ -15,7 +15,7 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../explore/presentation/pages/explore_page.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
-import '../../../favorites/presentation/pages/favorites_page.dart';
+import '../../../saved/presentation/pages/saved_page.dart';
 import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../notifications/domain/repositories/notification_repository.dart';
 import '../../../notifications/presentation/bloc/unread_count_cubit.dart';
@@ -68,7 +68,7 @@ class _MainPageState extends State<MainPage> {
     MainTab.explore => const ExplorePage(),
     MainTab.search => SearchPage(resetNotifier: _searchResetNotifier),
     MainTab.ask => const AiChatHistoryPage(embedded: true),
-    MainTab.saved => const FavoritesPage(),
+    MainTab.saved => const SavedPage(),
     MainTab.you => const MorePage(),
   };
 
@@ -157,6 +157,7 @@ class _MainPageState extends State<MainPage> {
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return;
     setState(() => _selectedIndex = index);
+    if (_tabs[index] == MainTab.saved) SavedPage.reload.value++; // always show fresh prices
     _searchResetNotifier.value = !_searchResetNotifier.value;
   }
 

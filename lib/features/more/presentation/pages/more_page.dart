@@ -12,7 +12,6 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../auth/presentation/pages/my_profile_page.dart';
-import '../../../favorites/presentation/pages/favorites_page.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/widgets/html_content_page.dart';
 import 'contact_us_page.dart';
@@ -386,13 +385,6 @@ class _MoreView extends StatelessWidget {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Favorites — sellers only (admins have their own panel)
-                    if (isSeller)
-                      _MoreTile(
-                        icon: Icons.favorite_border,
-                        label: 'more.my_favorites'.tr(),
-                        onTap: () => FavoritesPage.push(context),
-                      ),
                     // My Properties — sellers only, hidden in review
                     if (isSeller && !inReview) ...[
                       _MoreTile(

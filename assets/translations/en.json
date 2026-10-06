@@ -240,6 +240,71 @@
     "days_ago": "{} days ago",
     "yesterday": "yesterday"
   },
+  "saved": {
+    "title": "Saved",
+    "tab_listings": "Listings",
+    "tab_compounds": "Compounds",
+    "tab_developers": "Developers",
+    "n_listings": {
+      "one": "{} listing",
+      "other": "{} listings"
+    },
+    "n_price_drops": {
+      "one": "{} price drop",
+      "other": "{} price drops"
+    },
+    "n_sold": {
+      "one": "{} sold",
+      "other": "{} sold"
+    },
+    "n_unavailable": {
+      "one": "{} unavailable",
+      "other": "{} unavailable"
+    },
+    "n_compounds": {
+      "one": "{} compound",
+      "other": "{} compounds"
+    },
+    "n_new_releases": {
+      "one": "{} new release",
+      "other": "{} new releases"
+    },
+    "n_developers": {
+      "one": "{} developer",
+      "other": "{} developers"
+    },
+    "compounds_between": "{} compounds between them",
+    "sold": "Sold",
+    "unavailable": "No longer available",
+    "price_drop": "{} since you saved it",
+    "follow": "Follow",
+    "following": "Following",
+    "new_release": "New release",
+    "units": "Units",
+    "from": "From",
+    "developer": "Developer",
+    "compounds_count": "{} compounds",
+    "removed": "Removed from Saved",
+    "unfollowed": "Unfollowed",
+    "undo": "Undo",
+    "action_failed": "Couldn’t do that. Please try again.",
+    "follow_failed": "Couldn’t update. Please try again.",
+    "empty_listings_title": "Nothing saved yet.",
+    "empty_listings_sub": "Tap the heart on any listing and we will watch its price for you.",
+    "empty_compounds_title": "No compounds followed.",
+    "empty_compounds_sub": "Follow a compound and we will tell you the moment a phase opens.",
+    "empty_developers_title": "No developers followed.",
+    "empty_developers_sub": "Follow a developer and every launch lands in your inbox."
+  },
+  "developer": {
+    "verified": "Verified developer",
+    "followers": {
+      "one": "{} follower",
+      "other": "{} followers"
+    },
+    "compounds": "Compounds",
+    "website": "Website"
+  },
   "done": {
     "title": "You’re all set, {}.",
     "title_anon": "You’re all set.",
