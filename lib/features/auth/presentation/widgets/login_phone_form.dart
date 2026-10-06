@@ -1,3 +1,5 @@
+import 'dart:ui' as ui show TextDirection;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -5,7 +7,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/utils/app_colors.dart';
-import 'auth_primary_button.dart';
+import '../../../../core/widgets/jv2.dart';
 
 // ─── Country data ──────────────────────────────────────────────────────────────
 
@@ -81,7 +83,10 @@ class _LoginPhoneFormState extends State<LoginPhoneForm> {
     if (!_valid || !widget.termsAccepted || widget.isLoading) return;
     final digits = _phoneCtrl.text.replaceAll(RegExp(r'\D'), '');
     try {
-      final parsed = PhoneNumber.parse(digits, callerCountry: _selectedCountry.isoCode);
+      final parsed = PhoneNumber.parse(
+        digits,
+        callerCountry: _selectedCountry.isoCode,
+      );
       widget.onContinue(parsed.international);
     } catch (_) {
       // Fallback — shouldn't happen when _valid is true
@@ -115,7 +120,10 @@ class _LoginPhoneFormState extends State<LoginPhoneForm> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded, color: AppColors.inkSub),
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.inkSub,
+                    ),
                     onPressed: () => Navigator.pop(dialogContext),
                   ),
                 ],
@@ -148,7 +156,10 @@ class _LoginPhoneFormState extends State<LoginPhoneForm> {
                         child: Center(
                           child: Text(
                             'Content coming soon',
-                            style: TextStyle(fontSize: 14, color: AppColors.grey),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.grey,
+                            ),
                           ),
                         ),
                       ),
@@ -162,159 +173,139 @@ class _LoginPhoneFormState extends State<LoginPhoneForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'auth.phone_number'.tr(),
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.ink,
-              letterSpacing: 0.1,
+    final ready = _valid && widget.termsAccepted;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        JV2Field(
+          label: 'auth.mobile_number'.tr(),
+          controller: _phoneCtrl,
+          placeholder: 'auth.phone_hint'.tr(),
+          keyboardType: TextInputType.phone,
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[\d\s\-]')),
+          ],
+          prefix: Container(
+            padding: const EdgeInsetsDirectional.only(end: 11),
+            decoration: const BoxDecoration(
+              border: BorderDirectional(end: BorderSide(color: JV2.line)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _selectedCountry.flag,
+                  style: const TextStyle(fontSize: 18),
+                ),
+                const SizedBox(width: 7),
+                Text(
+                  _selectedCountry.dialCode,
+                  style: const TextStyle(
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w600,
+                    color: JV2.inkSub,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 10),
-          Row(
+        ),
+        const SizedBox(height: 30),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => widget.onTermsChanged(!widget.termsAccepted),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 52,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 22,
+                height: 22,
+                margin: const EdgeInsets.only(top: 1),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F6F8),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.hairline, width: 1.5),
+                  borderRadius: BorderRadius.circular(7),
+                  gradient: widget.termsAccepted
+                      ? const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [JV2.goldHi, Color(0xFFA67428)],
+                        )
+                      : null,
+                  border: Border.all(
+                    color: widget.termsAccepted
+                        ? Colors.transparent
+                        : const Color(0x330B2A4A),
+                  ),
                 ),
-                child: Row(
+                child: widget.termsAccepted
+                    ? const Icon(
+                        Icons.check_rounded,
+                        size: 15,
+                        color: Colors.white,
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text.rich(
+                  TextSpan(
+                    style: const TextStyle(
+                      fontSize: 13,
+                      height: 1.5,
+                      color: JV2.inkSub,
+                    ),
+                    children: [
+                      TextSpan(text: 'auth.agree_terms_prefix'.tr()),
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.baseline,
+                        baseline: TextBaseline.alphabetic,
+                        child: GestureDetector(
+                          onTap: () => _showTermsDialog(context),
+                          child: Text(
+                            'auth.terms_of_service'.tr(),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              height: 1.5,
+                              color: JV2.gold,
+                              decoration: TextDecoration.underline,
+                              decorationColor: JV2.goldEdge,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 30),
+        JV2PrimaryButton(
+          onPressed: ready && !widget.isLoading ? _onContinue : null,
+          child: widget.isLoading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    color: Colors.white,
+                  ),
+                )
+              : Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      _selectedCountry.flag,
-                      style: const TextStyle(fontSize: 20),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      _selectedCountry.dialCode,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.ink,
-                      ),
+                    Text('auth.send_code'.tr()),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Directionality.of(context) == ui.TextDirection.rtl
+                          ? Icons.chevron_left_rounded
+                          : Icons.chevron_right_rounded,
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: SizedBox(
-                  height: 52,
-                  child: TextField(
-                    controller: _phoneCtrl,
-                    keyboardType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[\d\s\-]')),
-                    ],
-                    style: const TextStyle(
-                      fontSize: 17,
-                      color: AppColors.ink,
-                      letterSpacing: 0.3,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: 'auth.phone_hint'.tr(),
-                      hintStyle: const TextStyle(
-                        color: AppColors.inkMute,
-                        fontSize: 17,
-                      ),
-                      filled: true,
-                      fillColor: const Color(0xFFF5F6F8),
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: AppColors.hairline,
-                          width: 1.5,
-                        ),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: AppColors.hairline,
-                          width: 1.5,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(
-                          color: AppColors.primary,
-                          width: 1.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'auth.phone_helper'.tr(),
-            style: const TextStyle(
-              fontSize: 12,
-              color: AppColors.inkMute,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 28),
-          AuthPrimaryButton(
-            label: 'auth.continue'.tr(),
-            enabled: _valid && widget.termsAccepted && !widget.isLoading,
-            onTap: _onContinue,
-          ),
-          const SizedBox(height: 16),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: Checkbox(
-                  value: widget.termsAccepted,
-                  onChanged: (v) => widget.onTermsChanged(v ?? false),
-                  activeColor: AppColors.primary,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  visualDensity: VisualDensity.compact,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                'auth.agree_terms_prefix'.tr(),
-                style:
-                    const TextStyle(fontSize: 13, color: AppColors.inkSub),
-              ),
-              GestureDetector(
-                onTap: () => _showTermsDialog(context),
-                child: Text(
-                  'auth.terms_of_service'.tr(),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                    decoration: TextDecoration.underline,
-                    decorationColor: AppColors.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
-

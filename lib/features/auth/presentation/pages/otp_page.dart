@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/jv2.dart';
 import '../../../main/presentation/pages/main_page.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -30,10 +32,12 @@ class _OtpView extends StatefulWidget {
 }
 
 class _OtpViewState extends State<_OtpView> {
+  static const _codeLength = 6;
+  static const _resendCooldown = 60;
+
   final _otpCtrl = TextEditingController();
   final _focusNode = FocusNode();
 
-  static const _resendCooldown = 60;
   int _secondsLeft = _resendCooldown;
   Timer? _timer;
 
@@ -41,6 +45,7 @@ class _OtpViewState extends State<_OtpView> {
   void initState() {
     super.initState();
     _startCountdown();
+    _focusNode.addListener(() => setState(() {}));
   }
 
   @override
@@ -72,21 +77,28 @@ class _OtpViewState extends State<_OtpView> {
 
   void _verify(BuildContext context) {
     final otp = _otpCtrl.text.trim();
-    if (otp.length != 6) return;
-    context.read<AuthBloc>().add(AuthVerifyOtpEvent(phone: widget.phone, otp: otp));
+    if (otp.length != _codeLength) return;
+    context.read<AuthBloc>().add(
+      AuthVerifyOtpEvent(phone: widget.phone, otp: otp),
+    );
   }
 
   void _handleState(BuildContext context, AuthState state) {
     if (state is AuthOtpSent) {
       // Resend succeeded — timer already restarted in _resend()
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('A new code was sent to your phone.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('auth.code_resent'.tr())));
     } else if (state is AuthPhoneChecked) {
       if (!state.isProfileComplete) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => CompleteProfilePage(phone: widget.phone, initialUser: state.user)),
+          MaterialPageRoute(
+            builder: (_) => CompleteProfilePage(
+              phone: widget.phone,
+              initialUser: state.user,
+            ),
+          ),
           (_) => false,
         );
       } else {
@@ -97,166 +109,300 @@ class _OtpViewState extends State<_OtpView> {
         );
       }
     } else if (state is AuthError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(state.message)));
     }
+  }
+
+  Widget _box(int i) {
+    final digits = _otpCtrl.text;
+    final filled = digits.length;
+    final active = _focusNode.hasFocus && i == filled.clamp(0, _codeLength - 1);
+    final hasDigit = i < filled;
+    return Container(
+      height: 62,
+      decoration: BoxDecoration(
+        color: JV2.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: active ? JV2.goldEdge : JV2.line),
+        boxShadow: active
+            ? const [BoxShadow(color: Color(0x1AC9A063), spreadRadius: 3)]
+            : null,
+      ),
+      alignment: Alignment.center,
+      child: hasDigit
+          ? Text(digits[i], style: JV2.display(context, 27))
+          : active
+          ? const _Caret()
+          : Container(
+              width: 6,
+              height: 6,
+              decoration: const BoxDecoration(
+                color: JV2.track,
+                shape: BoxShape.circle,
+              ),
+            ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
     return BlocListener<AuthBloc, AuthState>(
       listener: _handleState,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () => Navigator.pop(context),
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle.dark,
+        child: Scaffold(
+          backgroundColor: JV2.bgDeep,
+          body: JV2Ambient(
+            child: BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                final isLoading = state is AuthLoading;
+                final ready = _otpCtrl.text.length == _codeLength;
+                return Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        24,
+                        media.padding.top + 12,
+                        24,
+                        0,
+                      ),
+                      child: const Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: JV2BackButton(),
+                      ),
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(24, 26, 24, 0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'auth.step_of'.tr(args: ['1', '3']).toUpperCase(),
+                              style: JV2.eyebrow,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'auth.otp_title'.tr(),
+                              style: JV2.display(context, 34),
+                            ),
+                            const SizedBox(height: 10),
+                            Text.rich(
+                              TextSpan(
+                                style: JV2.sub,
+                                children: [
+                                  TextSpan(text: '${'auth.otp_sent_to'.tr()} '),
+                                  TextSpan(
+                                    text: widget.phone,
+                                    style: const TextStyle(
+                                      color: JV2.ink,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const TextSpan(text: '  '),
+                                  WidgetSpan(
+                                    alignment: PlaceholderAlignment.middle,
+                                    child: GestureDetector(
+                                      onTap: () => Navigator.pop(context),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Icons.edit_outlined,
+                                            size: 14,
+                                            color: JV2.gold,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'auth.change'.tr(),
+                                            style: const TextStyle(
+                                              fontSize: 14.5,
+                                              color: JV2.gold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+
+                            // Six boxes drawn over one real (invisible) field,
+                            // so paste, SMS autofill and the keyboard all work.
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () => _focusNode.requestFocus(),
+                              child: Stack(
+                                children: [
+                                  Directionality(
+                                    textDirection: ui.TextDirection.ltr,
+                                    child: Row(
+                                      children: [
+                                        for (
+                                          var i = 0;
+                                          i < _codeLength;
+                                          i++
+                                        ) ...[
+                                          if (i > 0) const SizedBox(width: 9),
+                                          Expanded(child: _box(i)),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  Positioned.fill(
+                                    child: Opacity(
+                                      opacity: 0,
+                                      child: TextField(
+                                        controller: _otpCtrl,
+                                        focusNode: _focusNode,
+                                        autofocus: true,
+                                        keyboardType: TextInputType.number,
+                                        maxLength: _codeLength,
+                                        autofillHints: const [
+                                          AutofillHints.oneTimeCode,
+                                        ],
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter
+                                              .digitsOnly,
+                                        ],
+                                        showCursor: false,
+                                        decoration: const InputDecoration(
+                                          counterText: '',
+                                          border: InputBorder.none,
+                                        ),
+                                        onChanged: (_) => setState(() {}),
+                                        onSubmitted: (_) => _verify(context),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: 28),
+                            Row(
+                              children: [
+                                if (_secondsLeft > 0) ...[
+                                  const SizedBox(
+                                    width: 26,
+                                    height: 26,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: JV2.goldHi,
+                                      backgroundColor: JV2.track,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Text.rich(
+                                    TextSpan(
+                                      style: const TextStyle(
+                                        fontSize: 13.5,
+                                        color: JV2.inkSub,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: '${'auth.resend_in'.tr()} ',
+                                        ),
+                                        TextSpan(
+                                          text:
+                                              '0:${_secondsLeft.toString().padLeft(2, '0')}',
+                                          style: const TextStyle(
+                                            color: JV2.ink,
+                                            fontWeight: FontWeight.w600,
+                                            fontFeatures: [
+                                              ui.FontFeature.tabularFigures(),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ] else
+                                  GestureDetector(
+                                    onTap: isLoading
+                                        ? null
+                                        : () => _resend(context),
+                                    child: Text(
+                                      'auth.resend_code'.tr(),
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w700,
+                                        color: JV2.gold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        24,
+                        12,
+                        24,
+                        media.padding.bottom + 20,
+                      ),
+                      child: JV2PrimaryButton(
+                        onPressed: isLoading || !ready
+                            ? null
+                            : () => _verify(context),
+                        child: isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Text('auth.verify'.tr()),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
-        body: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            final isLoading = state is AuthLoading;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Enter verification code',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.ink,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'We sent a 6-digit code via SMS to\n${widget.phone}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.inkSub,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 36),
+      ),
+    );
+  }
+}
 
-                  // OTP input
-                  TextField(
-                    controller: _otpCtrl,
-                    focusNode: _focusNode,
-                    autofocus: true,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    maxLength: 6,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 12,
-                      color: AppColors.ink,
-                    ),
-                    decoration: InputDecoration(
-                      counterText: '',
-                      hintText: '------',
-                      hintStyle: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w300,
-                        letterSpacing: 12,
-                        color: AppColors.grey.withValues(alpha: 0.4),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide(
-                          color: AppColors.grey.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(
-                          color: AppColors.primary,
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 20),
-                    ),
-                    onChanged: (_) => setState(() {}),
-                    onSubmitted: (_) => _verify(context),
-                  ),
+/// Blinking tan caret shown in the active code box.
+class _Caret extends StatefulWidget {
+  const _Caret();
 
-                  const SizedBox(height: 32),
+  @override
+  State<_Caret> createState() => _CaretState();
+}
 
-                  // Verify button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: isLoading || _otpCtrl.text.trim().length != 6
-                          ? null
-                          : () => _verify(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor:
-                            AppColors.primary.withValues(alpha: 0.4),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: isLoading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Verify',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                    ),
-                  ),
+class _CaretState extends State<_Caret> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1100),
+  )..repeat();
 
-                  const SizedBox(height: 24),
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
 
-                  // Resend
-                  Center(
-                    child: _secondsLeft > 0
-                        ? Text(
-                            'Resend code in 0:${_secondsLeft.toString().padLeft(2, '0')}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: AppColors.inkSub,
-                            ),
-                          )
-                        : TextButton(
-                            onPressed: isLoading ? null : () => _resend(context),
-                            child: const Text(
-                              'Resend Code',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                          ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (_, _) => Opacity(
+        opacity: _c.value < 0.5 ? 1 : 0,
+        child: Container(width: 2, height: 24, color: JV2.goldHi),
       ),
     );
   }

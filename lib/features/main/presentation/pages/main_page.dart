@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -7,108 +8,90 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/services/notification_service.dart';
-import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/jv2.dart';
 import '../../../ai_chat/presentation/session/pages/ai_chat_history_page.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
-import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../explore/presentation/pages/explore_page.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
+import '../../../favorites/presentation/pages/favorites_page.dart';
 import '../../../../core/widgets/lazy_indexed_stack.dart';
-import '../../../home/presentation/pages/home_page.dart';
 import '../../../notifications/domain/repositories/notification_repository.dart';
 import '../../../notifications/presentation/bloc/unread_count_cubit.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
+import '../../../packages/presentation/pages/packages_destination.dart';
 import '../../../projects/presentation/pages/project_details_page.dart';
 import '../../../search/presentation/pages/search_page.dart';
-import '../../../projects/presentation/pages/projects_page.dart';
 import '../../../more/presentation/pages/more_page.dart';
-import 'tab4_destination.dart';
+import '../main_badges.dart';
+
+/// The five fixed tabs. They never rearrange when a buyer becomes a seller —
+/// seller tools live inside You.
+enum MainTab { explore, search, ask, saved, you }
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
-  static final _tabNotifier = ValueNotifier<int?>(null);
+  // Legacy int indices (the old call sites use these): same order as [MainTab].
+  static const int tabExplore = 0;
+  static const int tabSearch = 1;
+  static const int tabAsk = 2;
+  static const int tabSaved = 3;
+  static const int tabYou = 4;
 
-  /// Switch to the given tab index from anywhere in the app.
-  static void switchTab(int index) => _tabNotifier.value = index;
+  static final _tabNotifier = ValueNotifier<MainTab?>(null);
+
+  /// Switch tab from anywhere in the app. Ignored if that tab isn't shown
+  /// (Ask is hidden while the store build is in review).
+  static void switchTab(int index) {
+    if (index < 0 || index >= MainTab.values.length) return;
+    _tabNotifier.value = MainTab.values[index];
+  }
 
   @override
   State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
-  int _selectedIndex = 0;
-  bool _isSeller = AppStorage.isSeller;
-  bool _hasSubscription = false;
+  late List<MainTab> _tabs;
   late List<Widget> _pages;
-  late List<_NavItem> _navItems;
+  int _selectedIndex = 0;
   final _searchResetNotifier = ValueNotifier<bool>(false);
   StreamSubscription<Map<String, dynamic>>? _fcmTapSub;
   StreamSubscription<Map<String, dynamic>>? _fcmFgSub;
-
-  void _goToProjects() {
-    if (_selectedIndex == 2) return;
-    setState(() => _selectedIndex = 2);
-  }
+  StreamSubscription<FavoritesState>? _favSub;
 
   bool get _inReview => AppSettingsService.instance.inReview;
 
-  void _buildNav() {
-    final showPackages = _isSeller && !_inReview;
+  Widget _pageFor(MainTab t) => switch (t) {
+    MainTab.explore => const ExplorePage(),
+    MainTab.search => SearchPage(resetNotifier: _searchResetNotifier),
+    MainTab.ask => const AiChatHistoryPage(embedded: true),
+    MainTab.saved => const FavoritesPage(),
+    MainTab.you => const MorePage(),
+  };
 
-    _pages = [
-      HomePage(onSearchTap: _goToProjects),
-      SearchPage(resetNotifier: _searchResetNotifier),
-      const ProjectsPage(),
-      Tab4Destination.create(isSeller: showPackages),
-      const MorePage(),
+  void _buildTabs() {
+    _tabs = [
+      for (final t in MainTab.values)
+        if (t != MainTab.ask || !_inReview) t,
     ];
-
-    _navItems = [
-      _NavItem(
-        icon: Icons.home_rounded,
-        activeIcon: Icons.home_rounded,
-        label: 'bottom_nav.home'.tr(),
-      ),
-      _NavItem(
-        icon: Icons.search_outlined,
-        activeIcon: Icons.search,
-        label: 'bottom_nav.search'.tr(),
-      ),
-      _NavItem(
-        icon: Icons.business_outlined,
-        activeIcon: Icons.business,
-        label: 'bottom_nav.projects'.tr(),
-      ),
-      if (showPackages)
-        _NavItem(
-          icon: Icons.workspace_premium_outlined,
-          activeIcon: Icons.workspace_premium,
-          label: _hasSubscription
-              ? 'subscription.title'.tr()
-              : 'bottom_nav.packages'.tr(),
-        )
-      else
-        _NavItem(
-          icon: Icons.favorite_border,
-          activeIcon: Icons.favorite,
-          label: 'bottom_nav.favorites'.tr(),
-        ),
-      _NavItem(
-        icon: Icons.more_horiz,
-        activeIcon: Icons.more_horiz,
-        label: 'bottom_nav.more'.tr(),
-      ),
-    ];
+    _pages = [for (final t in _tabs) _pageFor(t)];
   }
 
   @override
   void initState() {
     super.initState();
-    _buildNav();
+    _buildTabs();
     MainPage._tabNotifier.addListener(_onTabSwitch);
     sl<UnreadCountCubit>().fetch();
+
+    // Keep the Saved badge honest as the user saves / unsaves.
+    _favSub = sl<FavoritesBloc>().stream.listen((s) {
+      if (s is FavoritesLoaded)
+        MainBadges.savedCount.value = s.properties.length;
+    });
 
     _fcmTapSub = NotificationService.instance.tapStream.listen(_handleFcmTap);
     _fcmFgSub = NotificationService.instance.foregroundStream.listen((_) {
@@ -136,7 +119,11 @@ class _MainPageState extends State<MainPage> {
           return;
         }
       case 'subscription':
-        MainPage.switchTab(3);
+        // Plans & billing used to be a seller-only tab; it now opens from You.
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const PackagesDestination()),
+        );
         return;
       default:
         break;
@@ -149,22 +136,12 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _onTabSwitch() {
-    final index = MainPage._tabNotifier.value;
-    if (index != null && index != _selectedIndex) {
+    final tab = MainPage._tabNotifier.value;
+    if (tab == null) return;
+    MainPage._tabNotifier.value = null;
+    final index = _tabs.indexOf(tab);
+    if (index != -1 && index != _selectedIndex)
       setState(() => _selectedIndex = index);
-      MainPage._tabNotifier.value = null;
-    }
-  }
-
-  void _onAuthUpdated(bool isSeller, bool hasSubscription) {
-    if (_isSeller == isSeller && _hasSubscription == hasSubscription) return;
-    setState(() {
-      final roleChanged = _isSeller != isSeller;
-      _isSeller = isSeller;
-      _hasSubscription = hasSubscription;
-      if (roleChanged) _selectedIndex = 0;
-      _buildNav();
-    });
   }
 
   @override
@@ -173,6 +150,7 @@ class _MainPageState extends State<MainPage> {
     _searchResetNotifier.dispose();
     _fcmTapSub?.cancel();
     _fcmFgSub?.cancel();
+    _favSub?.cancel();
     super.dispose();
   }
 
@@ -192,50 +170,15 @@ class _MainPageState extends State<MainPage> {
         BlocProvider.value(value: sl<FavoritesBloc>()),
         BlocProvider.value(value: sl<UnreadCountCubit>()),
       ],
-      child: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthMeLoaded) {
-            _onAuthUpdated(state.user.isSeller, state.user.subscriptionId != null);
-          }
-        },
-        child: _MainScaffold(
+      child: Scaffold(
+        backgroundColor: JV2.bgDeep,
+        body: LazyIndexedStack(index: _selectedIndex, children: _pages),
+        bottomNavigationBar: _JeeranTabBar(
+          tabs: _tabs,
           selectedIndex: _selectedIndex,
-          pages: _pages,
-          navItems: _navItems,
           onTap: _onItemTapped,
-          showFab: !_inReview,
         ),
       ),
-    );
-  }
-}
-
-class _MainScaffold extends StatelessWidget {
-  final int selectedIndex;
-  final List<Widget> pages;
-  final List<_NavItem> navItems;
-  final ValueChanged<int> onTap;
-  final bool showFab;
-
-  const _MainScaffold({
-    required this.selectedIndex,
-    required this.pages,
-    required this.navItems,
-    required this.onTap,
-    required this.showFab,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: LazyIndexedStack(index: selectedIndex, children: pages),
-      bottomNavigationBar: _JeeranBottomNavBar(
-        selectedIndex: selectedIndex,
-        items: navItems,
-        onTap: onTap,
-      ),
-      floatingActionButton: showFab ? const _AiChatFab() : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
@@ -265,7 +208,10 @@ class NotificationBell extends StatelessWidget {
                 top: 6,
                 right: 6,
                 child: Container(
-                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     color: AppColors.danger,
@@ -289,173 +235,210 @@ class NotificationBell extends StatelessWidget {
   }
 }
 
-class _AiChatFab extends StatefulWidget {
-  const _AiChatFab();
+// ── Tab bar (v2): Explore · Search · Ask · Saved · You ──────────────────────
 
-  @override
-  State<_AiChatFab> createState() => _AiChatFabState();
-}
+class _JeeranTabBar extends StatelessWidget {
+  final List<MainTab> tabs;
+  final int selectedIndex;
+  final ValueChanged<int> onTap;
 
-class _AiChatFabState extends State<_AiChatFab>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulse;
+  const _JeeranTabBar({
+    required this.tabs,
+    required this.selectedIndex,
+    required this.onTap,
+  });
 
-  @override
-  void initState() {
-    super.initState();
-    _pulse = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )..repeat(reverse: true);
-  }
+  static String _label(MainTab t) => 'bottom_nav.${t.name}'.tr();
 
-  @override
-  void dispose() {
-    _pulse.dispose();
-    super.dispose();
-  }
+  static IconData _icon(MainTab t, bool on) => switch (t) {
+    MainTab.explore => on ? Icons.home_rounded : Icons.home_outlined,
+    MainTab.search => Icons.search_rounded,
+    MainTab.ask => Icons.auto_awesome_rounded,
+    MainTab.saved =>
+      on ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+    MainTab.you => on ? Icons.person_rounded : Icons.person_outline_rounded,
+  };
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _pulse,
-      builder: (_, child) {
-        return Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.secondary
-                    .withValues(alpha: 0.25 + 0.25 * _pulse.value),
-                blurRadius: 18 + 10 * _pulse.value,
-                spreadRadius: 2 + 2 * _pulse.value,
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Color(0xDBFFFFFF), // .86
+            border: Border(top: BorderSide(color: JV2.line)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (var i = 0; i < tabs.length; i++)
+                    Expanded(
+                      child: _TabItem(
+                        tab: tabs[i],
+                        label: _label(tabs[i]),
+                        icon: _icon(tabs[i], i == selectedIndex),
+                        selected: i == selectedIndex,
+                        onTap: () => onTap(i),
+                      ),
+                    ),
+                ],
               ),
-            ],
+            ),
           ),
-          child: child,
-        );
-      },
-      child: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, animation, _) => const AiChatHistoryPage(),
-            transitionsBuilder: (_, animation, _, child) {
-              return SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0, 1),
-                  end: Offset.zero,
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                )),
-                child: child,
-              );
-            },
-            transitionDuration: const Duration(milliseconds: 400),
-          ),
-        ),
-        backgroundColor: AppColors.primary,
-        elevation: 0,
-        tooltip: 'Jeeran AI',
-        shape: const CircleBorder(),
-        child: const Icon(
-          Icons.auto_awesome_rounded,
-          color: Colors.white,
-          size: 26,
         ),
       ),
     );
   }
 }
 
-class _JeeranBottomNavBar extends StatelessWidget {
-  final int selectedIndex;
-  final List<_NavItem> items;
-  final ValueChanged<int> onTap;
+class _TabItem extends StatelessWidget {
+  final MainTab tab;
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
 
-  const _JeeranBottomNavBar({
-    required this.selectedIndex,
-    required this.items,
+  const _TabItem({
+    required this.tab,
+    required this.label,
+    required this.icon,
+    required this.selected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.ink.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+    final hero = tab == MainTab.ask;
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 34, child: hero ? _askPill() : _glyph()),
+          const SizedBox(height: 5),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+              letterSpacing: 0.1,
+              color: selected ? JV2.navy : JV2.inkSub,
+            ),
           ),
         ],
       ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(items.length, (i) {
-              final selected = i == selectedIndex;
-              final item = items[i];
-              return GestureDetector(
-                onTap: () => onTap(i),
-                behavior: HitTestBehavior.opaque,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: selected
-                        ? AppColors.primary.withValues(alpha: 0.10)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        selected ? item.activeIcon : item.icon,
-                        size: 24,
-                        color: selected ? AppColors.primary : AppColors.grey,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: selected
-                              ? FontWeight.w600
-                              : FontWeight.normal,
-                          color: selected ? AppColors.primary : AppColors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }),
+    );
+  }
+
+  Widget _askPill() {
+    return Center(
+      child: Container(
+        width: 46,
+        height: 34,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(17),
+          gradient: LinearGradient(
+            begin: const Alignment(-0.5, -1),
+            end: const Alignment(0.5, 1),
+            colors: selected
+                ? const [JV2.navyLift, JV2.navy]
+                : const [JV2.navy, Color(0xFF071D34)],
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Color(selected ? 0x570B2A4A : 0x380B2A4A),
+              blurRadius: selected ? 20 : 12,
+              offset: Offset(0, selected ? 8 : 4),
+            ),
+          ],
+        ),
+        child: const Icon(
+          Icons.auto_awesome_rounded,
+          size: 19,
+          color: Colors.white,
         ),
       ),
     );
   }
-}
 
-class _NavItem {
-  final IconData icon;
-  final IconData activeIcon;
-  final String label;
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-  });
+  Widget _glyph() {
+    final color = selected ? JV2.navy : JV2.inkMute;
+    return Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
+      children: [
+        Icon(icon, size: 24, color: color),
+        if (tab == MainTab.saved)
+          ValueListenableBuilder<int>(
+            valueListenable: MainBadges.savedCount,
+            builder: (_, n, _) => n <= 0
+                ? const SizedBox.shrink()
+                : Positioned(
+                    top: 2,
+                    right: -2,
+                    child: Container(
+                      constraints: const BoxConstraints(
+                        minWidth: 15,
+                        minHeight: 15,
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        color: JV2.goldHi,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        n > 99 ? '99+' : '$n',
+                        style: const TextStyle(
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+          ),
+        if (tab == MainTab.you)
+          ValueListenableBuilder<bool>(
+            valueListenable: MainBadges.youAttention,
+            builder: (_, on, _) => !on
+                ? const SizedBox.shrink()
+                : Positioned(
+                    top: 5,
+                    right: 6,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: JV2.goldHi,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                    ),
+                  ),
+          ),
+        if (selected)
+          Positioned(
+            bottom: -3,
+            child: Container(
+              width: 4,
+              height: 4,
+              decoration: const BoxDecoration(
+                color: JV2.goldHi,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 // ── FCM token unregistration helper (called from logout) ────────────────────

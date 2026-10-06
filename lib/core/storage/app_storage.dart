@@ -9,6 +9,7 @@ class AppStorage {
   static const String _keyUserName = 'user_name';
   static const String _keyUserType = 'user_type';
   static const String _keyLanguage = 'language';
+  static const String _keyExploreArea = 'explore_area';
   static const String _keyLastFcmToken = 'last_fcm_token';
 
   static Future<void> init() async {
@@ -103,6 +104,12 @@ class AppStorage {
 
   // Language
   static String? get language => _box.get(_keyLanguage) as String?;
+
+  /// Area chip on Explore: north_coast | cairo | sharm_el_sheikh (null = everywhere).
+  static String? get exploreArea => _box.get(_keyExploreArea) as String?;
+
+  static Future<void> setExploreArea(String? value) =>
+      value == null ? _box.delete(_keyExploreArea) : _box.put(_keyExploreArea, value);
 
   static Future<void> setLanguage(String value) => _box.put(_keyLanguage, value);
 }

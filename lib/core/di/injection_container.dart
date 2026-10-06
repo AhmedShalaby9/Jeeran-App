@@ -4,6 +4,8 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 import '../config/app_config.dart';
 import '../network/api_client.dart';
 import '../network/network_info.dart';
+import '../../features/explore/data/datasources/explore_remote_data_source.dart';
+import '../../features/explore/presentation/bloc/explore_cubit.dart';
 import '../../features/home/data/datasources/home_local_data_source.dart';
 import '../../features/home/data/datasources/home_remote_data_source.dart';
 import '../../features/home/data/repositories/home_repository_impl.dart';
@@ -70,6 +72,7 @@ final sl = GetIt.instance;
 Future<void> init() async {
   // -- BLoC ----------------------------------------------
   sl.registerFactory(() => HomeBloc(repository: sl()));
+  sl.registerFactory(() => ExploreCubit(dataSource: sl()));
   sl.registerLazySingleton(() => BannersBloc(repository: sl()));
   sl.registerLazySingleton(() => ProjectsBloc(repository: sl()));
   sl.registerFactory(() => PropertiesBloc(repository: sl()));
@@ -91,6 +94,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => AdsBloc(repository: sl()));
 
   // -- Repositories --------------------------------------
+  sl.registerLazySingleton(() => ExploreRemoteDataSource(apiClient: sl()));
   sl.registerLazySingleton<HomeRepository>(
     () => HomeRepositoryImpl(
       remoteDataSource: sl(),

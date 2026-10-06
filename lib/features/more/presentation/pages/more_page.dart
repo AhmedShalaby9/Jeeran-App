@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../../packages/presentation/pages/packages_destination.dart';
 import '../../../main/presentation/pages/main_page.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
@@ -398,6 +399,16 @@ class _MoreView extends StatelessWidget {
                         icon: Icons.home_work_outlined,
                         label: 'more.my_properties'.tr(),
                         onTap: () => MyPropertiesPage.push(context),
+                      ),
+                      // Plans & billing — used to be a seller-only tab; the tab bar is
+                      // now identical for everyone, so it lives here.
+                      _MoreTile(
+                        icon: Icons.workspace_premium_outlined,
+                        label: 'bottom_nav.packages'.tr(),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const PackagesDestination()),
+                        ),
                       ),
                     ],
                     // Add Property — sellers (not in review) OR admins always

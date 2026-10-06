@@ -61,6 +61,8 @@
 
   // Seller Request
   static const String sellerRequests = '/seller-requests';
+  static const String sellerRequestMy = '/seller-requests/my';
+  static const String home = '/home';
   static String sellerRequestById(int id) => '/seller-requests/$id';
   static String sellerRequestApprove(int id) => '/seller-requests/$id/approve';
   static String sellerRequestReject(int id) => '/seller-requests/$id/reject';

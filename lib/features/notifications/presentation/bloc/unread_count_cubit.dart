@@ -13,6 +13,9 @@ class UnreadCountCubit extends Cubit<int> {
 
   void increment() => emit(state + 1);
 
+  /// Sync from a payload that already carries the count (e.g. the Explore feed).
+  void set(int count) => emit(count);
+
   void reset() => emit(0);
 
   void decrement() {

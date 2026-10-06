@@ -40,6 +40,13 @@ class ProjectModel extends Project {
     super.mainImage,
     super.descAr,
     super.descEn,
+    super.developer,
+    super.isNewLaunch,
+    super.state,
+    super.areaAr,
+    super.areaEn,
+    super.minPrice,
+    super.unitsCount,
   });
 
   factory ProjectModel.fromJson(Map<String, dynamic> json) {
@@ -51,9 +58,9 @@ class ProjectModel extends Project {
     final rawFeatures = json['features'];
     final features = rawFeatures is List
         ? rawFeatures
-            .whereType<Map<String, dynamic>>()
-            .map(ProjectFeatureModel.fromJson)
-            .toList()
+              .whereType<Map<String, dynamic>>()
+              .map(ProjectFeatureModel.fromJson)
+              .toList()
         : <ProjectFeatureModel>[];
 
     return ProjectModel(
@@ -66,6 +73,25 @@ class ProjectModel extends Project {
       isActive: json['is_active'] as bool? ?? true,
       descAr: json['desc_ar'] as String?,
       descEn: json['desc_en'] as String?,
+      developer: _developerFrom(json['developer']),
+      isNewLaunch: json['is_new_launch'] as bool? ?? false,
+      state: json['state'] as String?,
+      areaAr: json['area_ar'] as String?,
+      areaEn: json['area_en'] as String?,
+      minPrice: (json['min_price'] as num?)?.toDouble(),
+      unitsCount: (json['units_count'] as num?)?.toInt(),
+    );
+  }
+
+  static ProjectDeveloper? _developerFrom(dynamic raw) {
+    if (raw is! Map<String, dynamic>) return null;
+    final id = raw['id'];
+    if (id is! int) return null;
+    return ProjectDeveloper(
+      id: id,
+      nameAr: raw['name_ar'] as String? ?? '',
+      nameEn: raw['name_en'] as String? ?? '',
+      logo: raw['logo'] as String?,
     );
   }
 }

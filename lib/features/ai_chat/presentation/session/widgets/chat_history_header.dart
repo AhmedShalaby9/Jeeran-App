@@ -4,7 +4,8 @@ import '../../../../../core/utils/app_colors.dart';
 
 class ChatHistoryHeader extends StatelessWidget {
   final VoidCallback onNewChat;
-  const ChatHistoryHeader({super.key, required this.onNewChat});
+  final bool showBack;
+  const ChatHistoryHeader({super.key, required this.onNewChat, this.showBack = true});
 
   @override
   Widget build(BuildContext context) {
@@ -22,12 +23,15 @@ class ChatHistoryHeader extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
           child: Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: Colors.white, size: 20),
-                onPressed: () => Navigator.pop(context),
-              ),
-              const SizedBox(width: 4),
+              if (showBack) ...[
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white, size: 20),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                const SizedBox(width: 4),
+              ] else
+                const SizedBox(width: 12),
               _AiAvatarCircle(),
               const SizedBox(width: 12),
               Expanded(

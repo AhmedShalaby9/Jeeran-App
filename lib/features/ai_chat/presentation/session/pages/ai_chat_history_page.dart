@@ -16,19 +16,22 @@ import '../widgets/delete_confirm_dialog.dart';
 import '../../chat/pages/ai_chat_page.dart';
 
 class AiChatHistoryPage extends StatelessWidget {
-  const AiChatHistoryPage({super.key});
+  /// True when shown as the Ask tab: there is no route to pop, so no back button.
+  final bool embedded;
+  const AiChatHistoryPage({super.key, this.embedded = false});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: sl<ChatSessionsBloc>()..add(const LoadChatSessions()),
-      child: const _HistoryView(),
+      child: _HistoryView(embedded: embedded),
     );
   }
 }
 
 class _HistoryView extends StatefulWidget {
-  const _HistoryView();
+  final bool embedded;
+  const _HistoryView({this.embedded = false});
 
   @override
   State<_HistoryView> createState() => _HistoryViewState();
@@ -88,7 +91,7 @@ class _HistoryViewState extends State<_HistoryView> {
       backgroundColor: AppColors.chatBackground,
       body: Column(
         children: [
-          ChatHistoryHeader(onNewChat: _openNewSession),
+          ChatHistoryHeader(onNewChat: _openNewSession, showBack: !widget.embedded),
           Expanded(child: _buildBody()),
         ],
       ),
