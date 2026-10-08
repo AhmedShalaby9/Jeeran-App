@@ -21,6 +21,9 @@ class AppSettings {
   final bool aiGuideVideoVisible;
   final String? contactPhone;
 
+  /// True on environments with a static login code: the app skips the reCAPTCHA step.
+  final bool otpTestMode;
+
   const AppSettings({
     this.minVersionIos,
     this.minVersionAndroid,
@@ -40,6 +43,7 @@ class AppSettings {
     this.aiGuideVideoUrl,
     this.aiGuideVideoVisible = false,
     this.contactPhone,
+    this.otpTestMode = false,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -61,6 +65,7 @@ class AppSettings {
         aiGuideVideoUrl: json['ai_guide_video_url'] as String?,
         aiGuideVideoVisible: (json['ai_guide_video_visible'] as bool?) ?? false,
         contactPhone: json['contact_phone'] as String?,
+        otpTestMode: json['otp_test_mode'] == true,
       );
 }
 
@@ -84,6 +89,8 @@ class AppSettingsService {
   }
 
   bool get inReview => settings?.inReview ?? false;
+
+  bool get otpTestMode => settings?.otpTestMode ?? false;
 
   /// The number every "Call us" button dials; null/empty hides those buttons.
   String? get contactPhone {

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/services/app_settings_service.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/services/notification_service.dart';
@@ -61,6 +62,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onSendOtp(AuthSendOtpEvent event, Emitter<AuthState> emit) async {
+    // staging has a static code and sends nothing, so there is nothing to prove with reCAPTCHA
+    if (AppSettingsService.instance.otpTestMode) {
+      await _onSendOtpRest(AuthSendOtpRestEvent(phone: event.phone, recaptchaToken: 'static'), emit);
+      return;
+    }
     emit(AuthRecaptchaRequired(event.phone));
   }
 

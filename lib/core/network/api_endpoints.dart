@@ -7,8 +7,6 @@
   static const String firebaseVerify = '/auth/firebase-verify';
   static const String sendOtpRest = '/auth/send-otp-rest';
   static const String verifyOtpRest = '/auth/verify-otp-rest';
-  static const String sendOtp = '/auth/send-otp';
-  static const String verifyOtp = '/auth/verify-otp';
   static const String socialLogin = '/auth/social-login';
   static const String register = '/auth/register';
   static const String logout = '/auth/logout';
