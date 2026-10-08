@@ -125,6 +125,8 @@ void main() {
             ),
           ),
         );
+        // translations load on a real async turn
+        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
         await tester.pump(const Duration(milliseconds: 300));
         expect(tester.takeException(), isNull);
         expect(find.byType(SavedCompoundCard), findsOneWidget);
