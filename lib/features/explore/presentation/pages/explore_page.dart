@@ -69,7 +69,7 @@ class _ExploreView extends StatelessWidget {
 
         return Column(
           children: [
-            ExploreTopBar(area: state.area, onAreaChanged: cubit.setArea),
+            const ExploreTopBar(),
             Expanded(
               child: data == null
                   ? (state.status == ExploreStatus.failure

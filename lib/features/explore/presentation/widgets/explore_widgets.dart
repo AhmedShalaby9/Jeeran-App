@@ -80,71 +80,8 @@ class Photo extends StatelessWidget {
 
 // ── top bar ───────────────────────────────────────────────
 
-const _areas = <String?>[null, 'north_coast', 'cairo', 'sharm_el_sheikh'];
-
-String areaLabel(String? area) =>
-    area == null ? 'explore.area_all'.tr() : 'explore.area_$area'.tr();
-
 class ExploreTopBar extends StatelessWidget {
-  final String? area;
-  final ValueChanged<String?> onAreaChanged;
-
-  const ExploreTopBar({
-    super.key,
-    required this.area,
-    required this.onAreaChanged,
-  });
-
-  Future<void> _pickArea(BuildContext context) async {
-    final picked = await showModalBottomSheet<_AreaPick>(
-      context: context,
-      backgroundColor: JV2.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: JV2.track,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text('explore.choose_area'.tr(), style: JV2.display(ctx, 22)),
-              const SizedBox(height: 8),
-              for (final a in _areas)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    areaLabel(a),
-                    style: TextStyle(
-                      fontSize: 15.5,
-                      fontWeight: a == area ? FontWeight.w700 : FontWeight.w500,
-                      color: JV2.ink,
-                    ),
-                  ),
-                  trailing: a == area
-                      ? const Icon(Icons.check_rounded, color: JV2.gold)
-                      : null,
-                  onTap: () => Navigator.pop(ctx, _AreaPick(a)),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-    if (picked != null) onAreaChanged(picked.area);
-  }
+  const ExploreTopBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -165,43 +102,6 @@ class ExploreTopBar extends StatelessWidget {
           child: Row(
             children: [
               const JV2Mark(size: 28),
-              const SizedBox(width: 12),
-              GestureDetector(
-                onTap: () => _pickArea(context),
-                child: Container(
-                  padding: const EdgeInsetsDirectional.fromSTEB(9, 6, 10, 6),
-                  decoration: BoxDecoration(
-                    color: JV2.fillFaint,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: JV2.line),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.place_outlined,
-                        size: 14,
-                        color: JV2.navy,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        areaLabel(area),
-                        style: const TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: JV2.ink,
-                        ),
-                      ),
-                      const SizedBox(width: 3),
-                      const Icon(
-                        Icons.keyboard_arrow_down_rounded,
-                        size: 15,
-                        color: JV2.inkMute,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
               const Spacer(),
               const _Bell(),
             ],
@@ -210,11 +110,6 @@ class ExploreTopBar extends StatelessWidget {
       ),
     );
   }
-}
-
-class _AreaPick {
-  final String? area;
-  const _AreaPick(this.area);
 }
 
 class _Bell extends StatelessWidget {

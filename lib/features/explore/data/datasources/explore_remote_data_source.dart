@@ -8,14 +8,10 @@ class ExploreRemoteDataSource {
 
   ExploreRemoteDataSource({required this.apiClient});
 
-  /// One round trip for the whole Explore screen. [state] narrows by area
-  /// (north_coast | cairo | sharm_el_sheikh).
-  Future<ExploreData> getHome({String? state}) async {
+  /// One round trip for the whole Explore screen.
+  Future<ExploreData> getHome() async {
     try {
-      final response = await apiClient.get(
-        ApiEndpoints.home,
-        queryParams: {if (state != null) 'state': state},
-      );
+      final response = await apiClient.get(ApiEndpoints.home);
       if (response.statusCode == 200) {
         final data = response.data['data'];
         if (data is Map<String, dynamic>) return ExploreData.fromJson(data);
