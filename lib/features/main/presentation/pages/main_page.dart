@@ -24,7 +24,7 @@ import '../../../packages/presentation/pages/packages_destination.dart';
 import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../developers/presentation/pages/developer_page.dart';
 import '../../../search/presentation/search_home.dart';
-import '../../../more/presentation/pages/more_page.dart';
+import '../../../you/you_page.dart';
 import '../main_badges.dart';
 
 /// The five fixed tabs. They never rearrange when a buyer becomes a seller —
@@ -70,7 +70,7 @@ class _MainPageState extends State<MainPage> {
     MainTab.search => SearchHome(resetNotifier: _searchResetNotifier),
     MainTab.ask => const AskView(),
     MainTab.saved => const SavedPage(),
-    MainTab.you => const MorePage(),
+    MainTab.you => const YouPage(),
   };
 
   void _buildTabs() {

@@ -1043,5 +1043,51 @@
     "load_failed": "Couldn’t load your questions.",
     "retry": "Try again",
     "limit": "You’ve used all your questions for this hour. Try again in {} min."
+  },
+  "you": {
+    "role_buyer": "Buyer",
+    "role_seller": "Seller",
+    "role_admin": "Admin",
+    "edit": "Edit profile",
+    "upsell_eyebrow": "Sellers",
+    "upsell_title": "List your property.\nReach thousands.",
+    "upsell_cta": "Join us as a seller",
+    "upsell_note": "Free plan available",
+    "pending_title": "Seller request under review",
+    "pending_sub": "Submitted {} · usually 1–2 business days",
+    "pending_cta": "Track request",
+    "rejected_title": "Seller request not approved",
+    "rejected_fallback": "We couldn’t approve your request this time. You can send it again.",
+    "rejected_cta": "Fix and resubmit",
+    "track_title": "Your seller request",
+    "track_status": "Under review",
+    "track_note": "We’ll send you a notification the moment it’s reviewed.",
+    "plan_current": "Current plan",
+    "plan_renews": "renews {}",
+    "plan_ends": "ends {}",
+    "plan_manage": "Manage",
+    "plan_upgrade": "Upgrade",
+    "plan_used": "Listings used",
+    "plan_left": {
+      "one": "{} listing left this month",
+      "other": "{} listings left this month"
+    },
+    "list_property": "List a property",
+    "g_selling": "Selling",
+    "g_activity": "Activity",
+    "g_account": "Account",
+    "g_admin": "Admin",
+    "my_properties_meta": "{} live · {} in review",
+    "ads_meta": {
+      "zero": "No ads yet",
+      "one": "{} ad",
+      "other": "{} ads"
+    },
+    "no_plan": "No active plan — choose one to start listing",
+    "notif_meta": "{} · {}",
+    "privacy": "Privacy & security",
+    "footer": "Jeeran {} · Egypt",
+    "load_failed": "Couldn’t load your account.",
+    "retry": "Try again"
   }
 }

@@ -8,6 +8,8 @@ class AppSettings {
   final String? googlePlayUrl;
   final String? termsEn;
   final String? termsAr;
+  final String? privacyEn;
+  final String? privacyAr;
   final String? aboutUsEn;
   final String? aboutUsAr;
   final String? adGenerationPrice;
@@ -31,6 +33,8 @@ class AppSettings {
     this.googlePlayUrl,
     this.termsEn,
     this.termsAr,
+    this.privacyEn,
+    this.privacyAr,
     this.aboutUsEn,
     this.aboutUsAr,
     this.adGenerationPrice,
@@ -53,6 +57,8 @@ class AppSettings {
         googlePlayUrl: json['google_play_url'] as String?,
         termsEn: json['terms_en'] as String?,
         termsAr: json['terms_ar'] as String?,
+        privacyEn: json['privacy_policy_en'] as String?,
+        privacyAr: json['privacy_policy_ar'] as String?,
         aboutUsEn: json['about_us_en'] as String?,
         aboutUsAr: json['about_us_ar'] as String?,
         adGenerationPrice: json['ad_generation_price'] as String?,
@@ -96,6 +102,12 @@ class AppSettingsService {
   String? get contactPhone {
     final p = settings?.contactPhone?.trim();
     return (p == null || p.isEmpty) ? null : p;
+  }
+
+  /// The privacy policy, falling back to the terms text while none has been written.
+  String? privacy(String locale) {
+    final p = locale == 'ar' ? settings?.privacyAr : settings?.privacyEn;
+    return (p == null || p.trim().isEmpty) ? terms(locale) : p;
   }
 
   String? terms(String locale) =>
