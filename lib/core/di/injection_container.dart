@@ -50,11 +50,6 @@ import '../../features/subscription/data/datasources/subscription_remote_data_so
 import '../../features/subscription/data/repositories/subscription_repository_impl.dart';
 import '../../features/subscription/domain/repositories/subscription_repository.dart';
 import '../../features/subscription/presentation/bloc/subscription_bloc.dart';
-import '../../features/ai_chat/data/datasources/chat_remote_data_source.dart';
-import '../../features/ai_chat/data/repositories/chat_repository_impl.dart';
-import '../../features/ai_chat/domain/repositories/chat_repository.dart';
-import '../../features/ai_chat/presentation/chat/bloc/chat_bloc.dart';
-import '../../features/ai_chat/presentation/session/bloc/chat_sessions_bloc.dart';
 import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
@@ -89,8 +84,6 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FavoritesBloc(repository: sl()));
   sl.registerFactory(() => SellerRequestBloc(repository: sl()));
   sl.registerFactory(() => SubscriptionBloc(repository: sl()));
-  sl.registerLazySingleton(() => ChatSessionsBloc(repository: sl()));
-  sl.registerFactory(() => ChatBloc(repository: sl()));
   sl.registerFactory(() => NotificationBloc(repository: sl()));
   sl.registerLazySingleton(() => UnreadCountCubit(repository: sl()));
   sl.registerFactory(() => AiAdsBloc(repository: sl()));
@@ -132,9 +125,6 @@ Future<void> init() async {
   sl.registerLazySingleton<SubscriptionRepository>(
     () => SubscriptionRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
-  sl.registerLazySingleton<ChatRepository>(
-    () => ChatRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
-  );
   sl.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
@@ -175,9 +165,6 @@ sl.registerLazySingleton<HomeLocalDataSource>(
   );
   sl.registerLazySingleton<SubscriptionRemoteDataSource>(
     () => SubscriptionRemoteDataSourceImpl(apiClient: sl()),
-  );
-  sl.registerLazySingleton<ChatRemoteDataSource>(
-    () => ChatRemoteDataSourceImpl(apiClient: sl()),
   );
   sl.registerLazySingleton<NotificationRemoteDataSource>(
     () => NotificationRemoteDataSourceImpl(apiClient: sl()),

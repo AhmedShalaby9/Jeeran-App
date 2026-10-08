@@ -10,7 +10,7 @@ import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/jv2.dart';
-import '../../../ai_chat/presentation/session/pages/ai_chat_history_page.dart';
+import '../../../ai_chat/ask/ask_view.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../explore/presentation/pages/explore_page.dart';
@@ -68,7 +68,7 @@ class _MainPageState extends State<MainPage> {
   Widget _pageFor(MainTab t) => switch (t) {
     MainTab.explore => const ExplorePage(),
     MainTab.search => SearchHome(resetNotifier: _searchResetNotifier),
-    MainTab.ask => const AiChatHistoryPage(embedded: true),
+    MainTab.ask => const AskView(),
     MainTab.saved => const SavedPage(),
     MainTab.you => const MorePage(),
   };

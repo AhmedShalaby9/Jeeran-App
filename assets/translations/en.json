@@ -1002,5 +1002,46 @@
     "muted": "Muted",
     "no_news": "No news yet",
     "save_failed": "Couldn’t save that. Try again."
+  },
+  "concierge": {
+    "title": "Jeeran AI",
+    "reading_live": "Reading live listings",
+    "empty_title": "Ask about any\nproperty in Egypt.",
+    "empty_sub": "I read the live listings, compounds and news — not the internet. Everything I tell you comes with the units behind it.",
+    "try": "Try",
+    "p1": "3-bed chalet in Sahel under 12M, ready to move",
+    "p2": "Which North Coast compounds launched this year?",
+    "p3": "Compare Marassi and Hacienda Bay on price per m²",
+    "p4_seller": "How many listings do I have left on my plan?",
+    "p4_buyer": "Which developers have the most units listed?",
+    "input_hint": "Ask about anything in Egypt",
+    "step": "Searching Jeeran listings",
+    "compounds": "Compounds",
+    "news": "News",
+    "s_listings": {
+      "one": "{} listing",
+      "other": "{} listings"
+    },
+    "s_compounds": {
+      "one": "{} compound",
+      "other": "{} compounds"
+    },
+    "s_news": {
+      "one": "{} article",
+      "other": "{} articles"
+    },
+    "history": "History",
+    "new_chat": "New chat",
+    "back": "Back",
+    "history_title": "Your questions",
+    "history_empty_title": "No questions yet",
+    "history_empty_sub": "Your conversations with Jeeran AI will appear here.",
+    "meta_account": "account",
+    "deleted": "Chat deleted",
+    "delete_failed": "Couldn’t delete that. Try again.",
+    "send_failed": "Couldn’t get an answer. Try again.",
+    "load_failed": "Couldn’t load your questions.",
+    "retry": "Try again",
+    "limit": "You’ve used all your questions for this hour. Try again in {} min."
   }
 }

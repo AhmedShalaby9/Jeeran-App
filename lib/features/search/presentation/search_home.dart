@@ -7,7 +7,7 @@ import '../../../core/di/injection_container.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/format_utils.dart';
 import '../../../core/widgets/jv2.dart';
-import '../../ai_chat/presentation/session/pages/ai_chat_history_page.dart';
+import '../../ai_chat/ask/ask_view.dart';
 import '../../explore/presentation/widgets/explore_widgets.dart';
 import '../../properties/data/models/property_model.dart';
 import '../../properties/presentation/pages/property_details_page.dart';
@@ -222,7 +222,7 @@ class _SearchHomeState extends State<SearchHome> {
 
   void _openAsk() => Navigator.push(
     context,
-    MaterialPageRoute(builder: (_) => const AiChatHistoryPage()),
+    MaterialPageRoute(builder: (_) => const AskView(embedded: false)),
   );
 
   void _openDevelopers() {

@@ -12,8 +12,6 @@ import '../../../ai_chat/scoped/ask_context.dart';
 import '../../../ai_chat/scoped/ask_scope_api.dart';
 import '../../../compounds/data/compound_page_data.dart';
 import '../../../compounds/presentation/pages/compound_page.dart';
-import '../../../compounds/presentation/widgets/page_widgets.dart'
-    show EmptyBlock;
 import '../../../developers/presentation/pages/developer_page.dart';
 import '../../../explore/presentation/widgets/explore_widgets.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';

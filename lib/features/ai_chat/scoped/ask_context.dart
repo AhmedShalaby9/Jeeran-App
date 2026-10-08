@@ -7,8 +7,7 @@ import '../../../core/error/exceptions.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/jv2.dart';
 import '../../explore/presentation/widgets/explore_widgets.dart';
-import '../domain/entities/chat_session.dart';
-import '../presentation/chat/pages/ai_chat_page.dart';
+import '../ask/ask_view.dart';
 import 'ask_scope_api.dart';
 
 String _lang(BuildContext c) => c.locale.languageCode;
@@ -322,17 +321,12 @@ class _AskContextSheetState extends State<AskContextSheet> {
     final nav = Navigator.of(context);
     nav.pop();
     if (id == null) return;
-    final now = DateTime.now();
     nav.push(
       MaterialPageRoute(
-        builder: (_) => AiChatPage(
-          session: ChatSession(
-            id: id,
-            userId: 0,
-            title: _info?.name ?? _scope.name,
-            createdAt: now,
-            updatedAt: now,
-          ),
+        builder: (_) => AskView(
+          embedded: false,
+          sessionId: id,
+          sessionTitle: _info?.name ?? _scope.name,
         ),
       ),
     );

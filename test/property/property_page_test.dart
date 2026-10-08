@@ -10,8 +10,6 @@ import 'package:jeeran_flutter/core/di/injection_container.dart';
 import 'package:jeeran_flutter/core/error/exceptions.dart';
 import 'package:jeeran_flutter/core/error/failures.dart';
 import 'package:jeeran_flutter/core/network/api_client.dart';
-import 'package:jeeran_flutter/features/ai_chat/scoped/ask_context.dart';
-import 'package:jeeran_flutter/features/ai_chat/scoped/ask_scope_api.dart';
 import 'package:jeeran_flutter/features/favorites/domain/repositories/favorites_repository.dart';
 import 'package:jeeran_flutter/features/favorites/presentation/bloc/favorites_bloc.dart';
 import 'package:jeeran_flutter/features/properties/data/models/property_model.dart';
