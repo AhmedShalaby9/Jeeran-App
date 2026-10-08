@@ -74,10 +74,12 @@ class ProjectModel extends Project {
       descAr: json['desc_ar'] as String?,
       descEn: json['desc_en'] as String?,
       developer: _developerFrom(json['developer']),
-      isNewLaunch: json['is_new_launch'] as bool? ?? false,
-      state: json['state'] as String?,
-      areaAr: json['area_ar'] as String?,
-      areaEn: json['area_en'] as String?,
+      // the API now sends a live `promotion` and an `area` object; the flat fields are the old shape
+      isNewLaunch: json['is_new_launch'] == true ||
+          (json['promotion'] is Map && (json['promotion'] as Map)['type'] == 'launch'),
+      state: (json['state'] ?? (json['area'] is Map ? (json['area'] as Map)['state'] : null)) as String?,
+      areaAr: (json['area'] is Map ? (json['area'] as Map)['name_ar'] : json['area_ar']) as String?,
+      areaEn: (json['area'] is Map ? (json['area'] as Map)['name_en'] : json['area_en']) as String?,
       minPrice: (json['min_price'] as num?)?.toDouble(),
       unitsCount: (json['units_count'] as num?)?.toInt(),
     );

@@ -35,6 +35,14 @@ class AddPropertyForm {
 
   bool isFeatured = false;
 
+  /// primary (from the developer) or resale (from an owner).
+  String listingType = 'primary';
+
+  /// Optional per-unit details. Left empty, the unit inherits the compound's.
+  String? finishing;
+  Set<String> payment = {};
+  Set<String> amenities = {};
+
   // ── Per-step validation ──────────────────────────────────────
   bool get step1Valid => propertyType != null && propertyStatus != null;
   bool get step2Valid => location != null && projectId != null;
@@ -74,6 +82,10 @@ class AddPropertyForm {
         'country': 'egypt',
         'state': location!.apiKey,
         'project_id': projectId,
+        'listing_type': listingType,
+        if (finishing != null) 'finishing': finishing,
+        if (payment.isNotEmpty) 'payment_options': payment.toList(),
+        if (amenities.isNotEmpty) 'features': amenities.toList(),
         'images': imageUrls,
         'agent_name': agentName.trim(),
         'agent_mobile': agentMobile.trim(),

@@ -70,6 +70,8 @@
   static const String unfollow = '/user-subscriptions/unfollow';
   static const String followCheck = '/user-subscriptions/check';
   static String developerById(int id) => '/developers/$id';
+  static String compoundById(int id) => '/compounds/$id';
+  static String propertyPageById(int id) => '/properties/$id';
   static String sellerRequestById(int id) => '/seller-requests/$id';
   static String sellerRequestApprove(int id) => '/seller-requests/$id/approve';
   static String sellerRequestReject(int id) => '/seller-requests/$id/reject';
@@ -80,6 +82,8 @@
   // AI Chat
   static const String chatSessions = '/chat/sessions';
   static String chatSessionById(int id) => '/chat/sessions/$id';
+  static const String chatScope = '/chat/scope';
+  static String chatSessionScope(int id) => '/chat/sessions/$id/scope';
   static String chatMessages(int sessionId) => '/chat/sessions/$sessionId/messages';
 
   // FCM Tokens

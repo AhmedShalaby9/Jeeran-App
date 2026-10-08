@@ -7,7 +7,7 @@ import '../../../../properties/domain/entities/property.dart';
 import '../../../../properties/presentation/pages/property_details_page.dart';
 import '../../../../properties/presentation/widgets/property_card.dart';
 import '../../../../projects/domain/entities/project.dart';
-import '../../../../projects/presentation/pages/project_details_page.dart';
+import '../../../../compounds/presentation/pages/compound_page.dart';
 import '../../../domain/entities/chat_references.dart';
 
 class ChatReferenceCards extends StatelessWidget {
@@ -117,9 +117,9 @@ class _ProjectChip extends StatelessWidget {
       onTap: () => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => ProjectDetailsPage.fromId(
-            projectId: project.id,
-            displayName: project.name,
+          builder: (_) => CompoundPage(
+            compoundId: project.id,
+            name: project.name,
           ),
         ),
       ),

@@ -10,7 +10,7 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/widgets/jv2.dart';
 import '../../../developers/presentation/pages/developer_page.dart';
 import '../../../news/presentation/pages/all_news_page.dart';
-import '../../../projects/presentation/pages/project_details_page.dart';
+import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../properties/presentation/pages/property_details_page.dart';
 import '../../data/models/saved_models.dart';
 import '../bloc/saved_cubit.dart';
@@ -60,24 +60,35 @@ class _SavedViewState extends State<_SavedView> {
     if (mounted) context.read<SavedCubit>().load();
   }
 
-  void _undoable(Future<Future<void> Function()?> pending, String messageKey) async {
+  void _undoable(
+    Future<Future<void> Function()?> pending,
+    String messageKey,
+  ) async {
     final undo = await pending;
     if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger.hideCurrentSnackBar();
     if (undo == null) {
-      messenger.showSnackBar(SnackBar(content: Text('saved.action_failed'.tr())));
+      messenger.showSnackBar(
+        SnackBar(content: Text('saved.action_failed'.tr())),
+      );
       return;
     }
     messenger.showSnackBar(
       SnackBar(
         content: Text(messageKey.tr()),
-        action: SnackBarAction(label: 'saved.undo'.tr(), onPressed: () => undo()),
+        action: SnackBarAction(
+          label: 'saved.undo'.tr(),
+          onPressed: () => undo(),
+        ),
       ),
     );
   }
 
-  void _openNews() => Navigator.push(context, MaterialPageRoute(builder: (_) => const AllNewsPage()));
+  void _openNews() => Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const AllNewsPage()),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -116,9 +127,18 @@ class _SavedViewState extends State<_SavedView> {
             children: [
               const Icon(Icons.cloud_off_rounded, size: 40, color: JV2.inkMute),
               const SizedBox(height: 14),
-              Text('explore.load_failed'.tr(), textAlign: TextAlign.center, style: JV2.display(context, 22)),
+              Text(
+                'explore.load_failed'.tr(),
+                textAlign: TextAlign.center,
+                style: JV2.display(context, 22),
+              ),
               const SizedBox(height: 18),
-              JV2PrimaryButton(width: 160, height: 46, onPressed: cubit.load, child: Text('explore.try_again'.tr())),
+              JV2PrimaryButton(
+                width: 160,
+                height: 46,
+                onPressed: cubit.load,
+                child: Text('explore.try_again'.tr()),
+              ),
             ],
           ),
         ),
@@ -135,9 +155,12 @@ class _SavedViewState extends State<_SavedView> {
               item: l,
               onOpen: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => PropertyDetailsPage(property: l.property)),
+                MaterialPageRoute(
+                  builder: (_) => PropertyDetailsPage(property: l.property),
+                ),
               ),
-              onRemove: () => _undoable(cubit.removeListing(l), 'saved.removed'),
+              onRemove: () =>
+                  _undoable(cubit.removeListing(l), 'saved.removed'),
             ),
         ],
       ),
@@ -150,9 +173,15 @@ class _SavedViewState extends State<_SavedView> {
               item: c,
               onOpen: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => ProjectDetailsPage(project: c.project)),
+                MaterialPageRoute(
+                  builder: (_) => CompoundPage(
+                    compoundId: c.project.id,
+                    name: c.project.name,
+                  ),
+                ),
               ),
-              onUnfollow: () => _undoable(cubit.unfollowCompound(c), 'saved.unfollowed'),
+              onUnfollow: () =>
+                  _undoable(cubit.unfollowCompound(c), 'saved.unfollowed'),
               onOpenUpdate: _openNews,
             ),
         ],
@@ -166,9 +195,13 @@ class _SavedViewState extends State<_SavedView> {
               item: d,
               onOpen: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => DeveloperPage(developerId: d.id, name: d.name)),
+                MaterialPageRoute(
+                  builder: (_) =>
+                      DeveloperPage(developerId: d.id, name: d.name),
+                ),
               ),
-              onUnfollow: () => _undoable(cubit.unfollowDeveloper(d), 'saved.unfollowed'),
+              onUnfollow: () =>
+                  _undoable(cubit.unfollowDeveloper(d), 'saved.unfollowed'),
               onOpenUpdate: _openNews,
             ),
         ],
@@ -177,9 +210,21 @@ class _SavedViewState extends State<_SavedView> {
 
     if (empty) {
       final e = switch (_tab) {
-        _SavedTab.listings => ('saved.empty_listings_title', 'saved.empty_listings_sub', Icons.bookmark_border_rounded),
-        _SavedTab.compounds => ('saved.empty_compounds_title', 'saved.empty_compounds_sub', Icons.home_outlined),
-        _SavedTab.developers => ('saved.empty_developers_title', 'saved.empty_developers_sub', Icons.business_outlined),
+        _SavedTab.listings => (
+          'saved.empty_listings_title',
+          'saved.empty_listings_sub',
+          Icons.bookmark_border_rounded,
+        ),
+        _SavedTab.compounds => (
+          'saved.empty_compounds_title',
+          'saved.empty_compounds_sub',
+          Icons.home_outlined,
+        ),
+        _SavedTab.developers => (
+          'saved.empty_developers_title',
+          'saved.empty_developers_sub',
+          Icons.business_outlined,
+        ),
       };
       // still pull-to-refreshable
       return RefreshIndicator(
@@ -250,8 +295,16 @@ class _Header extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 12, 20, 14),
-                child: Text('saved.title'.tr(), style: JV2.display(context, 26)),
+                padding: EdgeInsets.fromLTRB(
+                  20,
+                  MediaQuery.of(context).padding.top + 12,
+                  20,
+                  14,
+                ),
+                child: Text(
+                  'saved.title'.tr(),
+                  style: JV2.display(context, 26),
+                ),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -267,7 +320,9 @@ class _Header extends StatelessWidget {
                           decoration: BoxDecoration(
                             border: Border(
                               bottom: BorderSide(
-                                color: t == tab ? JV2.goldHi : Colors.transparent,
+                                color: t == tab
+                                    ? JV2.goldHi
+                                    : Colors.transparent,
                                 width: 2.5,
                               ),
                             ),
@@ -278,16 +333,25 @@ class _Header extends StatelessWidget {
                                 _label(t),
                                 style: TextStyle(
                                   fontSize: 13.5,
-                                  fontWeight: t == tab ? FontWeight.w800 : FontWeight.w600,
+                                  fontWeight: t == tab
+                                      ? FontWeight.w800
+                                      : FontWeight.w600,
                                   color: t == tab ? JV2.ink : JV2.inkSub,
                                 ),
                               ),
                               const SizedBox(width: 6),
                               Container(
-                                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                                padding: const EdgeInsets.symmetric(horizontal: 5),
+                                constraints: const BoxConstraints(
+                                  minWidth: 18,
+                                  minHeight: 18,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: t == tab ? JV2.goldFilm : JV2.fillFaint,
+                                  color: t == tab
+                                      ? JV2.goldFilm
+                                      : JV2.fillFaint,
                                   borderRadius: BorderRadius.circular(9),
                                 ),
                                 alignment: Alignment.center,
@@ -328,25 +392,36 @@ class _Summary extends StatelessWidget {
       _SavedTab.listings => (
         'saved.n_listings'.plural(counts.listings),
         [
-          if (counts.priceDrops > 0) 'saved.n_price_drops'.plural(counts.priceDrops),
+          if (counts.priceDrops > 0)
+            'saved.n_price_drops'.plural(counts.priceDrops),
           if (counts.sold > 0) 'saved.n_sold'.plural(counts.sold),
-          if (counts.unavailable > 0) 'saved.n_unavailable'.plural(counts.unavailable),
+          if (counts.unavailable > 0)
+            'saved.n_unavailable'.plural(counts.unavailable),
         ],
       ),
       _SavedTab.compounds => (
         'saved.n_compounds'.plural(counts.compounds),
-        [if (counts.freshCompounds > 0) 'saved.n_new_releases'.plural(counts.freshCompounds)],
+        [
+          if (counts.freshCompounds > 0)
+            'saved.n_new_releases'.plural(counts.freshCompounds),
+        ],
       ),
       _SavedTab.developers => (
         'saved.n_developers'.plural(counts.developers),
-        [if (counts.developerProjects > 0) 'saved.compounds_between'.tr(args: ['${counts.developerProjects}'])],
+        [
+          if (counts.developerProjects > 0)
+            'saved.compounds_between'.tr(args: ['${counts.developerProjects}']),
+        ],
       ),
     };
     return Text.rich(
       TextSpan(
         style: const TextStyle(fontSize: 12.5, color: JV2.inkSub),
         children: [
-          TextSpan(text: lead, style: const TextStyle(fontWeight: FontWeight.w800, color: JV2.ink)),
+          TextSpan(
+            text: lead,
+            style: const TextStyle(fontWeight: FontWeight.w800, color: JV2.ink),
+          ),
           if (rest.isNotEmpty) TextSpan(text: ' · ${rest.join(', ')}'),
         ],
       ),
@@ -361,7 +436,10 @@ class _Skeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget row() => Container(
       height: 120,
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+      ),
     );
     return Shimmer.fromColors(
       baseColor: const Color(0xFFE9EEF4),
@@ -369,7 +447,13 @@ class _Skeleton extends StatelessWidget {
       child: ListView(
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
-        children: [row(), const SizedBox(height: 10), row(), const SizedBox(height: 10), row()],
+        children: [
+          row(),
+          const SizedBox(height: 10),
+          row(),
+          const SizedBox(height: 10),
+          row(),
+        ],
       ),
     );
   }

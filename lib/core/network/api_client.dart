@@ -26,20 +26,33 @@ class ApiClient {
     ]);
   }
 
+  /// Sent by the v2 screens (compound / developer pages): the API answers in
+  /// the new vocabulary — `compound` instead of `project`.
+  static const apiV2 = {'X-Api-Version': '2'};
+
   Future<Response> get(
     String path, {
     Map<String, dynamic>? queryParams,
+    Map<String, dynamic>? headers,
   }) async {
     try {
-      return await _dio.get(path, queryParameters: queryParams);
+      return await _dio.get(
+        path,
+        queryParameters: queryParams,
+        options: headers == null ? null : Options(headers: headers),
+      );
     } on DioException catch (e) {
       throw _mapError(e);
     }
   }
 
-  Future<Response> post(String path, {dynamic data}) async {
+  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? headers}) async {
     try {
-      return await _dio.post(path, data: data);
+      return await _dio.post(
+        path,
+        data: data,
+        options: headers == null ? null : Options(headers: headers),
+      );
     } on DioException catch (e) {
       throw _mapError(e);
     }
@@ -53,9 +66,13 @@ class ApiClient {
     }
   }
 
-  Future<Response> patch(String path, {dynamic data}) async {
+  Future<Response> patch(String path, {dynamic data, Map<String, dynamic>? headers}) async {
     try {
-      return await _dio.patch(path, data: data);
+      return await _dio.patch(
+        path,
+        data: data,
+        options: headers == null ? null : Options(headers: headers),
+      );
     } on DioException catch (e) {
       throw _mapError(e);
     }
@@ -102,11 +119,23 @@ class ApiClient {
         return switch (e.response?.statusCode) {
           401 => UnauthorizedException(),
           404 => NotFoundException(),
-          _ => ServerException(message),
+          _ => ServerException(message, _extractCode(e.response), _extractRetry(e.response)),
         };
       default:
         return ServerException();
     }
+  }
+
+  String? _extractCode(Response? response) {
+    final data = response?.data;
+    return data is Map<String, dynamic> && data['code'] is String ? data['code'] as String : null;
+  }
+
+  int? _extractRetry(Response? response) {
+    final data = response?.data;
+    final inner = data is Map<String, dynamic> ? data['data'] : null;
+    final v = inner is Map<String, dynamic> ? inner['retry_after_seconds'] : null;
+    return v is num ? v.toInt() : null;
   }
 
   String? _extractErrorMessage(Response? response) {

@@ -18,3 +18,16 @@ String formatPrice(String? raw) {
   }
   return n % 1 == 0 ? n.toInt().toString() : raw;
 }
+
+/// 11900000 → 11.9M, 750000 → 750K
+String compactPrice(double n) {
+  if (n >= 1000000) {
+    final v = n / 1000000;
+    return '${v % 1 == 0 ? v.toInt() : v.toStringAsFixed(1)}M';
+  }
+  if (n >= 1000) {
+    final v = n / 1000;
+    return '${v % 1 == 0 ? v.toInt() : v.toStringAsFixed(1)}K';
+  }
+  return n.toInt().toString();
+}

@@ -26,6 +26,11 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
     PropertyType.clinic: Icons.local_hospital_rounded,
     PropertyType.office: Icons.business_center_rounded,
     PropertyType.shop: Icons.storefront_rounded,
+    PropertyType.twinhouse: Icons.holiday_village_rounded,
+    PropertyType.townhouse: Icons.home_work_rounded,
+    PropertyType.duplex: Icons.layers_rounded,
+    PropertyType.studio: Icons.single_bed_rounded,
+    PropertyType.land: Icons.landscape_rounded,
   };
 
   static const _typeSubtitles = <PropertyType, String>{
@@ -36,6 +41,11 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
     PropertyType.clinic: 'Medical spaces',
     PropertyType.office: 'Commercial offices',
     PropertyType.shop: 'Shops & showrooms',
+    PropertyType.twinhouse: 'Two joined villas',
+    PropertyType.townhouse: 'Row houses',
+    PropertyType.duplex: 'Two-floor apartments',
+    PropertyType.studio: 'Open-plan units',
+    PropertyType.land: 'Plots',
   };
 
   void _update(VoidCallback fn) {
@@ -69,6 +79,26 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
         ),
         const SizedBox(height: 22),
 
+        // ── Primary or resale ────────────────────────────────────
+        const WizardLabel('Sale type', required: true),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            WizardChip(
+              label: 'Primary — from the developer',
+              active: widget.form.listingType == 'primary',
+              onTap: () => _update(() => widget.form.listingType = 'primary'),
+            ),
+            WizardChip(
+              label: 'Resale — from an owner',
+              active: widget.form.listingType == 'resale',
+              onTap: () => _update(() => widget.form.listingType = 'resale'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 22),
+
         // ── Property type list ───────────────────────────────────
         const WizardLabel('Property type', required: true),
         ...PropertyType.options.map((t) {
@@ -80,7 +110,10 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
               onTap: () => _update(() => widget.form.propertyType = t),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
@@ -137,12 +170,18 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
                         shape: BoxShape.circle,
                         color: active ? AppColors.primary : Colors.white,
                         border: Border.all(
-                          color: active ? AppColors.primary : const Color(0xFFD5DAE2),
+                          color: active
+                              ? AppColors.primary
+                              : const Color(0xFFD5DAE2),
                           width: 2,
                         ),
                       ),
                       child: active
-                          ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
+                          ? const Icon(
+                              Icons.check_rounded,
+                              size: 12,
+                              color: Colors.white,
+                            )
                           : null,
                     ),
                   ],

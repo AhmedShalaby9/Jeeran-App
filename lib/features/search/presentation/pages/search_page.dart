@@ -302,7 +302,10 @@ class _SearchPageState extends State<SearchPage> {
                 ),
                 child: Text(
                   'search.filters.search_button'.tr(),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
@@ -480,7 +483,10 @@ class _PriceRange extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: _PriceField(controller: minController, hint: 'search.filters.min'.tr()),
+          child: _PriceField(
+            controller: minController,
+            hint: 'search.filters.min'.tr(),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -490,7 +496,10 @@ class _PriceRange extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: _PriceField(controller: maxController, hint: 'search.filters.max'.tr()),
+          child: _PriceField(
+            controller: maxController,
+            hint: 'search.filters.max'.tr(),
+          ),
         ),
       ],
     );
@@ -528,7 +537,9 @@ class _BedroomSelector extends StatelessWidget {
       children: [
         ...options.map((n) {
           final isSelected = n == selected;
-          final label = n == 5 ? 'search.filters.bedrooms_plus'.tr(namedArgs: {'count': '5'}) : '$n';
+          final label = n == 5
+              ? 'search.filters.bedrooms_plus'.tr(namedArgs: {'count': '5'})
+              : '$n';
           return Expanded(
             child: GestureDetector(
               onTap: () => onSelected(n),
