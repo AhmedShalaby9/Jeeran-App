@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:jeeran_flutter/core/widgets/app_loading.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/project.dart';
-import '../pages/project_details_page.dart';
+import '../../../compounds/presentation/pages/compound_page.dart';
 
 class ProjectCard extends StatelessWidget {
   final Project project;
@@ -14,7 +14,7 @@ class ProjectCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => ProjectDetailsPage(project: project)),
+        MaterialPageRoute(builder: (_) => CompoundPage(compoundId: project.id, name: project.name)),
       ),
       child: Container(
         decoration: BoxDecoration(

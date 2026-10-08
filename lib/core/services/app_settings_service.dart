@@ -19,6 +19,7 @@ class AppSettings {
   final int promoSellerOrder;
   final String? aiGuideVideoUrl;
   final bool aiGuideVideoVisible;
+  final String? contactPhone;
 
   const AppSettings({
     this.minVersionIos,
@@ -38,6 +39,7 @@ class AppSettings {
     this.promoSellerOrder = 2,
     this.aiGuideVideoUrl,
     this.aiGuideVideoVisible = false,
+    this.contactPhone,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -58,6 +60,7 @@ class AppSettings {
         promoSellerOrder: (json['promo_seller_order'] as int?) ?? 2,
         aiGuideVideoUrl: json['ai_guide_video_url'] as String?,
         aiGuideVideoVisible: (json['ai_guide_video_visible'] as bool?) ?? false,
+        contactPhone: json['contact_phone'] as String?,
       );
 }
 
@@ -81,6 +84,12 @@ class AppSettingsService {
   }
 
   bool get inReview => settings?.inReview ?? false;
+
+  /// The number every "Call us" button dials; null/empty hides those buttons.
+  String? get contactPhone {
+    final p = settings?.contactPhone?.trim();
+    return (p == null || p.isEmpty) ? null : p;
+  }
 
   String? terms(String locale) =>
       locale == 'ar' ? settings?.termsAr : settings?.termsEn;

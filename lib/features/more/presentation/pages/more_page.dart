@@ -15,7 +15,8 @@ import '../../../auth/presentation/pages/my_profile_page.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/widgets/html_content_page.dart';
 import 'contact_us_page.dart';
-import '../../../notifications/presentation/pages/notifications_page.dart';
+import '../../../notifications/presentation/bloc/unread_count_cubit.dart';
+import '../../../notifications/presentation/pages/notification_settings_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../../properties/presentation/pages/my_properties_page.dart';
 import '../../../ai_ads/presentation/pages/ai_ads_page.dart';
@@ -457,9 +458,12 @@ class _MoreView extends StatelessWidget {
             _MoreTile(
               icon: Icons.notifications_outlined,
               label: 'more.notifications'.tr(),
+              trailing: sl<UnreadCountCubit>().state > 0
+                  ? 'notif.unread_n'.plural(sl<UnreadCountCubit>().state)
+                  : null,
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const NotificationsPage()),
+                MaterialPageRoute(builder: (_) => const NotificationSettingsPage()),
               ),
             ),
 

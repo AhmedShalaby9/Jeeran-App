@@ -9,7 +9,8 @@ import '../../../../core/widgets/jv2.dart';
 import '../../../ai_ads/presentation/pages/ai_ads_page.dart';
 import '../../../main/presentation/pages/main_page.dart';
 import '../../../news/presentation/pages/all_news_page.dart';
-import '../../../projects/presentation/pages/project_details_page.dart';
+import '../../../compounds/presentation/pages/compound_page.dart';
+import '../../../developers/presentation/pages/developer_page.dart';
 import '../../../properties/data/models/property_model.dart';
 import '../../../properties/presentation/pages/property_details_page.dart';
 import '../../data/models/explore_data.dart';
@@ -29,15 +30,21 @@ class BannerActions {
       case 'phone':
         if ((b.phone ?? '').isNotEmpty)
           await launchUrl(Uri(scheme: 'tel', path: b.phone));
-      case 'project':
+      case 'project' || 'compound':
         if (b.targetId != null) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => ProjectDetailsPage.fromId(
-                projectId: b.targetId,
-                displayName: null,
-              ),
+              builder: (_) => CompoundPage(compoundId: b.targetId!, name: null),
+            ),
+          );
+        }
+      case 'developer':
+        if (b.targetId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => DeveloperPage(developerId: b.targetId!),
             ),
           );
         }

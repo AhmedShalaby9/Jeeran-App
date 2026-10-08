@@ -7,7 +7,7 @@ import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../../../news/domain/entities/news.dart';
 import '../../../news/presentation/pages/news_details_page.dart';
 import '../../../projects/domain/entities/project.dart';
-import '../../../projects/presentation/pages/project_details_page.dart';
+import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../properties/domain/entities/property.dart';
 import '../../../properties/presentation/pages/property_details_page.dart';
 import 'explore_widgets.dart';
@@ -49,7 +49,9 @@ class LaunchStrip extends StatelessWidget {
           return GestureDetector(
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => ProjectDetailsPage(project: p)),
+              MaterialPageRoute(
+                builder: (_) => CompoundPage(compoundId: p.id, name: p.name),
+              ),
             ),
             child: SizedBox(
               width: 176,
@@ -349,7 +351,10 @@ class _ExplorePropertyCardState extends State<ExplorePropertyCard> {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => ProjectDetailsPage(project: project),
+                    builder: (_) => CompoundPage(
+                      compoundId: project.id,
+                      name: project.name,
+                    ),
                   ),
                 ),
                 child: Container(

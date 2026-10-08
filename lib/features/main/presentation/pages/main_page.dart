@@ -21,8 +21,9 @@ import '../../../notifications/domain/repositories/notification_repository.dart'
 import '../../../notifications/presentation/bloc/unread_count_cubit.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
 import '../../../packages/presentation/pages/packages_destination.dart';
-import '../../../projects/presentation/pages/project_details_page.dart';
-import '../../../search/presentation/pages/search_page.dart';
+import '../../../compounds/presentation/pages/compound_page.dart';
+import '../../../developers/presentation/pages/developer_page.dart';
+import '../../../search/presentation/search_home.dart';
 import '../../../more/presentation/pages/more_page.dart';
 import '../main_badges.dart';
 
@@ -66,7 +67,7 @@ class _MainPageState extends State<MainPage> {
 
   Widget _pageFor(MainTab t) => switch (t) {
     MainTab.explore => const ExplorePage(),
-    MainTab.search => SearchPage(resetNotifier: _searchResetNotifier),
+    MainTab.search => SearchHome(resetNotifier: _searchResetNotifier),
     MainTab.ask => const AiChatHistoryPage(embedded: true),
     MainTab.saved => const SavedPage(),
     MainTab.you => const MorePage(),
@@ -105,15 +106,22 @@ class _MainPageState extends State<MainPage> {
     final entityId = int.tryParse(data['entity_id'] as String? ?? '');
 
     switch (type) {
-      case 'project':
+      case 'developer':
         if (entityId != null) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => ProjectDetailsPage.fromId(
-                projectId: entityId,
-                displayName: null,
-              ),
+              builder: (_) => DeveloperPage(developerId: entityId),
+            ),
+          );
+          return;
+        }
+      case 'project' || 'compound':
+        if (entityId != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CompoundPage(compoundId: entityId, name: null),
             ),
           );
           return;
@@ -157,7 +165,8 @@ class _MainPageState extends State<MainPage> {
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return;
     setState(() => _selectedIndex = index);
-    if (_tabs[index] == MainTab.saved) SavedPage.reload.value++; // always show fresh prices
+    if (_tabs[index] == MainTab.saved)
+      SavedPage.reload.value++; // always show fresh prices
     _searchResetNotifier.value = !_searchResetNotifier.value;
   }
 

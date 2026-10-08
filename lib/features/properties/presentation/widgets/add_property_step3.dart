@@ -33,6 +33,31 @@ class _AddPropertyStep3State extends State<AddPropertyStep3> {
     super.dispose();
   }
 
+  static const _finishings = [
+    ('fully_finished', 'Fully finished'),
+    ('semi_finished', 'Semi-finished'),
+    ('core_shell', 'Core & shell'),
+    ('furnished', 'Furnished'),
+  ];
+  static const _payments = [
+    ('cash', 'Cash'),
+    ('installments', 'Installments'),
+    ('mortgage', 'Mortgage eligible'),
+  ];
+  static const _amenities = [
+    ('sea_view', 'Sea view'),
+    ('pool_view', 'Pool view'),
+    ('private_garden', 'Private garden'),
+    ('roof', 'Roof'),
+    ('golf_view', 'Golf view'),
+    ('beach_access', 'Beach access'),
+    ('corner_unit', 'Corner unit'),
+    ('parking', 'Parking'),
+  ];
+
+  void _toggle(Set<String> set, String v) =>
+      set.contains(v) ? set.remove(v) : set.add(v);
+
   void _update(VoidCallback fn) {
     fn();
     widget.onChanged();
@@ -92,6 +117,60 @@ class _AddPropertyStep3State extends State<AddPropertyStep3> {
           value: widget.form.bathrooms,
           min: 1,
           onChanged: (v) => _update(() => widget.form.bathrooms = v),
+        ),
+        const SizedBox(height: 24),
+
+        // ── Optional details: left empty, the compound's apply ───
+        const WizardLabel('Finishing'),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final f in _finishings)
+              WizardChip(
+                label: f.$2,
+                active: widget.form.finishing == f.$1,
+                onTap: () => _update(
+                  () => widget.form.finishing = widget.form.finishing == f.$1
+                      ? null
+                      : f.$1,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        const WizardLabel('Payment'),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final p in _payments)
+              WizardChip(
+                label: p.$2,
+                active: widget.form.payment.contains(p.$1),
+                onTap: () => _update(() => _toggle(widget.form.payment, p.$1)),
+              ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        const WizardLabel('Amenities'),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final a in _amenities)
+              WizardChip(
+                label: a.$2,
+                active: widget.form.amenities.contains(a.$1),
+                onTap: () =>
+                    _update(() => _toggle(widget.form.amenities, a.$1)),
+              ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'Optional — anything you leave out is taken from the compound.',
+          style: TextStyle(fontSize: 12, color: Color(0xFF8A93A3)),
         ),
       ],
     );
