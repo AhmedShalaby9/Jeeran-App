@@ -58,6 +58,31 @@ class ApiClient {
     }
   }
 
+  /// For calls that legitimately take a minute (image generation).
+  Future<Response> postLong(String path, {dynamic data, Map<String, dynamic>? headers}) async {
+    try {
+      return await _dio.post(
+        path,
+        data: data,
+        options: Options(headers: headers, receiveTimeout: const Duration(seconds: 120)),
+      );
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  Future<Response> putWithHeaders(String path, {dynamic data, Map<String, dynamic>? headers}) async {
+    try {
+      return await _dio.put(
+        path,
+        data: data,
+        options: headers == null ? null : Options(headers: headers),
+      );
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
   Future<Response> put(String path, {dynamic data}) async {
     try {
       return await _dio.put(path, data: data);

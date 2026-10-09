@@ -59,11 +59,9 @@ class AppStorage {
     if (userType != null) await _box.put(_keyUserType, userType);
   }
 
-  static Future<void> saveUserName(String name) =>
-      _box.put(_keyUserName, name);
+  static Future<void> saveUserName(String name) => _box.put(_keyUserName, name);
 
-  static Future<void> saveUserType(String type) =>
-      _box.put(_keyUserType, type);
+  static Future<void> saveUserType(String type) => _box.put(_keyUserType, type);
 
   /// Overwrite only the fields that are non-null — call this after every
   /// successful /auth/me response to keep local state in sync with the server.
@@ -102,7 +100,14 @@ class AppStorage {
       _box.put(_keyAiAdGuideViewed, value);
 
   // Language
+  /// A half-finished "List a property" draft (JSON), kept on this phone only.
+  static String? get listingDraft => _box.get('listing_draft_v1') as String?;
+  static Future<void> setListingDraft(String? json) => json == null
+      ? _box.delete('listing_draft_v1')
+      : _box.put('listing_draft_v1', json);
+
   static String? get language => _box.get(_keyLanguage) as String?;
 
-  static Future<void> setLanguage(String value) => _box.put(_keyLanguage, value);
+  static Future<void> setLanguage(String value) =>
+      _box.put(_keyLanguage, value);
 }

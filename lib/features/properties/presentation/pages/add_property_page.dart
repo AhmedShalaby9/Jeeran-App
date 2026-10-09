@@ -7,8 +7,8 @@ import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_snackbar.dart';
 import '../../../subscription/presentation/bloc/subscription_bloc.dart';
-import '../../../subscription/presentation/bloc/subscription_event.dart';
 import '../../../subscription/presentation/bloc/subscription_state.dart';
+import '../../../listing/listing_flow.dart';
 import '../bloc/add_property_bloc.dart';
 import '../bloc/add_property_event.dart';
 import '../bloc/add_property_state.dart';
@@ -34,22 +34,7 @@ class AddPropertyPage extends StatelessWidget {
       );
       return;
     }
-    await Navigator.push<void>(
-      context,
-      MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (_) => MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => sl<AddPropertyBloc>()),
-            BlocProvider(
-              create: (_) =>
-                  sl<SubscriptionBloc>()..add(const FetchMySubscriptionEvent()),
-            ),
-          ],
-          child: const AddPropertyPage(),
-        ),
-      ),
-    );
+    await ListingFlow.open(context);
   }
 
   @override
@@ -142,12 +127,12 @@ class _AddPropertyViewState extends State<_AddPropertyView> {
   }
 
   String _validationErrorMessage(int step) => switch (step) {
-        1 => 'Please select a property type and listing status',
-        2 => 'Please select a location and project',
-        3 => 'Please enter a valid price and area',
-        4 => 'Add at least 1 photo and fill in all titles and descriptions',
-        _ => 'Please enter agent name and mobile number',
-      };
+    1 => 'Please select a property type and listing status',
+    2 => 'Please select a location and project',
+    3 => 'Please enter a valid price and area',
+    4 => 'Add at least 1 photo and fill in all titles and descriptions',
+    _ => 'Please enter agent name and mobile number',
+  };
 
   void _publish() {
     final state = context.read<AddPropertyBloc>().state;
@@ -205,7 +190,8 @@ class _AddPropertyViewState extends State<_AddPropertyView> {
             BlocBuilder<AddPropertyBloc, AddPropertyState>(
               builder: (context, state) {
                 final busy =
-                    state is AddPropertyUploading || state is AddPropertySubmitting;
+                    state is AddPropertyUploading ||
+                    state is AddPropertySubmitting;
                 String? progressLabel;
                 if (state is AddPropertyUploading) {
                   progressLabel = 'Uploading ${state.current}/${state.total}…';
@@ -319,7 +305,9 @@ class _WizardHeader extends StatelessWidget {
                 value: progress,
                 minHeight: 3,
                 backgroundColor: const Color(0xFFEEF0F4),
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppColors.primary,
+                ),
               ),
             ),
           ),

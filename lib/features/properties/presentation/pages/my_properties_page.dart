@@ -7,6 +7,7 @@ import '../../../../core/widgets/app_snackbar.dart';
 import '../../../subscription/presentation/bloc/subscription_bloc.dart';
 import '../../../subscription/presentation/bloc/subscription_event.dart';
 import '../../../subscription/presentation/bloc/subscription_state.dart';
+import '../../../listing/listing_flow.dart';
 import '../../domain/entities/property.dart';
 import '../../domain/entities/property_filter_params.dart';
 import '../../domain/repositories/property_repository.dart';
@@ -20,15 +21,20 @@ import 'property_details_page.dart';
 class MyPropertiesPage extends StatelessWidget {
   const MyPropertiesPage({super.key});
 
-  static Future<void> push(BuildContext context) =>
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const MyPropertiesPage()));
+  static Future<void> push(BuildContext context) => Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const MyPropertiesPage()),
+  );
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<MyPropertiesBloc>()),
-        BlocProvider(create: (_) => sl<SubscriptionBloc>()..add(const FetchMySubscriptionEvent())),
+        BlocProvider(
+          create: (_) =>
+              sl<SubscriptionBloc>()..add(const FetchMySubscriptionEvent()),
+        ),
       ],
       child: const _MyPropertiesView(),
     );
@@ -42,7 +48,8 @@ class _MyPropertiesView extends StatefulWidget {
   State<_MyPropertiesView> createState() => _MyPropertiesViewState();
 }
 
-class _MyPropertiesViewState extends State<_MyPropertiesView> with SingleTickerProviderStateMixin {
+class _MyPropertiesViewState extends State<_MyPropertiesView>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final ScrollController _scrollController = ScrollController();
 
@@ -112,7 +119,10 @@ class _MyPropertiesViewState extends State<_MyPropertiesView> with SingleTickerP
             return const PropertiesShimmer();
           }
           if (state is PropertiesError) {
-            return _ErrorView(message: state.message, onRetry: () => _fetch(_tabs[_tabController.index]));
+            return _ErrorView(
+              message: state.message,
+              onRetry: () => _fetch(_tabs[_tabController.index]),
+            );
           }
 
           final properties = switch (state) {
@@ -125,29 +135,44 @@ class _MyPropertiesViewState extends State<_MyPropertiesView> with SingleTickerP
           if (properties.isEmpty) return _EmptyView();
 
           return BlocBuilder<SubscriptionBloc, SubscriptionState>(
-            buildWhen: (_, curr) => curr is MySubscriptionLoaded || curr is MySubscriptionLoading,
+            buildWhen: (_, curr) =>
+                curr is MySubscriptionLoaded || curr is MySubscriptionLoading,
             builder: (context, subState) {
-              final remainingFeatured = subState is MySubscriptionLoaded ? subState.subscription.remainingFeatured : 0;
+              final remainingFeatured = subState is MySubscriptionLoaded
+                  ? subState.subscription.remainingFeatured
+                  : 0;
               return ListView.separated(
                 controller: _scrollController,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                itemCount: properties.length + (state is PropertiesLoadingMore ? 1 : 0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+                itemCount:
+                    properties.length +
+                    (state is PropertiesLoadingMore ? 1 : 0),
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   if (index == properties.length) {
                     return const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
+                      ),
                     );
                   }
                   final property = properties[index];
                   return _PropertyCardWithFeaturedToggle(
                     property: property,
                     remainingFeatured: remainingFeatured,
-                    onFeaturedToggled: () => _fetch(_tabs[_tabController.index]),
+                    onFeaturedToggled: () =>
+                        _fetch(_tabs[_tabController.index]),
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => PropertyDetailsPage(property: property)),
+                      MaterialPageRoute(
+                        builder: (_) => PropertyDetailsPage(property: property),
+                      ),
                     ),
                   );
                 },
@@ -176,10 +201,12 @@ class _PropertyCardWithFeaturedToggle extends StatefulWidget {
   });
 
   @override
-  State<_PropertyCardWithFeaturedToggle> createState() => _PropertyCardWithFeaturedToggleState();
+  State<_PropertyCardWithFeaturedToggle> createState() =>
+      _PropertyCardWithFeaturedToggleState();
 }
 
-class _PropertyCardWithFeaturedToggleState extends State<_PropertyCardWithFeaturedToggle> {
+class _PropertyCardWithFeaturedToggleState
+    extends State<_PropertyCardWithFeaturedToggle> {
   bool _loading = false;
 
   Future<void> _toggle() async {
@@ -197,7 +224,10 @@ class _PropertyCardWithFeaturedToggleState extends State<_PropertyCardWithFeatur
     }
 
     setState(() => _loading = true);
-    final result = await sl<PropertyRepository>().updateProperty(widget.property.id, {'is_featured': newValue});
+    final result = await sl<PropertyRepository>().updateProperty(
+      widget.property.id,
+      {'is_featured': newValue},
+    );
     if (!mounted) return;
     setState(() => _loading = false);
 
@@ -211,7 +241,9 @@ class _PropertyCardWithFeaturedToggleState extends State<_PropertyCardWithFeatur
       (_) {
         AppSnackbar.show(
           context,
-          message: newValue ? 'Listing is now featured!' : 'Listing removed from featured.',
+          message: newValue
+              ? 'Listing is now featured!'
+              : 'Listing removed from featured.',
           icon: newValue ? Icons.star_rounded : Icons.star_border_rounded,
           iconColor: newValue ? const Color(0xFFF59E0B) : AppColors.inkSub,
         );
@@ -222,11 +254,46 @@ class _PropertyCardWithFeaturedToggleState extends State<_PropertyCardWithFeatur
 
   @override
   Widget build(BuildContext context) {
-    final canToggleOn = widget.property.isFeatured || widget.remainingFeatured > 0;
+    final canToggleOn =
+        widget.property.isFeatured || widget.remainingFeatured > 0;
 
     return Stack(
       children: [
-        PropertyCard.horizontalCard(property: widget.property, onTap: widget.onTap),
+        PropertyCard.horizontalCard(
+          property: widget.property,
+          onTap: widget.onTap,
+        ),
+        Positioned(
+          top: 8,
+          right: 50,
+          child: GestureDetector(
+            key: Key('edit-property-${widget.property.id}'),
+            onTap: () async {
+              final saved = await ListingFlow.edit(context, widget.property.id);
+              if (saved == true) widget.onFeaturedToggled();
+            },
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.edit_outlined,
+                size: 17,
+                color: AppColors.inkSub,
+              ),
+            ),
+          ),
+        ),
         Positioned(
           top: 8,
           right: 8,
@@ -236,19 +303,30 @@ class _PropertyCardWithFeaturedToggleState extends State<_PropertyCardWithFeatur
               width: 34,
               height: 34,
               decoration: BoxDecoration(
-                color: widget.property.isFeatured ? const Color(0xFFF59E0B) : Colors.white,
+                color: widget.property.isFeatured
+                    ? const Color(0xFFF59E0B)
+                    : Colors.white,
                 shape: BoxShape.circle,
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 6, offset: const Offset(0, 2)),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
                 ],
               ),
               child: _loading
                   ? const Padding(
                       padding: EdgeInsets.all(8),
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primary,
+                      ),
                     )
                   : Icon(
-                      widget.property.isFeatured ? Icons.star_rounded : Icons.star_border_rounded,
+                      widget.property.isFeatured
+                          ? Icons.star_rounded
+                          : Icons.star_border_rounded,
                       size: 18,
                       color: widget.property.isFeatured
                           ? Colors.white
@@ -274,19 +352,34 @@ class _EmptyView extends StatelessWidget {
           Container(
             width: 100,
             height: 100,
-            decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.08), shape: BoxShape.circle),
-            child: Icon(Icons.home_work_outlined, size: 48, color: AppColors.primary),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.home_work_outlined,
+              size: 48,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(height: 24),
           Text(
             'my_properties.empty_title'.tr(),
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.ink),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: AppColors.ink,
+            ),
           ),
           const SizedBox(height: 10),
           Text(
             'my_properties.empty_subtitle'.tr(),
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.inkSub, height: 1.5),
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.inkSub,
+              height: 1.5,
+            ),
           ),
         ],
       ),
@@ -307,9 +400,15 @@ class _ErrorView extends StatelessWidget {
         children: [
           const Icon(Icons.error_outline, size: 48, color: AppColors.inkMute),
           const SizedBox(height: 16),
-          Text(message, style: const TextStyle(fontSize: 14, color: AppColors.inkSub)),
+          Text(
+            message,
+            style: const TextStyle(fontSize: 14, color: AppColors.inkSub),
+          ),
           const SizedBox(height: 16),
-          TextButton(onPressed: onRetry, child: Text('my_properties.retry'.tr())),
+          TextButton(
+            onPressed: onRetry,
+            child: Text('my_properties.retry'.tr()),
+          ),
         ],
       ),
     );

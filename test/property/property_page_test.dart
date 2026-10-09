@@ -212,6 +212,8 @@ void main() {
     });
 
     test('floor plan goes last in the gallery', () {
+      expect(PropertyPageData.fromJson({..._payload(), 'cover_is_ai': true}).coverIsAi, isTrue);
+      expect(PropertyPageData.fromJson(_payload()).coverIsAi, isFalse);
       final d = PropertyPageData.fromJson({..._payload(), 'images': ['a.jpg', 'b.jpg'], 'floor_plan': 'plan.png'});
       expect(d.gallery, ['a.jpg', 'b.jpg', 'plan.png']);
     });

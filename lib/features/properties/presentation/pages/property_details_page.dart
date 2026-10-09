@@ -211,6 +211,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                     index: _media,
                     controller: _pager,
                     featured: d.isFeatured,
+                    aiCover: d.coverIsAi,
                     saved: _saved,
                     onPage: (i) => setState(() => _media = i),
                     onTapMedia: (i) => _openMedia(d, media, i),

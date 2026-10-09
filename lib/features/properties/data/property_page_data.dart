@@ -61,6 +61,7 @@ class PropertyPageData {
   final List<String> images;
   final String? videoUrl;
   final String? floorPlan;
+  final bool coverIsAi;
   final bool isFeatured;
   final Bi level;
   final Bi maintenance;
@@ -102,6 +103,7 @@ class PropertyPageData {
     required this.images,
     required this.videoUrl,
     required this.floorPlan,
+    this.coverIsAi = false,
     required this.isFeatured,
     required this.level,
     required this.maintenance,
@@ -167,6 +169,7 @@ class PropertyPageData {
       images: _strings(j['images']),
       videoUrl: _s(j['video_url']),
       floorPlan: _s(j['floor_plan']),
+      coverIsAi: j['cover_is_ai'] == true,
       isFeatured: j['is_featured'] == true,
       level: Bi.of(j, 'level'),
       maintenance: Bi.of(j, 'maintenance'),
