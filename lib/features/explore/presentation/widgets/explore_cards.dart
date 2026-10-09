@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/widgets/jv2.dart';
 import '../../../favorites/presentation/bloc/favorites_bloc.dart';
 import '../../../news/domain/entities/news.dart';
-import '../../../news/presentation/pages/news_details_page.dart';
+import '../../../news/v2/news_article_page.dart';
 import '../../../projects/domain/entities/project.dart';
 import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../properties/domain/entities/property.dart';
@@ -469,7 +469,7 @@ class NewsRail extends StatelessWidget {
               child: GestureDetector(
                 onTap: () => Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => NewsDetailsPage(news: n)),
+                  MaterialPageRoute(builder: (_) => NewsArticlePage(id: n.id)),
                 ),
                 child: Container(
                   padding: const EdgeInsets.all(10),

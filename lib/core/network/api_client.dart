@@ -83,10 +83,16 @@ class ApiClient {
     required String filePath,
     String fileField = 'file',
     Map<String, dynamic>? queryParams,
+    Map<String, dynamic>? fields,
+    DioMediaType? contentType,
   }) async {
     try {
       final formData = FormData.fromMap({
-        fileField: await MultipartFile.fromFile(filePath),
+        ...?fields,
+        fileField: await MultipartFile.fromFile(
+          filePath,
+          contentType: contentType,
+        ),
       });
       return await _dio.post(
         path,

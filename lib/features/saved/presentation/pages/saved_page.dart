@@ -9,7 +9,7 @@ import 'package:shimmer/shimmer.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/widgets/jv2.dart';
 import '../../../developers/presentation/pages/developer_page.dart';
-import '../../../news/presentation/pages/all_news_page.dart';
+import '../../../news/v2/news_list_page.dart';
 import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../properties/presentation/pages/property_details_page.dart';
 import '../../data/models/saved_models.dart';
@@ -87,7 +87,7 @@ class _SavedViewState extends State<_SavedView> {
 
   void _openNews() => Navigator.push(
     context,
-    MaterialPageRoute(builder: (_) => const AllNewsPage()),
+    MaterialPageRoute(builder: (_) => const NewsListPage()),
   );
 
   @override

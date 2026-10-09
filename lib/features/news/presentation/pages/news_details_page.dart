@@ -410,21 +410,21 @@ class _NewsDetailsPageState extends State<NewsDetailsPage> {
   void _showFullScreenVideo(String url) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => _FullScreenVideoPage(url: url),
+        builder: (context) => NewsVideoPage(url: url),
       ),
     );
   }
 }
 
-class _FullScreenVideoPage extends StatefulWidget {
+class NewsVideoPage extends StatefulWidget {
   final String url;
-  const _FullScreenVideoPage({required this.url});
+  const NewsVideoPage({super.key, required this.url});
 
   @override
-  State<_FullScreenVideoPage> createState() => _FullScreenVideoPageState();
+  State<NewsVideoPage> createState() => NewsVideoPageState();
 }
 
-class _FullScreenVideoPageState extends State<_FullScreenVideoPage> {
+class NewsVideoPageState extends State<NewsVideoPage> {
   late VideoPlayerController _controller;
   late Future<void> _initFuture;
   bool _showControls = true;

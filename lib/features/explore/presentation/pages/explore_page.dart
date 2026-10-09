@@ -7,7 +7,8 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/widgets/jv2.dart';
 import '../../../main/presentation/pages/main_page.dart';
-import '../../../news/presentation/pages/all_news_page.dart';
+import '../../../voice/voice_page.dart';
+import '../../../news/v2/news_list_page.dart';
 import '../../../projects/presentation/pages/projects_page.dart';
 import '../../../properties/domain/entities/property_filter_params.dart';
 import '../../../properties/presentation/pages/properties_screen.dart';
@@ -139,6 +140,12 @@ class _ExploreView extends StatelessWidget {
         onAsk: AppSettingsService.instance.inReview
             ? null
             : () => MainPage.switchTab(MainPage.tabAsk),
+        onVoice: AppSettingsService.instance.inReview
+            ? null
+            : () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const VoicePage()),
+              ),
       ),
       if (d.topBanners.isNotEmpty) BannerRail(banners: d.topBanners),
       if (showSeller)
@@ -187,7 +194,7 @@ class _ExploreView extends StatelessWidget {
             title: 'explore.latest_news'.tr(),
             onAction: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const AllNewsPage()),
+              MaterialPageRoute(builder: (_) => const NewsListPage()),
             ),
           ),
           NewsRail(news: d.news),

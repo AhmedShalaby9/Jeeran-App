@@ -113,7 +113,18 @@
   "news": {
     "title": "News",
     "show_all": "Show all",
-    "gallery": "Gallery"
+    "gallery": "Gallery",
+    "v2_title": "Market news",
+    "v2_headline": "What moved the\nmarket lately.",
+    "v2_sub": "Launches, price revisions and delivery news from the Jeeran desk — newest first.",
+    "earlier": "Earlier",
+    "end": "That's everything.",
+    "empty_title": "Nothing published yet",
+    "empty_sub": "New stories land here, and in your notifications if market news is on.",
+    "retry": "Try again",
+    "more": "More news",
+    "one_photo": "1 photo",
+    "n_media": "{} photos & videos"
   },
   "favorites": {
     "title": "Favorites",
@@ -238,7 +249,8 @@
     "try_again": "Try again",
     "today": "today",
     "days_ago": "{} days ago",
-    "yesterday": "yesterday"
+    "yesterday": "yesterday",
+    "voice_tooltip": "Voice"
   },
   "saved": {
     "title": "Saved",
@@ -1089,5 +1101,29 @@
     "footer": "Jeeran {} · Egypt",
     "load_failed": "Couldn’t load your account.",
     "retry": "Try again"
+  },
+  "voice": {
+    "title": "Talk to Jeeran",
+    "idle_title": "Ask out loud.",
+    "idle_sub": "I write down what you say, search the live listings, and read the answer back.",
+    "examples": "Say something like",
+    "ex1": "Chalets in Sahel under 12 million",
+    "ex2": "What launched in New Cairo this month?",
+    "ex3": "Which compounds deliver in 2027?",
+    "tap": "Tap and say what you're looking for",
+    "recording": "{} · tap to send",
+    "working": "Working…",
+    "heard": "What I heard",
+    "edit_hint": "Tap the text to fix it before asking.",
+    "rerecord": "Re-record",
+    "ask": "Ask",
+    "nospeech_title": "I didn't catch that",
+    "nospeech_sub": "Nothing came through on the mic. Try again in a quieter spot, or type the question instead.",
+    "denied_title": "Microphone is off",
+    "denied_sub": "Jeeran needs mic access to hear you. Turn it on in your phone's Settings, or type instead.",
+    "failed_title": "Couldn't process that",
+    "failed_sub": "The voice service isn't answering right now. Try again, or type your question.",
+    "try_again": "Try again",
+    "type_instead": "Type instead"
   }
 }

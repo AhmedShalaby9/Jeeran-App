@@ -127,10 +127,15 @@ class AskApi {
     return _i(res.data['data']['id']);
   }
 
-  Future<AskReply> send(int sessionId, String text, String lang) async {
+  Future<AskReply> send(
+    int sessionId,
+    String text,
+    String lang, {
+    int? voiceId,
+  }) async {
     final res = await client.post(
       '/chat/sessions/$sessionId/messages',
-      data: {'content': text},
+      data: {'content': text, 'voice_id': ?voiceId},
       headers: _lang(lang),
     );
     final d = res.data['data'] as Map<String, dynamic>;

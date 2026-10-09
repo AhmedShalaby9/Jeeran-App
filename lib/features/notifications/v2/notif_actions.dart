@@ -7,7 +7,8 @@ import '../../../core/widgets/jv2.dart';
 import '../../ai_ads/presentation/pages/ai_ads_page.dart';
 import '../../compounds/presentation/pages/compound_page.dart';
 import '../../developers/presentation/pages/developer_page.dart';
-import '../../news/presentation/pages/all_news_page.dart';
+import '../../news/v2/news_list_page.dart';
+import '../../news/v2/news_article_page.dart';
 import '../../packages/presentation/pages/packages_destination.dart';
 import '../../properties/data/models/property_model.dart';
 import '../../properties/presentation/pages/property_details_page.dart';
@@ -57,7 +58,10 @@ NotifAction? actionFor(InboxItem n, {required bool ar}) {
     case 'news':
       return NotifAction(
         'notif.a_open_news',
-        (c) => _push(c, const AllNewsPage()),
+        (c) => _push(
+          c,
+          id == null ? const NewsListPage() : NewsArticlePage(id: id),
+        ),
       );
     case 'ad':
       return NotifAction('notif.a_open_ad', (c) => _push(c, const AiAdsPage()));

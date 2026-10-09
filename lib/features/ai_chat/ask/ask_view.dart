@@ -10,9 +10,10 @@ import '../../../core/storage/app_storage.dart';
 import '../../../core/widgets/jv2.dart';
 import '../../compounds/presentation/pages/compound_page.dart';
 import '../../explore/presentation/widgets/explore_widgets.dart' show isRtl;
-import '../../news/presentation/pages/all_news_page.dart';
+import '../../news/v2/news_list_page.dart';
 import '../../properties/data/models/property_model.dart';
 import '../../properties/presentation/pages/property_details_page.dart';
+import '../../voice/voice_services.dart';
 import 'ask_api.dart';
 import 'ask_history_page.dart';
 import 'ask_widgets.dart';
@@ -25,12 +26,20 @@ class AskView extends StatefulWidget {
   final int? sessionId;
   final String? sessionTitle;
   final AskApi? api; // tests inject a fake
+
+  /// Asked as soon as the screen opens (a voice question). With a [speaker] the answer is read aloud.
+  final String? initialQuestion;
+  final int? voiceId;
+  final VoiceSpeaker? speaker;
   const AskView({
     super.key,
     this.embedded = true,
     this.sessionId,
     this.sessionTitle,
     this.api,
+    this.initialQuestion,
+    this.voiceId,
+    this.speaker,
   });
 
   @override
@@ -59,11 +68,18 @@ class _AskViewState extends State<AskView> {
   void initState() {
     super.initState();
     if (widget.sessionId != null) _open(widget.sessionId!, widget.sessionTitle);
+    final q = widget.initialQuestion;
+    if (q != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _send(q, voiceId: widget.voiceId),
+      );
+    }
   }
 
   @override
   void dispose() {
     _typer?.cancel();
+    widget.speaker?.stop();
     _input.dispose();
     _scroll.dispose();
     super.dispose();
@@ -115,9 +131,10 @@ class _AskViewState extends State<AskView> {
     }
   }
 
-  Future<void> _send(String raw) async {
+  Future<void> _send(String raw, {int? voiceId}) async {
     final q = raw.trim();
     if (q.isEmpty || _thinking) return;
+    widget.speaker?.stop();
     _typer?.cancel();
     setState(() {
       _typingTurn = null;
@@ -133,7 +150,7 @@ class _AskViewState extends State<AskView> {
         _title = q.length > 60 ? '${q.substring(0, 60)}…' : q;
         _sessionId = await _api.createSession(_title!, _lang);
       }
-      final reply = await _api.send(_sessionId!, q, _lang);
+      final reply = await _api.send(_sessionId!, q, _lang, voiceId: voiceId);
       if (!mounted) return;
       setState(() {
         _turns.add(AskTurn(false, reply.text, reply.refs));
@@ -142,6 +159,7 @@ class _AskViewState extends State<AskView> {
         _revealed = 0;
       });
       _startTyping(_split(reply.text).$1.length);
+      widget.speaker?.speak(_spoken(reply.text), _lang);
     } on ServerException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -175,6 +193,12 @@ class _AskViewState extends State<AskView> {
       }
     });
   }
+
+  /// What is read aloud: the answer without markdown marks.
+  static String _spoken(String text) => text
+      .replaceAll(RegExp(r'[*_#`>]'), '')
+      .replaceAll(RegExp(r'\s+'), ' ')
+      .trim();
 
   /// The first paragraph goes above the cards, anything after it below them.
   static (String, String) _split(String text) {
@@ -405,7 +429,7 @@ class _AskViewState extends State<AskView> {
       ),
       onNews: () => Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => const AllNewsPage()),
+        MaterialPageRoute(builder: (_) => const NewsListPage()),
       ),
     );
   }

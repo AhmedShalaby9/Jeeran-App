@@ -8,7 +8,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/jv2.dart';
 import '../../../ai_ads/presentation/pages/ai_ads_page.dart';
 import '../../../main/presentation/pages/main_page.dart';
-import '../../../news/presentation/pages/all_news_page.dart';
+import '../../../news/v2/news_list_page.dart';
 import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../developers/presentation/pages/developer_page.dart';
 import '../../../properties/data/models/property_model.dart';
@@ -53,7 +53,7 @@ class BannerActions {
       case 'news':
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const AllNewsPage()),
+          MaterialPageRoute(builder: (_) => const NewsListPage()),
         );
       case 'ai_ads':
         Navigator.push(

@@ -95,9 +95,13 @@ class AskHeader extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 5),
-                    Text(
-                      'concierge.reading_live'.tr(),
-                      style: const TextStyle(fontSize: 11, color: JV2.inkSub),
+                    Flexible(
+                      child: Text(
+                        'concierge.reading_live'.tr(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 11, color: JV2.inkSub),
+                      ),
                     ),
                   ],
                 ),

@@ -219,8 +219,14 @@ class ExploreGreeting extends StatelessWidget {
 class ExploreSearchEntry extends StatelessWidget {
   final VoidCallback onSearch;
   final VoidCallback? onAsk; // null hides the Ask button (store review build)
+  final VoidCallback? onVoice; // null hides the mic
 
-  const ExploreSearchEntry({super.key, required this.onSearch, this.onAsk});
+  const ExploreSearchEntry({
+    super.key,
+    required this.onSearch,
+    this.onAsk,
+    this.onVoice,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -297,6 +303,30 @@ class ExploreSearchEntry extends StatelessWidget {
                     Icons.auto_awesome_rounded,
                     size: 22,
                     color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+          if (onVoice != null) ...[
+            const SizedBox(width: 10),
+            Tooltip(
+              message: 'explore.voice_tooltip'.tr(),
+              child: GestureDetector(
+                key: const Key('explore-mic'),
+                onTap: onVoice,
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: JV2.surface,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.all(color: JV2.line),
+                  ),
+                  child: const Icon(
+                    Icons.mic_none_rounded,
+                    size: 22,
+                    color: JV2.ink,
                   ),
                 ),
               ),
