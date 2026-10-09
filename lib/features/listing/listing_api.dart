@@ -64,6 +64,67 @@ class PriceBand {
   }
 }
 
+/// One of the seller's live listings, as the price shortcut names it.
+class ListingBrief {
+  final int id;
+  final String title;
+  final String? compound;
+  final double? price;
+  const ListingBrief(this.id, this.title, this.compound, this.price);
+
+  factory ListingBrief.fromJson(Map<String, dynamic> j) => ListingBrief(
+    (j['id'] as num).toInt(),
+    '${j['title'] ?? ''}',
+    j['compound'] as String?,
+    (j['price'] as num?)?.toDouble(),
+  );
+
+  String get label => [
+    if (title.isNotEmpty) title,
+    if (compound != null) compound!,
+  ].join(' · ');
+}
+
+/// What the assistant understood of "change the price of …": a proposal, or one question.
+class PriceReply {
+  final ListingBrief? listing;
+  final double? oldPrice, newPrice, changePercent;
+  final int savers;
+  final String? question;
+  final List<ListingBrief> candidates;
+  const PriceReply({
+    this.listing,
+    this.oldPrice,
+    this.newPrice,
+    this.changePercent,
+    this.savers = 0,
+    this.question,
+    this.candidates = const [],
+  });
+
+  bool get hasProposal => listing != null && newPrice != null;
+
+  factory PriceReply.fromJson(Map<String, dynamic> j) {
+    double? d(dynamic v) => v is num ? v.toDouble() : null;
+    return PriceReply(
+      listing: j['listing'] is Map
+          ? ListingBrief.fromJson(
+              Map<String, dynamic>.from(j['listing'] as Map),
+            )
+          : null,
+      oldPrice: d(j['old_price']),
+      newPrice: d(j['new_price']),
+      changePercent: d(j['change_percent']),
+      savers: (j['savers'] as num?)?.toInt() ?? 0,
+      question: j['question'] as String?,
+      candidates: [
+        for (final c in (j['candidates'] as List?) ?? const [])
+          if (c is Map) ListingBrief.fromJson(Map<String, dynamic>.from(c)),
+      ],
+    );
+  }
+}
+
 class ListingApi {
   final ApiClient client;
   ListingApi(this.client);
@@ -80,6 +141,19 @@ class ListingApi {
       headers: _lang(lang),
     );
     return DraftReply.fromJson(res.data['data'] as Map<String, dynamic>);
+  }
+
+  Future<PriceReply> priceChange(
+    String text,
+    String lang, {
+    int? listingId,
+  }) async {
+    final res = await client.post(
+      '/listing-draft/price-change',
+      data: {'text': text, 'listing_id': ?listingId},
+      headers: _lang(lang),
+    );
+    return PriceReply.fromJson(res.data['data'] as Map<String, dynamic>);
   }
 
   Future<({String title, String description})> describe(

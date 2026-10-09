@@ -9,7 +9,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:jeeran_flutter/core/network/api_client.dart';
 import 'package:jeeran_flutter/features/listing/listing_api.dart';
 import 'package:jeeran_flutter/features/listing/listing_draft.dart';
+import 'package:jeeran_flutter/features/listing/alert_shortcut_page.dart';
 import 'package:jeeran_flutter/features/listing/listing_flow.dart';
+import 'package:jeeran_flutter/features/listing/price_alert_api.dart';
+import 'package:jeeran_flutter/features/listing/price_shortcut_page.dart';
+import 'package:jeeran_flutter/features/listing/shortcut_hub.dart';
 import 'package:jeeran_flutter/features/voice/voice_api.dart';
 import 'package:jeeran_flutter/features/voice/voice_services.dart';
 import 'package:jeeran_flutter/features/you/you_api.dart';
@@ -66,6 +70,8 @@ class _Api extends ListingApi {
   final uploaded = <String>[];
   bool createFails = false;
   final coverCalls = <List<String>>[];
+  final priceCalls = <({String text, int? id})>[];
+  final updates = <({int id, Map<String, dynamic> body})>[];
   Map<String, dynamic>? updated;
   int? updatedId;
   bool inReview = true;
@@ -169,6 +175,39 @@ class _Api extends ListingApi {
     return 'https://r2/$path';
   }
 
+  static const _a = ListingBrief(11, 'Twinhouse', 'Marassi', 18500000);
+  static const _b = ListingBrief(12, 'Apartment', 'Madinaty', 30000);
+
+  @override
+  Future<PriceReply> priceChange(
+    String text,
+    String lang, {
+    int? listingId,
+  }) async {
+    priceCalls.add((text: text, id: listingId));
+    if (listingId == null && text.contains('make it')) {
+      return const PriceReply(
+        question: 'Which one of these?',
+        candidates: [_a, _b],
+      );
+    }
+    if (listingId == 11) {
+      return const PriceReply(
+        listing: _a,
+        oldPrice: 18500000,
+        newPrice: 9000000,
+        changePercent: -51.4,
+        savers: 2,
+      );
+    }
+    return const PriceReply(
+      listing: _a,
+      oldPrice: 18500000,
+      newPrice: 18300000,
+      changePercent: -1.1,
+    );
+  }
+
   @override
   Future<String> cover(List<String> sources) async {
     coverCalls.add(sources);
@@ -182,6 +221,7 @@ class _Api extends ListingApi {
   Future<bool> update(int id, Map<String, dynamic> body) async {
     updatedId = id;
     updated = body;
+    updates.add((id: id, body: body));
     return inReview;
   }
 
@@ -190,6 +230,64 @@ class _Api extends ListingApi {
     if (createFails) throw Exception('nope');
     created = body;
   }
+}
+
+class _Alerts extends PriceAlertApi {
+  _Alerts() : super(_You());
+  final parsed = <String>[];
+  final created = <PriceAlertDraft>[];
+  final removed = <int>[];
+  static const _marassi = CompoundRef(4, 'مراسي', 'Marassi');
+
+  @override
+  Future<AlertReply> parse(
+    String text,
+    PriceAlertDraft? prev,
+    String lang,
+  ) async {
+    parsed.add(text);
+    if (text.contains('11 million')) {
+      return AlertReply(
+        alert: const PriceAlertDraft(
+          compoundId: 4,
+          minBedrooms: 3,
+          maxPrice: 11000000,
+        ),
+        compound: _marassi,
+        unknownCompound: false,
+        complete: true,
+        now: const AlertMarket(0, 12400000, 2),
+        question: null,
+      );
+    }
+    return AlertReply(
+      alert: const PriceAlertDraft(compoundId: 4),
+      compound: _marassi,
+      unknownCompound: false,
+      complete: false,
+      now: null,
+      question: 'What price should I wait for?',
+    );
+  }
+
+  @override
+  Future<SavedAlert> create(PriceAlertDraft a) async {
+    created.add(a);
+    return SavedAlert(7, a, _marassi, const AlertMarket(0, 12400000, 2));
+  }
+
+  @override
+  Future<List<SavedAlert>> list() async => [
+    SavedAlert(
+      7,
+      const PriceAlertDraft(compoundId: 4, minBedrooms: 3, maxPrice: 11000000),
+      _marassi,
+      const AlertMarket(2, 9900000, 3),
+    ),
+  ];
+
+  @override
+  Future<void> remove(int id) async => removed.add(id);
 }
 
 class _Rec implements VoiceRecorder {
@@ -530,6 +628,132 @@ void main() {
         expect(u['cover_is_ai'], true);
         expect(u['features'], ['lagoon_view']);
         expect(find.text('listing.edit_review_title'.tr()), findsOneWidget);
+
+        // ── the "Do it" hub offers both shortcuts
+        final apiH = _Api();
+        host.value = ShortcutHub(
+          api: apiH,
+          priceAlertApi: _Alerts(),
+          recorder: _Rec(),
+          voiceApi: VoiceApi(_Voice()),
+        );
+        await settle(300);
+        expect(find.byKey(const Key('tile-alert')), findsOneWidget);
+        expect(
+          find.byKey(const Key('tile-list')),
+          findsNothing,
+        ); // a buyer cannot list
+        expect(find.byKey(const Key('tile-price')), findsNothing);
+        host.value = ShortcutHub(
+          api: apiH,
+          priceAlertApi: _Alerts(),
+          canList: true,
+          recorder: _Rec(),
+          voiceApi: VoiceApi(_Voice()),
+        );
+        await settle(300);
+        expect(find.byKey(const Key('tile-list')), findsOneWidget);
+        expect(find.byKey(const Key('tile-price')), findsOneWidget);
+        expect(find.byKey(const Key('tile-alert')), findsOneWidget);
+
+        // ── change a price: pick the listing, see the change, apply, undo; a second request is cancelled
+        final apiP = _Api();
+        host.value = PriceShortcutPage(
+          api: apiP,
+          recorder: _Rec(),
+          voiceApi: VoiceApi(_Voice()),
+        );
+        await settle(300);
+        await tester.enterText(
+          find.byKey(const Key('ai-input')),
+          'make it 9 million',
+        );
+        await tester.tap(find.byKey(const Key('ai-send')));
+        await settle(300);
+        expect(find.byKey(const Key('pick-11')), findsOneWidget);
+        expect(
+          find.byKey(const Key('price-card')),
+          findsNothing,
+        ); // nothing proposed until the listing is known
+        await tester.ensureVisible(find.byKey(const Key('pick-11')));
+        await tester.pump(const Duration(milliseconds: 600));
+        await tester.tap(find.byKey(const Key('pick-11')));
+        await settle(300);
+        expect(apiP.priceCalls.last.id, 11);
+        expect(
+          apiP.priceCalls.last.text,
+          'make it 9 million',
+        ); // the same request, now with the listing
+        expect(find.byKey(const Key('price-card')), findsOneWidget);
+        expect(
+          find.textContaining('51'),
+          findsWidgets,
+        ); // a big change is flagged
+        expect(apiP.updates, isEmpty); // nothing happens before the tap
+        await tester.ensureVisible(find.byKey(const Key('price-apply')));
+        await tester.pump(const Duration(milliseconds: 600));
+        await tester.tap(find.byKey(const Key('price-apply')));
+        await settle(300);
+        expect(apiP.updates.single.id, 11);
+        expect(apiP.updates.single.body, {'price': 9000000.0});
+        expect(find.byKey(const Key('price-undo')), findsOneWidget);
+        await tester.ensureVisible(find.byKey(const Key('price-undo')));
+        await tester.pump(const Duration(milliseconds: 600));
+        await tester.tap(find.byKey(const Key('price-undo')));
+        await settle(300);
+        expect(apiP.updates.last.body, {'price': 18500000.0});
+        expect(find.byKey(const Key('price-card')), findsNothing);
+        await tester.enterText(find.byKey(const Key('ai-input')), 'lower 200k');
+        await tester.tap(find.byKey(const Key('ai-send')));
+        await settle(300);
+        await tester.ensureVisible(find.byKey(const Key('price-cancel')));
+        await tester.pump(const Duration(milliseconds: 600));
+        await tester.tap(find.byKey(const Key('price-cancel')));
+        await settle(300);
+        expect(apiP.updates.length, 2); // apply + undo only
+
+        // ── a price alert: asked for the missing price, then the card, turn on, undo
+        final alerts = _Alerts();
+        host.value = AlertShortcutPage(
+          api: alerts,
+          recorder: _Rec(),
+          voiceApi: VoiceApi(_Voice()),
+        );
+        await settle(300);
+        await tester.enterText(
+          find.byKey(const Key('ai-input')),
+          'watch Marassi',
+        );
+        await tester.tap(find.byKey(const Key('ai-send')));
+        await settle(300);
+        expect(
+          find.byKey(const Key('alert-card')),
+          findsNothing,
+        ); // incomplete: it asks instead
+        expect(find.text('What price should I wait for?'), findsOneWidget);
+        await tester.enterText(
+          find.byKey(const Key('ai-input')),
+          'a 3 bed under 11 million',
+        );
+        await tester.tap(find.byKey(const Key('ai-send')));
+        await settle(300);
+        expect(find.byKey(const Key('alert-card')), findsOneWidget);
+        expect(alerts.created, isEmpty); // nothing is saved before the tap
+        await tester.ensureVisible(find.byKey(const Key('alert-on')));
+        await tester.pump(const Duration(milliseconds: 600));
+        await tester.tap(find.byKey(const Key('alert-on')));
+        await settle(300);
+        expect(alerts.created.single.maxPrice, 11000000);
+        expect(alerts.created.single.minBedrooms, 3);
+        expect(alerts.created.single.compoundId, 4);
+        await tester.ensureVisible(find.byKey(const Key('alert-undo')));
+        await tester.pump(const Duration(milliseconds: 600));
+        await tester.tap(find.byKey(const Key('alert-undo')));
+        await settle(300);
+        expect(alerts.removed, [7]);
+        expect(tester.takeException(), isNull);
+        expect(find.byKey(const Key('price-card')), findsNothing);
+        expect(tester.takeException(), isNull);
       });
     }
   });

@@ -81,7 +81,9 @@ class Photo extends StatelessWidget {
 // ── top bar ───────────────────────────────────────────────
 
 class ExploreTopBar extends StatelessWidget {
-  const ExploreTopBar({super.key});
+  /// "Do it": the AI shortcut. Null hides it (buyers, store-review build).
+  final VoidCallback? onShortcut;
+  const ExploreTopBar({super.key, this.onShortcut});
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +105,10 @@ class ExploreTopBar extends StatelessWidget {
             children: [
               const JV2Mark(size: 28),
               const Spacer(),
+              if (onShortcut != null) ...[
+                _DoIt(onTap: onShortcut!),
+                const SizedBox(width: 10),
+              ],
               const _Bell(),
             ],
           ),
@@ -110,6 +116,39 @@ class ExploreTopBar extends StatelessWidget {
       ),
     );
   }
+}
+
+class _DoIt extends StatelessWidget {
+  final VoidCallback onTap;
+  const _DoIt({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    key: const Key('do-it'),
+    onTap: onTap,
+    child: Container(
+      height: 38,
+      padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 12, 0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(13),
+        gradient: const LinearGradient(colors: [JV2.navyLift, JV2.navy]),
+        boxShadow: const [
+          BoxShadow(color: Color(0x330B2A4A), blurRadius: 14, offset: Offset(0, 6)),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.auto_awesome_rounded, size: 13, color: Color(0xFFE5C48F)),
+          const SizedBox(width: 6),
+          Text(
+            'explore.do_it'.tr(),
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Colors.white),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 class _Bell extends StatelessWidget {
@@ -299,10 +338,17 @@ class ExploreSearchEntry extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 22,
-                    color: Colors.white,
+                  clipBehavior: Clip.antiAlias,
+                  child: const Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      JV2GoldSweep(width: 22),
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        size: 22,
+                        color: Colors.white,
+                      ),
+                    ],
                   ),
                 ),
               ),

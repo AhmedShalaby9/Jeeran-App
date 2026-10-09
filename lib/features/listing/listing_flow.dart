@@ -60,6 +60,16 @@ class ListingFlow extends StatefulWidget {
     ),
   );
 
+  /// "Do it": straight into the assistant; closing it leaves the flow.
+  static Future<void> openAssistant(BuildContext context) =>
+      Navigator.push<void>(
+        context,
+        MaterialPageRoute(
+          fullscreenDialog: true,
+          builder: (_) => const ListingFlow(initialView: ListingView.assistant),
+        ),
+      );
+
   /// Edit one of the seller's own listings.
   static Future<bool?> edit(BuildContext context, int id) =>
       Navigator.push<bool>(
@@ -411,7 +421,9 @@ class _ListingFlowState extends State<ListingFlow> {
           api: _api,
           recorder: widget.recorder,
           voiceApi: widget.voiceApi,
-          onClose: () => setState(() => _view = ListingView.start),
+          onClose: () => widget.initialView == ListingView.assistant
+              ? Navigator.maybePop(context)
+              : setState(() => _view = ListingView.start),
           onReview: () => setState(() => _view = ListingView.review),
           onOpenForm: () => setState(() {
             _view = ListingView.form;

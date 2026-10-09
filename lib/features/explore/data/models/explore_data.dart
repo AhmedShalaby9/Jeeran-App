@@ -125,6 +125,12 @@ class ExploreData extends Equatable {
   final List<ProjectModel> launches;
   final List<PropertyModel> featured;
   final List<NewsModel> news;
+
+  /// Most viewed in the last 30 days, ranked (index 0 = #1). Empty until people have looked at compounds.
+  final List<ProjectModel> topCompounds;
+
+  /// True when the ranking comes from real views; false = the fallback (most live listings).
+  final bool topIsByViews;
   final SellerRequestStatus? sellerRequest;
   final int unreadCount;
   final int savedCount;
@@ -138,6 +144,8 @@ class ExploreData extends Equatable {
     this.launches = const [],
     this.featured = const [],
     this.news = const [],
+    this.topCompounds = const [],
+    this.topIsByViews = false,
     this.sellerRequest,
     this.unreadCount = 0,
     this.savedCount = 0,
@@ -176,6 +184,12 @@ class ExploreData extends Equatable {
       launches: _list(j['launches'], ProjectModel.fromJson),
       featured: _list(j['featured'], PropertyModel.fromJson),
       news: _list(j['news'], NewsModel.fromJson),
+      topCompounds: _list(j['top_compounds'], ProjectModel.fromJson),
+      topIsByViews:
+          j['top_compounds'] is List &&
+          (j['top_compounds'] as List).any(
+            (e) => e is Map && ((e['views'] as num?) ?? 0) > 0,
+          ),
       sellerRequest: seller is Map<String, dynamic>
           ? SellerRequestStatus.fromJson(seller)
           : null,
@@ -194,6 +208,8 @@ class ExploreData extends Equatable {
     launches,
     featured,
     news,
+    topCompounds,
+    topIsByViews,
     sellerRequest,
     unreadCount,
     savedCount,

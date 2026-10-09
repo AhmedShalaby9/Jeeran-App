@@ -368,10 +368,13 @@ class _TabItem extends StatelessWidget {
             ),
           ],
         ),
-        child: const Icon(
-          Icons.auto_awesome_rounded,
-          size: 19,
-          color: Colors.white,
+        clipBehavior: Clip.antiAlias,
+        child: const Stack(
+          alignment: Alignment.center,
+          children: [
+            JV2GoldSweep(width: 20, period: Duration(seconds: 6)),
+            Icon(Icons.auto_awesome_rounded, size: 19, color: Colors.white),
+          ],
         ),
       ),
     );

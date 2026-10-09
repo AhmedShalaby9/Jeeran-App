@@ -573,3 +573,69 @@ class _JV2FieldState extends State<JV2Field> {
     );
   }
 }
+
+/// A soft gold glint that crosses its parent every few seconds (the Ask buttons). Put it inside a
+/// clipped container; it ignores touches. [period] is the whole cycle — the glint itself is the first part of it.
+class JV2GoldSweep extends StatefulWidget {
+  final double width;
+  final Duration period;
+  const JV2GoldSweep({
+    super.key,
+    this.width = 22,
+    this.period = const Duration(milliseconds: 5500),
+  });
+
+  @override
+  State<JV2GoldSweep> createState() => _JV2GoldSweepState();
+}
+
+class _JV2GoldSweepState extends State<JV2GoldSweep>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: widget.period,
+  )..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: LayoutBuilder(
+        builder: (_, c) => AnimatedBuilder(
+          animation: _c,
+          builder: (_, _) {
+            // the glint crosses during the first 30% of the cycle, then rests
+            final t = (_c.value / 0.3).clamp(0.0, 1.0);
+            final x = -widget.width + t * (c.maxWidth + widget.width);
+            return Stack(
+              children: [
+                Positioned(
+                  left: x,
+                  top: 0,
+                  bottom: 0,
+                  width: widget.width,
+                  child: const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0x00B8893D),
+                          Color(0x99B8893D),
+                          Color(0x00B8893D),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}

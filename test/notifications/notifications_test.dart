@@ -7,6 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:jeeran_flutter/core/error/exceptions.dart';
 import 'package:jeeran_flutter/core/network/api_client.dart';
+import 'package:jeeran_flutter/features/listing/listing_draft.dart';
+import 'package:jeeran_flutter/features/listing/price_alert_api.dart';
 import 'package:jeeran_flutter/features/notifications/presentation/pages/notification_settings_page.dart';
 import 'package:jeeran_flutter/features/notifications/presentation/pages/notifications_page.dart';
 import 'package:jeeran_flutter/features/notifications/v2/notif_actions.dart';
@@ -250,6 +252,24 @@ Map<String, dynamic> _settings({bool places = true}) => {
   'places_followed': places ? 2 : 0,
   'places_on': places ? 2 : 0,
 };
+
+class _AlertsApi extends PriceAlertApi {
+  _AlertsApi() : super(_FakeApi());
+  final removed = <int>[];
+
+  @override
+  Future<List<SavedAlert>> list() async => [
+    SavedAlert(
+      3,
+      const PriceAlertDraft(compoundId: 4, minBedrooms: 3, maxPrice: 11000000),
+      const CompoundRef(4, 'مراسي', 'Marassi'),
+      const AlertMarket(2, 9900000, 3),
+    ),
+  ];
+
+  @override
+  Future<void> remove(int id) async => removed.add(id);
+}
 
 class _Host {
   final home = ValueNotifier<Widget>(const SizedBox());
@@ -495,6 +515,20 @@ void main() {
         await _show(tester, host, NotificationSettingsPage(api: NotifApi(api)));
         expect(find.text('notif.no_places_title'.tr()), findsOneWidget);
         expect(find.text('notif.off_all'.tr()), findsNothing);
+        expect(tester.takeException(), isNull);
+
+        // price alerts set with "Do it" are listed here and can be removed
+        final alerts = _AlertsApi();
+        await _show(
+          tester,
+          host,
+          NotificationSettingsPage(api: NotifApi(api), alertsApi: alerts),
+        );
+        expect(find.text('listing.alerts_title'.tr().toUpperCase()), findsOneWidget);
+        await tester.tap(find.byKey(const Key('remove-alert-3')));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(alerts.removed, [3]);
+        expect(find.byKey(const Key('remove-alert-3')), findsNothing);
         expect(tester.takeException(), isNull);
       });
     }

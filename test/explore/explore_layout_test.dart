@@ -8,6 +8,7 @@ import 'package:jeeran_flutter/features/explore/data/models/explore_data.dart';
 import 'package:jeeran_flutter/features/explore/presentation/widgets/explore_banners.dart';
 import 'package:jeeran_flutter/features/explore/presentation/widgets/explore_cards.dart';
 import 'package:jeeran_flutter/features/explore/presentation/widgets/explore_widgets.dart';
+import 'package:jeeran_flutter/features/news/v2/news_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'explore_data_test.dart' as fixture;
@@ -25,12 +26,16 @@ void main() {
   });
 
   for (final locale in const [Locale('en'), Locale('ar')]) {
-    testWidgets('Explore blocks lay out cleanly in ${locale.languageCode}', (tester) async {
-      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+    testWidgets('Explore blocks lay out cleanly in ${locale.languageCode}', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(390 * 3, 3600 * 3);
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
 
-      final d = ExploreData.fromJson(Map<String, dynamic>.from(fixture.homeFixture));
+      final d = ExploreData.fromJson(
+        Map<String, dynamic>.from(fixture.homeFixture),
+      );
 
       await tester.pumpWidget(
         EasyLocalization(
@@ -50,26 +55,53 @@ void main() {
                   children: [
                     const ExploreGreeting(),
                     const SizedBox(height: 20),
-                    ExploreSearchEntry(onSearch: () {}, onAsk: () {}),
+                    ExploreSearchEntry(
+                      onSearch: () {},
+                      onAsk: () {},
+                      onVoice: () {},
+                    ),
                     const SizedBox(height: 20),
                     BannerRail(banners: d.topBanners),
                     const SizedBox(height: 20),
                     if (d.sellerRequest != null)
-                      SellerStatusRow(request: d.sellerRequest!, onRejectedTap: () {}),
+                      SellerStatusRow(
+                        request: d.sellerRequest!,
+                        onRejectedTap: () {},
+                      ),
                     const SizedBox(height: 20),
-                    QuickGrid(tiles: [
-                      for (final k in ['chalets', 'villas', 'apartments', 'for_rent'])
-                        QuickTile(labelKey: 'explore.$k', count: 2140, tint: const Color(0x331A4A80), onTap: () {}),
-                    ]),
+                    QuickGrid(
+                      tiles: [
+                        for (final k in [
+                          'chalets',
+                          'villas',
+                          'apartments',
+                          'for_rent',
+                        ])
+                          QuickTile(
+                            labelKey: 'explore.$k',
+                            count: 2140,
+                            tint: const Color(0x331A4A80),
+                            onTap: () {},
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 20),
-                    SectionHead(eyebrow: 'explore.primary'.tr(), title: 'explore.new_launches'.tr(), onAction: () {}),
+                    SectionHead(
+                      eyebrow: 'explore.primary'.tr(),
+                      title: 'explore.new_launches'.tr(),
+                      onAction: () {},
+                    ),
                     LaunchStrip(projects: d.launches),
                     const SizedBox(height: 20),
-                    for (final p in d.featured) ExplorePropertyCard(property: p),
+                    for (final p in d.featured)
+                      ExplorePropertyCard(property: p),
                     const SizedBox(height: 20),
-                    if (d.feedBanner != null) InFeedBanner(banner: d.feedBanner!),
+                    if (d.feedBanner != null)
+                      InFeedBanner(banner: d.feedBanner!),
                     const SizedBox(height: 20),
                     NewsRail(news: d.news),
+                    const SizedBox(height: 20),
+                    TopCompoundsRail(projects: d.topCompounds),
                   ],
                 ),
               ),
@@ -78,12 +110,20 @@ void main() {
         ),
       );
       // translations load on a real async turn
-      await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 200)),
+      );
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(tester.takeException(), isNull);
       expect(find.byType(BannerRail), findsOneWidget);
       expect(find.byType(QuickGrid), findsOneWidget);
+      // ranked cards, #1 first, with the starting price
+      expect(find.byKey(const Key('top-compound-1')), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('explore.top_from'.tr(args: ['9.8M'])), findsOneWidget);
+      // the news rail uses the same rows as the news list
+      expect(find.byType(NewsRow), findsWidgets);
     });
   }
 }

@@ -9,6 +9,8 @@ import '../../../../core/widgets/jv2.dart';
 import '../../../main/presentation/pages/main_page.dart';
 import '../../../voice/voice_page.dart';
 import '../../../news/v2/news_list_page.dart';
+import '../../../listing/shortcut_hub.dart';
+import '../../../../core/storage/app_storage.dart';
 import '../../../projects/presentation/pages/projects_page.dart';
 import '../../../properties/domain/entities/property_filter_params.dart';
 import '../../../properties/presentation/pages/properties_screen.dart';
@@ -70,7 +72,14 @@ class _ExploreView extends StatelessWidget {
 
         return Column(
           children: [
-            const ExploreTopBar(),
+            ExploreTopBar(
+              // sellers list and re-price; everyone can set a price alert
+              onShortcut:
+                  AppStorage.isLoggedIn &&
+                      !AppSettingsService.instance.inReview
+                  ? () => ShortcutHub.open(context)
+                  : null,
+            ),
             Expanded(
               child: data == null
                   ? (state.status == ExploreStatus.failure
@@ -198,6 +207,18 @@ class _ExploreView extends StatelessWidget {
             ),
           ),
           NewsRail(news: d.news),
+        ]),
+      if (d.topCompounds.isNotEmpty)
+        section([
+          SectionHead(
+            eyebrow: (d.topIsByViews ? 'explore.top_eyebrow' : 'explore.top_eyebrow_units').tr(),
+            title: 'explore.top_compounds'.tr(),
+            onAction: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProjectsPage()),
+            ),
+          ),
+          TopCompoundsRail(projects: d.topCompounds),
         ]),
     ];
 

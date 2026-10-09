@@ -7,6 +7,8 @@ import '../../../../core/widgets/jv2.dart';
 import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../developers/presentation/pages/developer_page.dart';
 import '../../../explore/presentation/widgets/explore_widgets.dart';
+import '../../../listing/listing_widgets.dart' show money;
+import '../../../listing/price_alert_api.dart';
 import '../../v2/notif_api.dart';
 
 const double _pad = 20;
@@ -14,7 +16,8 @@ const double _pad = 20;
 /// You → Notifications: what you have signed up for, and each followed place, switchable where it sits.
 class NotificationSettingsPage extends StatefulWidget {
   final NotifApi? api; // tests inject a fake
-  const NotificationSettingsPage({super.key, this.api});
+  final PriceAlertApi? alertsApi;
+  const NotificationSettingsPage({super.key, this.api, this.alertsApi});
 
   @override
   State<NotificationSettingsPage> createState() =>
@@ -23,6 +26,11 @@ class NotificationSettingsPage extends StatefulWidget {
 
 class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   late final NotifApi _api = widget.api ?? NotifApi(sl<ApiClient>());
+  // a test that injects only a fake NotifApi gets no alerts section
+  late final PriceAlertApi? _alertsApi =
+      widget.alertsApi ??
+      (widget.api == null ? PriceAlertApi(sl<ApiClient>()) : null);
+  List<SavedAlert> _alerts = const [];
   NotifSettings? _s;
   bool _failed = false;
   bool _started = false;
@@ -42,6 +50,23 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       if (mounted) setState(() => _s = s);
     } catch (_) {
       if (mounted) setState(() => _failed = true);
+    }
+    try {
+      final a = await _alertsApi?.list();
+      if (mounted && a != null) setState(() => _alerts = a);
+    } catch (_) {}
+  }
+
+  Future<void> _removeAlert(SavedAlert a) async {
+    final before = _alerts;
+    setState(() => _alerts = [for (final x in _alerts) if (x.id != a.id) x]);
+    try {
+      await _alertsApi!.remove(a.id);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _alerts = before);
+        _toast();
+      }
     }
   }
 
@@ -242,6 +267,22 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               ),
           ],
         ),
+        if (_alerts.isNotEmpty) ...[
+          const SizedBox(height: 22),
+          _Section(
+            title: 'listing.alerts_title'.tr(),
+            count: _alerts.length,
+            children: [
+              for (var i = 0; i < _alerts.length; i++)
+                _AlertRow(
+                  first: i == 0,
+                  alert: _alerts[i],
+                  ar: ar,
+                  onRemove: () => _removeAlert(_alerts[i]),
+                ),
+            ],
+          ),
+        ],
         if (s.compounds.isNotEmpty) ...[
           const SizedBox(height: 22),
           _Section(
@@ -704,5 +745,63 @@ class _PlaceRow extends StatelessWidget {
         .where((x) => x.isNotEmpty)
         .toList();
     return w.isEmpty ? '?' : w.take(3).map((x) => x[0]).join().toUpperCase();
+  }
+}
+
+class _AlertRow extends StatelessWidget {
+  final bool first;
+  final SavedAlert alert;
+  final bool ar;
+  final VoidCallback onRemove;
+  const _AlertRow({
+    required this.first,
+    required this.alert,
+    required this.ar,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final a = alert.alert;
+    final what = [
+      if (a.minBedrooms != null) 'listing.alert_beds'.tr(args: ['${a.minBedrooms}']),
+      if (alert.compound != null)
+        alert.compound!.name(ar)
+      else if (a.propertyType != null)
+        'listing.t_${a.propertyType}'.tr(),
+    ].join(' · ');
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+      decoration: BoxDecoration(
+        border: first ? null : const Border(top: BorderSide(color: JV2.line)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$what · ${'listing.alert_under'.tr(args: ['EGP ${money(a.maxPrice ?? 0)}'])}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600, color: JV2.ink),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'listing.alerts_now'.plural(alert.now.underCount),
+                  style: const TextStyle(fontSize: 11.5, color: JV2.inkSub),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            key: Key('remove-alert-${alert.id}'),
+            onPressed: onRemove,
+            icon: const Icon(Icons.close_rounded, size: 18, color: JV2.inkSub),
+          ),
+        ],
+      ),
+    );
   }
 }
