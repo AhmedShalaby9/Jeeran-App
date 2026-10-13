@@ -11,7 +11,10 @@ class FollowService {
 
   FollowService({required this.apiClient});
 
-  Map<String, dynamic> _body(FollowType type, int id) => {'entity_type': type.name, 'entity_id': id};
+  Map<String, dynamic> _body(FollowType type, int id) => {
+    'entity_type': type.name,
+    'entity_id': id,
+  };
 
   Future<bool> isFollowing(FollowType type, int id) async {
     final res = await apiClient.get(
@@ -30,11 +33,20 @@ class FollowService {
     }
   }
 
+  /// Mute or unmute this place's notifications without unfollowing it (it stays in Saved).
+  Future<void> setAlerts(FollowType type, int id, bool enabled) async {
+    await apiClient.put(
+      '/user-subscriptions/alerts',
+      data: {..._body(type, id), 'enabled': enabled},
+    );
+  }
+
   Future<void> unfollow(FollowType type, int id) async {
     await apiClient.post(ApiEndpoints.unfollow, data: _body(type, id));
   }
 
   // the API answers 409 "Already following" — surfaced as a ServerException carrying that message
   bool _isConflict(Object e) =>
-      e is ServerException && (e.message ?? '').toLowerCase().contains('already');
+      e is ServerException &&
+      (e.message ?? '').toLowerCase().contains('already');
 }

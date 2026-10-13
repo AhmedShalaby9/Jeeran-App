@@ -10,38 +10,86 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Shapes captured from the backend (`GET /favorites`, `/saved/compounds`, `/saved/developers`).
 const _listing = {
-  'id': 7, 'title_ar': 'شالية', 'title_en': 'Chalet', 'images': ['https://x/a.jpg'], 'price': '12400000.00',
-  'bedrooms': 3, 'bathrooms': 2, 'size': '184.00', 'is_favorited': true,
-  'price_change': -400000, 'availability': 'available',
+  'id': 7,
+  'title_ar': 'شالية',
+  'title_en': 'Chalet',
+  'images': ['https://x/a.jpg'],
+  'price': '12400000.00',
+  'bedrooms': 3,
+  'bathrooms': 2,
+  'size': '184.00',
+  'is_favorited': true,
+  'price_change': -400000,
+  'availability': 'available',
   'project': {
-    'id': 1, 'name_ar': 'مراسي', 'name_en': 'Marassi', 'gallery': [], 'features': [], 'is_active': true,
+    'id': 1,
+    'name_ar': 'مراسي',
+    'name_en': 'Marassi',
+    'gallery': [],
+    'features': [],
+    'is_active': true,
     'developer': {'id': 1, 'name_ar': 'إعمار', 'name_en': 'Emaar Misr'},
   },
 };
-const _sold = {'id': 9, 'title_ar': 'شقة', 'title_en': 'Apt', 'images': [], 'price': '6300000.00', 'price_change': 0, 'availability': 'sold'};
+const _sold = {
+  'id': 9,
+  'title_ar': 'شقة',
+  'title_en': 'Apt',
+  'images': [],
+  'price': '6300000.00',
+  'price_change': 0,
+  'availability': 'sold',
+};
 const _compound = {
-  'id': 1, 'name_ar': 'مراسي', 'name_en': 'Marassi', 'gallery': [], 'features': [], 'is_active': true,
-  'state': 'north_coast', 'min_price': 8950000, 'units_count': 142,
+  'id': 1,
+  'name_ar': 'مراسي',
+  'name_en': 'Marassi',
+  'gallery': [],
+  'features': [],
+  'is_active': true,
+  'state': 'north_coast',
+  'min_price': 8950000,
+  'units_count': 142,
   'developer': {'id': 1, 'name_ar': 'إعمار', 'name_en': 'Emaar Misr'},
-  'latest_update': {'id': 4, 'title': 'Phase 4 released — 18 units', 'is_fresh': true}, 'is_fresh': true,
+  'latest_update': {
+    'id': 4,
+    'title': 'Phase 4 released — 18 units',
+    'is_fresh': true,
+  },
+  'is_fresh': true,
 };
 const _developer = {
-  'id': 1, 'name_ar': 'طلعت مصطفى', 'name_en': 'Talaat Moustafa Group', 'logo': null, 'is_verified': true,
-  'projects_count': 9, 'listings_count': 1240,
-  'latest_update': {'id': 5, 'title': 'Launched South Med phase 2', 'is_fresh': false},
+  'id': 1,
+  'name_ar': 'طلعت مصطفى',
+  'name_en': 'Talaat Moustafa Group',
+  'logo': null,
+  'is_verified': true,
+  'projects_count': 9,
+  'listings_count': 1240,
+  'latest_update': {
+    'id': 5,
+    'title': 'Launched South Med phase 2',
+    'is_fresh': false,
+  },
 };
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('models', () {
-    test('a price drop is only a drop while the listing is still available', () {
-      expect(SavedListing.fromJson(Map<String, dynamic>.from(_listing)).hasDropped, isTrue);
-      final sold = SavedListing.fromJson(Map<String, dynamic>.from(_sold));
-      expect(sold.isSold, isTrue);
-      expect(sold.isGone, isTrue);
-      expect(sold.hasDropped, isFalse);
-    });
+    test(
+      'a price drop is only a drop while the listing is still available',
+      () {
+        expect(
+          SavedListing.fromJson(Map<String, dynamic>.from(_listing)).hasDropped,
+          isTrue,
+        );
+        final sold = SavedListing.fromJson(Map<String, dynamic>.from(_sold));
+        expect(sold.isSold, isTrue);
+        expect(sold.isGone, isTrue);
+        expect(sold.hasDropped, isFalse);
+      },
+    );
 
     test('compound keeps developer, area, price and its latest update', () {
       final c = SavedCompound.fromJson(Map<String, dynamic>.from(_compound));
@@ -54,15 +102,30 @@ void main() {
     });
 
     test('developer monogram: initials of up to three words', () {
-      expect(SavedDeveloper.fromJson(Map<String, dynamic>.from(_developer)).short, 'TMG');
-      expect(const SavedDeveloper(id: 2, nameAr: '', nameEn: 'Emaar Misr').short, 'EM');
-      expect(const SavedDeveloper(id: 3, nameAr: '', nameEn: 'Palm').short, 'PA');
+      expect(
+        SavedDeveloper.fromJson(Map<String, dynamic>.from(_developer)).short,
+        'TMG',
+      );
+      expect(
+        const SavedDeveloper(id: 2, nameAr: '', nameEn: 'Emaar Misr').short,
+        'EM',
+      );
+      expect(
+        const SavedDeveloper(id: 3, nameAr: '', nameEn: 'Palm').short,
+        'PA',
+      );
     });
 
     test('counts parse and copyWith keeps the summary numbers', () {
       final c = SavedCounts.fromJson({
-        'listings': 4, 'compounds': 3, 'developers': 4, 'price_drops': 1, 'sold': 1,
-        'unavailable': 0, 'fresh_compounds': 1, 'developer_projects': 24,
+        'listings': 4,
+        'compounds': 3,
+        'developers': 4,
+        'price_drops': 1,
+        'sold': 1,
+        'unavailable': 0,
+        'fresh_compounds': 1,
+        'developer_projects': 24,
       });
       expect(c.copyWith(listings: 3).priceDrops, 1);
       expect(c.copyWith(listings: 3).listings, 3);
@@ -78,12 +141,15 @@ void main() {
     });
 
     for (final locale in const [Locale('en'), Locale('ar')]) {
-      testWidgets('Saved rows lay out cleanly in ${locale.languageCode}', (tester) async {
+      testWidgets('Saved rows lay out cleanly in ${locale.languageCode}', (
+        tester,
+      ) async {
         tester.view.physicalSize = const Size(390 * 3, 844 * 3);
         tester.view.devicePixelRatio = 3;
         addTearDown(tester.view.reset);
 
         void noop() {}
+        var opened = 0, devOpened = 0;
         await tester.pumpWidget(
           EasyLocalization(
             supportedLocales: const [Locale('en'), Locale('ar')],
@@ -100,18 +166,39 @@ void main() {
                   body: ListView(
                     padding: const EdgeInsets.all(20),
                     children: [
-                      SavedListingRow(item: SavedListing.fromJson(Map<String, dynamic>.from(_listing)), onOpen: noop, onRemove: noop),
+                      SavedListingRow(
+                        item: SavedListing.fromJson(
+                          Map<String, dynamic>.from(_listing),
+                        ),
+                        onOpen: noop,
+                        onRemove: noop,
+                      ),
                       const SizedBox(height: 10),
-                      SavedListingRow(item: SavedListing.fromJson(Map<String, dynamic>.from(_sold)), onOpen: noop, onRemove: noop),
+                      SavedListingRow(
+                        item: SavedListing.fromJson(
+                          Map<String, dynamic>.from(_sold),
+                        ),
+                        onOpen: noop,
+                        onRemove: noop,
+                      ),
                       const SizedBox(height: 10),
                       SavedCompoundCard(
-                        item: SavedCompound.fromJson(Map<String, dynamic>.from(_compound)),
-                        onOpen: noop, onUnfollow: noop, onOpenUpdate: noop,
+                        item: SavedCompound.fromJson(
+                          Map<String, dynamic>.from(_compound),
+                        ),
+                        onOpen: () => opened++,
+                        onUnfollow: noop,
+                        onOpenUpdate: noop,
+                        onOpenDeveloper: () => devOpened++,
                       ),
                       const SizedBox(height: 10),
                       SavedDeveloperRow(
-                        item: SavedDeveloper.fromJson(Map<String, dynamic>.from(_developer)),
-                        onOpen: noop, onUnfollow: noop, onOpenUpdate: noop,
+                        item: SavedDeveloper.fromJson(
+                          Map<String, dynamic>.from(_developer),
+                        ),
+                        onOpen: noop,
+                        onUnfollow: noop,
+                        onOpenUpdate: noop,
                       ),
                       const SavedEmptyState(
                         titleKey: 'saved.empty_listings_title',
@@ -126,10 +213,18 @@ void main() {
           ),
         );
         // translations load on a real async turn
-        await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 200)));
+        await tester.runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 200)),
+        );
         await tester.pump(const Duration(milliseconds: 300));
         expect(tester.takeException(), isNull);
         expect(find.byType(SavedCompoundCard), findsOneWidget);
+
+        // the developer's name opens the developer; the rest of the card opens the compound
+        await tester.tap(find.byKey(const Key('saved-dev-1')));
+        await tester.pump();
+        expect(devOpened, 1);
+        expect(opened, 0);
       });
     }
   });

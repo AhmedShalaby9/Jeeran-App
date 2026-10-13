@@ -13,8 +13,9 @@ import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../compounds/presentation/widgets/page_widgets.dart';
 import '../../../explore/presentation/widgets/explore_widgets.dart';
 import '../../../follow/data/follow_service.dart';
-import '../../../follow/presentation/follow_pill.dart';
+import '../../../follow/presentation/follow_alerts.dart';
 import '../../data/developer_page_data.dart';
+import '../widgets/developer_shimmer.dart';
 
 /// A developer's page: cover + logo + Follow, key figures, then Compounds / Listings / About.
 /// "Call us" dials the number saved in the dashboard settings — there is no messaging.
@@ -32,6 +33,7 @@ class _DeveloperPageState extends State<DeveloperPage> {
   DeveloperPageData? _data;
   bool _failed = false;
   int _tab = 0;
+  FollowController? _follow; // created once the developer has loaded
 
   @override
   void initState() {
@@ -48,7 +50,20 @@ class _DeveloperPageState extends State<DeveloperPage> {
       );
       final raw = res.data['data'];
       if (raw is! Map<String, dynamic>) throw const FormatException();
-      if (mounted) setState(() => _data = DeveloperPageData.fromJson(raw));
+      if (mounted) {
+        final data = DeveloperPageData.fromJson(raw);
+        setState(() {
+          _data = data;
+          _follow = FollowController(
+            service: sl<FollowService>(),
+            type: FollowType.developer,
+            id: data.id,
+            name: data.name.pick(_ar),
+            following: data.isFollowing,
+            alertsOn: data.alertsOn,
+          );
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _failed = true);
     }
@@ -117,10 +132,7 @@ class _DeveloperPageState extends State<DeveloperPage> {
       children: [
         _hero(d, name),
         if (d == null)
-          const Padding(
-            padding: EdgeInsets.only(top: 60),
-            child: Center(child: CircularProgressIndicator(color: JV2.navy)),
-          )
+          const DeveloperBodyShimmer()
         else
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -137,7 +149,17 @@ class _DeveloperPageState extends State<DeveloperPage> {
                     ),
                 ]),
                 const SizedBox(height: 16),
-                AskContextCard(scope: AskScope(AskScopeType.developer, d.id, d.name.pick(_ar))),
+                AskContextCard(
+                  scope: AskScope(
+                    AskScopeType.developer,
+                    d.id,
+                    d.name.pick(_ar),
+                  ),
+                ),
+                if (_follow != null) ...[
+                  const SizedBox(height: 16),
+                  AlertsStrip(c: _follow!),
+                ],
                 const SizedBox(height: 20),
                 PageTabs(
                   labels: [
@@ -176,11 +198,31 @@ class _DeveloperPageState extends State<DeveloperPage> {
             fit: StackFit.expand,
             children: [
               Photo(url: d?.cover, radius: 0),
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0, 0.42, 1],
+                    colors: [
+                      Color(0x470B2A4A),
+                      Color(0x00000000),
+                      Color(0xEBFAFBFD),
+                    ],
+                  ),
+                ),
+              ),
               Positioned(
                 top: top + 8,
                 left: 16,
                 right: 16,
-                child: const Row(children: [PhotoBackButton()]),
+                child: Row(
+                  children: [
+                    const PhotoBackButton(),
+                    const Spacer(),
+                    if (_follow != null) HeroBell(c: _follow!),
+                  ],
+                ),
               ),
             ],
           ),
@@ -214,12 +256,10 @@ class _DeveloperPageState extends State<DeveloperPage> {
                               .copyWith(color: JV2.navy),
                         ),
                 ),
-                const Spacer(),
-                if (d != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: FollowButton(type: FollowType.developer, id: d.id),
-                  ),
+                if (_follow != null) ...[
+                  const SizedBox(width: 13),
+                  Expanded(child: FollowCta(c: _follow!, height: 44)),
+                ],
               ],
             ),
           ),

@@ -91,7 +91,7 @@ class _FakeApi extends ApiClient {
 
   @override
   Future<Response> get(String path, {Map<String, dynamic>? queryParams, Map<String, dynamic>? headers}) async {
-    calls.add('$path ${headers ?? {}}');
+    calls.add('$path ${headers ?? {}}${queryParams == null ? '' : ' $queryParams'}');
     Response ok(dynamic data) => Response(requestOptions: RequestOptions(path: path), statusCode: 200, data: data);
     if (path.startsWith('/compounds/')) return ok({'success': true, 'data': compound});
     if (path.startsWith('/developers/')) return ok({'success': true, 'data': developer});
@@ -107,7 +107,7 @@ class _Host {
 }
 
 Future<_Host> _boot(WidgetTester tester, Locale locale) async {
-  tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+  tester.view.physicalSize = const Size(390 * 3, 1500 * 3);
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
   final host = _Host();
@@ -213,10 +213,16 @@ void main() {
         expect(find.byType(CallBar), findsOneWidget);
         expect(find.byIcon(Icons.call_rounded), findsOneWidget);
 
-        // ── Phases tab is never hidden: empty state
-        await tester.tap(find.text('compound.tab_phases'.tr()));
+        // ── two market tabs and About, no Phases; each lists only its own market
+        expect(find.text('compound.tab_phases'.tr()), findsNothing);
+        expect(api.calls.any((c) => c.contains('listing_type: primary')), isTrue);
+        expect(find.text('compound.primary_empty'.tr()), findsOneWidget);
+        await tester.tap(find.text('compound.tab_resale'.tr()));
+        await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
-        expect(find.text('compound.phases_empty_title'.tr()), findsOneWidget);
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(api.calls.any((c) => c.contains('listing_type: resale')), isTrue);
+        expect(find.text('compound.resale_empty'.tr()), findsOneWidget);
 
         // ── About tab: computed rows, custom facts, facilities
         await tester.tap(find.text('compound.tab_about'.tr()));
@@ -226,24 +232,6 @@ void main() {
         expect(find.text(lang == 'ar' ? 'مساحة الأرض' : 'Land area'), findsOneWidget);
         expect(find.byIcon(lang == 'ar' ? Icons.groups_rounded : Icons.pool_rounded), findsOneWidget);
 
-        // ── Phases tab with data: status label + count
-        await setUpApi(
-          phone: '+201000000000',
-          compound: _compound(images: false, phases: [
-            {
-              'id': 1, 'name_ar': 'مارينا', 'name_en': 'Marina Rise', 'delivery_label_ar': 'تسليم 2028',
-              'delivery_label_en': 'Delivery 2028', 'available_count': 12, 'min_price': 9000000, 'status': 'selling_now',
-            },
-            {'id': 2, 'name_ar': 'ب', 'name_en': 'Bayside', 'available_count': 0, 'status': 'sold_out'},
-          ]),
-        );
-        await _show(tester, host, const CompoundPage(compoundId: 3));
-        await tester.tap(find.text('compound.tab_phases'.tr()));
-        await tester.pump(const Duration(milliseconds: 300));
-        expect(tester.takeException(), isNull);
-        expect(find.text('compound.phase_selling_now'.tr()), findsOneWidget);
-        expect(find.text('compound.phase_sold_out'.tr()), findsOneWidget);
-
         // ── developer: trust block only for verified
         await setUpApi(phone: '+201000000000');
         await _show(tester, host, const DeveloperPage(developerId: 1));
@@ -252,6 +240,15 @@ void main() {
         expect(tester.takeException(), isNull);
         expect(find.text('developer.why_title'.tr()), findsOneWidget);
         expect(find.text('developer.call_us'.tr()), findsOneWidget);
+
+        // the bell sits on the cover, beside Follow, and opens the alerts sheet
+        expect(find.byKey(const Key('follow-button')), findsOneWidget);
+        await tester.tap(find.byKey(const Key('alert-bell')));
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(tester.takeException(), isNull);
+        expect(find.byKey(const Key('notify-me')), findsOneWidget);
+        await tester.tapAt(const Offset(10, 10));
+        await tester.pump(const Duration(milliseconds: 400));
 
         await setUpApi(developer: _developer(verified: false));
         await _show(tester, host, const DeveloperPage(developerId: 1));

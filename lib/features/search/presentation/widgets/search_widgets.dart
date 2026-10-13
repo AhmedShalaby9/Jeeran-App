@@ -967,43 +967,73 @@ class DevRailCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 132,
-        padding: const EdgeInsets.fromLTRB(13, 14, 13, 13),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: JV2.surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: JV2.line),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            DevAvatar(d),
-            const SizedBox(height: 10),
-            Text(
-              d.name(ar),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: JV2.ink,
+            // the developer's cover, when it has one, fades in behind the logo; without one nothing changes
+            if ((d.cover ?? '').isNotEmpty)
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 62,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Photo(url: d.cover, radius: 0),
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Color(0x00FFFFFF), JV2.surface],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'find.n_compounds'.plural(d.compounds),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 11, color: JV2.inkMute),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              'find.n_units'.plural(d.units),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: JV2.gold,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(13, 14, 13, 13),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DevAvatar(d),
+                  const SizedBox(height: 10),
+                  Text(
+                    d.name(ar),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: JV2.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'find.n_compounds'.plural(d.compounds),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 11, color: JV2.inkMute),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'find.n_units'.plural(d.units),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: JV2.gold,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -1050,7 +1080,9 @@ class DevListRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    '${'find.n_compounds'.plural(d.compounds)} · ${'find.n_units'.plural(d.units)}',
+                    d.compounds == 0
+                        ? 'find.dev_nothing_live'.tr()
+                        : '${'find.n_compounds'.plural(d.compounds)} · ${'find.n_units'.plural(d.units)}',
                     style: const TextStyle(fontSize: 11.5, color: JV2.inkSub),
                   ),
                 ],
@@ -1273,6 +1305,8 @@ List<(String, SearchFilters)> activeChips(
 
   if (f.areaId != null)
     add(f.areaName ?? 'find.s_area'.tr(), f.without('area'));
+  if (f.promotionId != null)
+    add(f.promotionName ?? 'find.s_promotion'.tr(), f.without('promotion'));
   if (f.compoundId != null)
     add(f.compoundName ?? 'find.s_compound'.tr(), f.without('compound'));
   if (f.developerId != null)

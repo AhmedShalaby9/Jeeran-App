@@ -20,6 +20,7 @@ class NewsCarouselWidget extends StatelessWidget {
     return const _NewsCarouselView();
   }
 }
+
 class _NewsCarouselView extends StatefulWidget {
   const _NewsCarouselView();
 

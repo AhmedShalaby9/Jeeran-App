@@ -242,12 +242,16 @@ class SavedCompoundCard extends StatelessWidget {
   final VoidCallback onUnfollow;
   final VoidCallback onOpenUpdate;
 
+  /// Tapping the developer's name opens the developer's page (the rest of the card opens the compound).
+  final VoidCallback? onOpenDeveloper;
+
   const SavedCompoundCard({
     super.key,
     required this.item,
     required this.onOpen,
     required this.onUnfollow,
     required this.onOpenUpdate,
+    this.onOpenDeveloper,
   });
 
   @override
@@ -323,8 +327,44 @@ class SavedCompoundCard extends StatelessWidget {
                               style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: JV2.ink, letterSpacing: -0.2),
                             ),
                             const SizedBox(height: 3),
-                            Text(sub, maxLines: 1, overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 11.5, color: JV2.inkSub)),
+                            Row(
+                              children: [
+                                if (dev != null && dev.isNotEmpty && onOpenDeveloper != null)
+                                  Flexible(
+                                    child: GestureDetector(
+                                      key: Key('saved-dev-${p.id}'),
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: onOpenDeveloper,
+                                      child: Padding(
+                                        // a little room around the name so it is easy to hit
+                                        padding: const EdgeInsets.symmetric(vertical: 4),
+                                        child: Text(
+                                          dev,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 11.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: JV2.navy,
+                                            decoration: TextDecoration.underline,
+                                            decorationColor: JV2.goldEdge,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                Flexible(
+                                  child: Text(
+                                    onOpenDeveloper != null && dev != null && dev.isNotEmpty
+                                        ? (area != null && area.isNotEmpty ? ' · $area' : '')
+                                        : sub,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 11.5, color: JV2.inkSub),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ],
                         ),
                       ),

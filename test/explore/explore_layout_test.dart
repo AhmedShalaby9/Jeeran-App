@@ -9,6 +9,8 @@ import 'package:jeeran_flutter/features/explore/presentation/widgets/explore_ban
 import 'package:jeeran_flutter/features/explore/presentation/widgets/explore_cards.dart';
 import 'package:jeeran_flutter/features/explore/presentation/widgets/explore_widgets.dart';
 import 'package:jeeran_flutter/features/news/v2/news_widgets.dart';
+import 'package:jeeran_flutter/features/search/presentation/widgets/search_widgets.dart'
+    show DevRailCard;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'explore_data_test.dart' as fixture;
@@ -72,14 +74,15 @@ void main() {
                     QuickGrid(
                       tiles: [
                         for (final k in [
-                          'chalets',
-                          'villas',
-                          'apartments',
-                          'for_rent',
+                          'compounds',
+                          'developers',
+                          'launches',
+                          'offers',
                         ])
                           QuickTile(
-                            labelKey: 'explore.$k',
-                            count: 2140,
+                            labelKey: 'explore.q_$k',
+                            subKey: 'explore.q_${k}_n',
+                            count: 412,
                             tint: const Color(0x331A4A80),
                             onTap: () {},
                           ),
@@ -101,6 +104,17 @@ void main() {
                     const SizedBox(height: 20),
                     NewsRail(news: d.news),
                     const SizedBox(height: 20),
+                    SizedBox(
+                      height: 168,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          for (final dev in d.topDevelopers)
+                            DevRailCard(d: dev, onTap: () {}),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     TopCompoundsRail(projects: d.topCompounds),
                   ],
                 ),
@@ -118,6 +132,15 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byType(BannerRail), findsOneWidget);
       expect(find.byType(QuickGrid), findsOneWidget);
+      // the tiles browse by who and where, with real totals
+      expect(find.text('explore.q_compounds'.tr()), findsOneWidget);
+      expect(find.text('explore.q_offers_n'.tr(args: ['412'])), findsOneWidget);
+      expect(find.byType(DevRailCard), findsOneWidget);
+      // the headline is a single line
+      expect(
+        find.text('explore.title'.tr().replaceAll('\n', ' ')),
+        findsOneWidget,
+      );
       // ranked cards, #1 first, with the starting price
       expect(find.byKey(const Key('top-compound-1')), findsOneWidget);
       expect(find.text('1'), findsOneWidget);

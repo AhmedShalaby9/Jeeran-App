@@ -97,6 +97,7 @@ class CompoundPageData {
   final int unitsCount;
   final int followersCount;
   final bool isFollowing;
+  final bool alertsOn; // following and not muted
   final CompoundUpdate? latestUpdate;
   final List<CompoundPhase> phases;
   final List<String> unitTypes;
@@ -125,6 +126,7 @@ class CompoundPageData {
     required this.unitsCount,
     required this.followersCount,
     required this.isFollowing,
+    this.alertsOn = false,
     required this.latestUpdate,
     required this.phases,
     required this.unitTypes,
@@ -177,6 +179,7 @@ class CompoundPageData {
       unitsCount: _i(j['units_count']) ?? 0,
       followersCount: _i(j['followers_count']) ?? 0,
       isFollowing: j['is_following'] == true,
+      alertsOn: j['is_following'] == true && j['alerts_enabled'] != false,
       latestUpdate:
           update is Map<String, dynamic> && _s(update['title']).isNotEmpty
           ? CompoundUpdate(_s(update['title']), update['is_fresh'] == true)

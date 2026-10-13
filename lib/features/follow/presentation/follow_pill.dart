@@ -13,7 +13,13 @@ class FollowPill extends StatelessWidget {
   final bool busy;
   final VoidCallback? onTap;
 
-  const FollowPill({super.key, required this.following, this.compact = false, this.busy = false, this.onTap});
+  const FollowPill({
+    super.key,
+    required this.following,
+    this.compact = false,
+    this.busy = false,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +78,12 @@ class FollowButton extends StatefulWidget {
   final int id;
   final bool compact;
 
-  const FollowButton({super.key, required this.type, required this.id, this.compact = false});
+  const FollowButton({
+    super.key,
+    required this.type,
+    required this.id,
+    this.compact = false,
+  });
 
   @override
   State<FollowButton> createState() => _FollowButtonState();
@@ -86,11 +97,14 @@ class _FollowButtonState extends State<FollowButton> {
   @override
   void initState() {
     super.initState();
-    _service.isFollowing(widget.type, widget.id).then((v) {
-      if (mounted) setState(() => _following = v);
-    }).catchError((_) {
-      if (mounted) setState(() => _following = false);
-    });
+    _service
+        .isFollowing(widget.type, widget.id)
+        .then((v) {
+          if (mounted) setState(() => _following = v);
+        })
+        .catchError((_) {
+          if (mounted) setState(() => _following = false);
+        });
   }
 
   Future<void> _toggle() async {
@@ -100,11 +114,15 @@ class _FollowButtonState extends State<FollowButton> {
       _busy = true;
     });
     try {
-      was ? await _service.unfollow(widget.type, widget.id) : await _service.follow(widget.type, widget.id);
+      was
+          ? await _service.unfollow(widget.type, widget.id)
+          : await _service.follow(widget.type, widget.id);
     } catch (_) {
       if (mounted) {
         setState(() => _following = was);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('saved.follow_failed'.tr())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('saved.follow_failed'.tr())));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -114,6 +132,11 @@ class _FollowButtonState extends State<FollowButton> {
   @override
   Widget build(BuildContext context) {
     if (_following == null) return const SizedBox(width: 74, height: 30);
-    return FollowPill(following: _following!, compact: widget.compact, busy: _busy, onTap: _toggle);
+    return FollowPill(
+      following: _following!,
+      compact: widget.compact,
+      busy: _busy,
+      onTap: _toggle,
+    );
   }
 }

@@ -12,12 +12,13 @@ import '../../../ai_chat/scoped/ask_scope_api.dart';
 import '../../../developers/presentation/pages/developer_page.dart';
 import '../../../explore/presentation/widgets/explore_widgets.dart';
 import '../../../follow/data/follow_service.dart';
+import '../../../follow/presentation/follow_alerts.dart';
 import '../../data/compound_page_data.dart';
 import '../widgets/facility_icon.dart';
 import '../widgets/page_widgets.dart';
 
 /// A compound's page: gallery, key figures, then Units / Phases / About.
-/// Following (the heart) turns on every notification for it. "Call to book a viewing"
+/// Following turns on every notification for it (the bell mutes them without unfollowing). "Call to book a viewing"
 /// dials the number saved in the dashboard settings.
 class CompoundPage extends StatefulWidget {
   final int compoundId;
@@ -34,7 +35,7 @@ class _CompoundPageState extends State<CompoundPage> {
   bool _failed = false;
   int _tab = 0;
   int _photo = 0;
-  CompoundPhase? _phaseFilter;
+  FollowController? _follow; // created once the compound has loaded
 
   @override
   void initState() {
@@ -51,7 +52,20 @@ class _CompoundPageState extends State<CompoundPage> {
       );
       final raw = res.data['data'];
       if (raw is! Map<String, dynamic>) throw const FormatException();
-      if (mounted) setState(() => _data = CompoundPageData.fromJson(raw));
+      if (mounted) {
+        final data = CompoundPageData.fromJson(raw);
+        setState(() {
+          _data = data;
+          _follow = FollowController(
+            service: sl<FollowService>(),
+            type: FollowType.project,
+            id: data.id,
+            name: data.name.pick(_ar),
+            following: data.isFollowing,
+            alertsOn: data.alertsOn,
+          );
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _failed = true);
     }
@@ -137,12 +151,20 @@ class _CompoundPageState extends State<CompoundPage> {
                   ('${d.deliveredSince}', 'compound.stat_delivered'.tr()),
               ]),
               const SizedBox(height: 16),
-              AskContextCard(scope: AskScope(AskScopeType.compound, d.id, d.name.pick(_ar))),
+              if (_follow != null) ...[
+                FollowBar(c: _follow!),
+                const SizedBox(height: 12),
+                AlertsStrip(c: _follow!),
+                const SizedBox(height: 16),
+              ],
+              AskContextCard(
+                scope: AskScope(AskScopeType.compound, d.id, d.name.pick(_ar)),
+              ),
               const SizedBox(height: 20),
               PageTabs(
                 labels: [
-                  'compound.tab_units'.tr(),
-                  'compound.tab_phases'.tr(),
+                  'compound.tab_primary'.tr(),
+                  'compound.tab_resale'.tr(),
                   'compound.tab_about'.tr(),
                 ],
                 index: _tab,
@@ -150,8 +172,8 @@ class _CompoundPageState extends State<CompoundPage> {
               ),
               const SizedBox(height: 18),
               switch (_tab) {
-                0 => _units(d),
-                1 => _phases(d),
+                0 => _listings(d, 'primary'),
+                1 => _listings(d, 'resale'),
                 _ => _about(d),
               },
               const SizedBox(height: 24),
@@ -198,13 +220,7 @@ class _CompoundPageState extends State<CompoundPage> {
             top: top + 8,
             left: 16,
             right: 16,
-            child: Row(
-              children: [
-                const PhotoBackButton(),
-                const Spacer(),
-                _FollowHeart(compoundId: d.id, initial: d.isFollowing),
-              ],
-            ),
+            child: Row(children: [const PhotoBackButton(), const Spacer()]),
           ),
           if (tagText != null)
             PositionedDirectional(
@@ -375,73 +391,12 @@ class _CompoundPageState extends State<CompoundPage> {
 
   // ── tabs ───────────────────────────────────────────────
 
-  Widget _units(CompoundPageData d) {
-    final phase = _phaseFilter;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (phase != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 14),
-            child: GestureDetector(
-              onTap: () => setState(() => _phaseFilter = null),
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(12, 7, 8, 7),
-                decoration: BoxDecoration(
-                  color: JV2.fillHi,
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'compound.phase_filter'.tr(args: [phase.name.pick(_ar)]),
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w700,
-                        color: JV2.navy,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.close_rounded, size: 15, color: JV2.navy),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        LiveListings(
-          key: ValueKey('units-${d.id}-${phase?.id}'),
-          query: {'compound_id': d.id, if (phase != null) 'phase_id': phase.id},
-          emptyText: 'compound.units_empty'.tr(),
-        ),
-      ],
-    );
-  }
-
-  Widget _phases(CompoundPageData d) {
-    if (d.phases.isEmpty) {
-      return EmptyBlock(
-        icon: Icons.layers_outlined,
-        title: 'compound.phases_empty_title'.tr(),
-        sub: 'compound.phases_empty_sub'.tr(),
-      );
-    }
-    return Column(
-      children: [
-        for (final p in d.phases)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _PhaseCard(
-              phase: p,
-              onTap: p.available > 0
-                  ? () => setState(() {
-                      _phaseFilter = p;
-                      _tab = 0;
-                    })
-                  : null,
-            ),
-          ),
-      ],
+  /// Primary = sold by the developer; Resale = sold by owners and brokers.
+  Widget _listings(CompoundPageData d, String type) {
+    return LiveListings(
+      key: ValueKey('$type-${d.id}'),
+      query: {'compound_id': d.id, 'listing_type': type},
+      emptyText: 'compound.${type}_empty'.tr(),
     );
   }
 
@@ -561,163 +516,6 @@ class _CompoundPageState extends State<CompoundPage> {
 }
 
 // ── bits ─────────────────────────────────────────────────
-
-/// Heart = follow. Optimistic; reverts with a message if the call fails.
-class _FollowHeart extends StatefulWidget {
-  final int compoundId;
-  final bool initial;
-  const _FollowHeart({required this.compoundId, required this.initial});
-
-  @override
-  State<_FollowHeart> createState() => _FollowHeartState();
-}
-
-class _FollowHeartState extends State<_FollowHeart> {
-  late bool _on = widget.initial;
-  bool _busy = false;
-
-  Future<void> _toggle() async {
-    if (_busy) return;
-    final was = _on;
-    setState(() {
-      _on = !was;
-      _busy = true;
-    });
-    final service = sl<FollowService>();
-    try {
-      was
-          ? await service.unfollow(FollowType.project, widget.compoundId)
-          : await service.follow(FollowType.project, widget.compoundId);
-    } catch (_) {
-      if (mounted) {
-        setState(() => _on = was);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('compound.follow_failed'.tr())));
-      }
-    } finally {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _toggle,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white,
-          boxShadow: JV2.shadowMd,
-        ),
-        child: Icon(
-          _on ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-          size: 21,
-          color: _on ? JV2.danger : JV2.ink,
-        ),
-      ),
-    );
-  }
-}
-
-class _PhaseCard extends StatelessWidget {
-  final CompoundPhase phase;
-  final VoidCallback? onTap;
-  const _PhaseCard({required this.phase, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final ar = isArabic(context);
-    final (bg, fg) = switch (phase.status) {
-      'selling_now' => (const Color(0x1A137A55), JV2.success),
-      'resale_only' => (JV2.goldFilm, JV2.gold),
-      'sold_out' => (const Color(0x14C23B3B), JV2.danger),
-      _ => (JV2.fillHi, JV2.inkSub),
-    };
-    final status = switch (phase.status) {
-      'selling_now' => 'compound.phase_selling_now'.tr(),
-      'resale_only' => 'compound.phase_resale_only'.tr(),
-      'sold_out' => 'compound.phase_sold_out'.tr(),
-      _ => 'compound.phase_coming_soon'.tr(),
-    };
-    final delivery = phase.delivery.pick(ar);
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: JV2.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: JV2.line),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(phase.name.pick(ar), style: JV2.display(context, 21)),
-                  if (delivery.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      delivery,
-                      style: const TextStyle(fontSize: 12.5, color: JV2.inkSub),
-                    ),
-                  ],
-                  if (phase.available > 0) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      [
-                        'compound.n_available'.plural(phase.available),
-                        if (phase.minPrice != null)
-                          '${'explore.from_price'.tr(args: [compactPrice(phase.minPrice!)])} ${'explore.egp'.tr()}',
-                      ].join(' · '),
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w600,
-                        color: JV2.ink,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 9,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: bg,
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    status,
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      color: fg,
-                    ),
-                  ),
-                ),
-                if (onTap != null) ...[
-                  const SizedBox(height: 10),
-                  Icon(chevronIcon(context), size: 18, color: JV2.inkMute),
-                ],
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _FacilityTile extends StatelessWidget {
   final String text;

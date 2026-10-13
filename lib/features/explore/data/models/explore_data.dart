@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../news/data/models/news_model.dart';
 import '../../../projects/data/models/project_model.dart';
+import '../../../search/data/search_api.dart' show DeveloperSummary;
 import '../../../properties/data/models/property_model.dart';
 
 /// A banner as the backend stores it: media + caption + tap target, placed by slot.
@@ -131,6 +132,12 @@ class ExploreData extends Equatable {
 
   /// True when the ranking comes from real views; false = the fallback (most live listings).
   final bool topIsByViews;
+
+  /// Totals for the four tiles: compounds, developers, launches, offers.
+  final Map<String, int> counts;
+
+  /// The ten biggest developers, for the "Top developers" rail.
+  final List<DeveloperSummary> topDevelopers;
   final SellerRequestStatus? sellerRequest;
   final int unreadCount;
   final int savedCount;
@@ -146,6 +153,8 @@ class ExploreData extends Equatable {
     this.news = const [],
     this.topCompounds = const [],
     this.topIsByViews = false,
+    this.counts = const {},
+    this.topDevelopers = const [],
     this.sellerRequest,
     this.unreadCount = 0,
     this.savedCount = 0,
@@ -185,6 +194,8 @@ class ExploreData extends Equatable {
       featured: _list(j['featured'], PropertyModel.fromJson),
       news: _list(j['news'], NewsModel.fromJson),
       topCompounds: _list(j['top_compounds'], ProjectModel.fromJson),
+      counts: _counts(j['counts']),
+      topDevelopers: _list(j['top_developers'], DeveloperSummary.fromJson),
       topIsByViews:
           j['top_compounds'] is List &&
           (j['top_compounds'] as List).any(
@@ -210,6 +221,8 @@ class ExploreData extends Equatable {
     news,
     topCompounds,
     topIsByViews,
+    counts,
+    topDevelopers,
     sellerRequest,
     unreadCount,
     savedCount,

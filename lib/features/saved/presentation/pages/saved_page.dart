@@ -183,6 +183,17 @@ class _SavedViewState extends State<_SavedView> {
               onUnfollow: () =>
                   _undoable(cubit.unfollowCompound(c), 'saved.unfollowed'),
               onOpenUpdate: _openNews,
+              onOpenDeveloper: c.project.developer == null
+                  ? null
+                  : () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DeveloperPage(
+                          developerId: c.project.developer!.id,
+                          name: c.project.developer!.name,
+                        ),
+                      ),
+                    ),
             ),
         ],
       ),

@@ -14,12 +14,12 @@ import '../admin/presentation/pages/admin_panel_page.dart';
 import '../ai_ads/presentation/pages/ai_ad_guide_page.dart';
 import '../ai_ads/presentation/pages/ai_ads_page.dart';
 import '../auth/presentation/pages/login_page.dart';
-import '../auth/presentation/pages/my_profile_page.dart';
 import '../explore/presentation/widgets/explore_widgets.dart';
 import '../main/presentation/pages/main_page.dart';
 import '../more/presentation/pages/contact_us_page.dart';
 import '../notifications/presentation/pages/notification_settings_page.dart';
 import '../packages/presentation/pages/packages_destination.dart';
+import '../profile/profile_page.dart';
 import '../properties/presentation/pages/add_property_page.dart';
 import '../properties/presentation/pages/my_properties_page.dart';
 import '../seller_request/presentation/bloc/seller_request_bloc.dart';
@@ -142,7 +142,15 @@ class _YouPageState extends State<YouPage> {
 
   // ── header ──
 
-  Widget _header(YouSummary? s) {
+  /// Tapping the person opens their profile, the same as the pencil.
+  Widget _header(YouSummary? s) => GestureDetector(
+    key: const Key('you-header'),
+    behavior: HitTestBehavior.opaque,
+    onTap: s == null ? null : () => _go(const ProfilePage()),
+    child: _headerBody(s),
+  );
+
+  Widget _headerBody(YouSummary? s) {
     final name = (s?.name.isNotEmpty ?? false)
         ? s!.name
         : (AppStorage.userName ?? '');
@@ -263,7 +271,7 @@ class _YouPageState extends State<YouPage> {
           Tooltip(
             message: 'you.edit'.tr(),
             child: GestureDetector(
-              onTap: () => _go(const MyProfilePage()),
+              onTap: () => _go(const ProfilePage()),
               child: Container(
                 width: 38,
                 height: 38,

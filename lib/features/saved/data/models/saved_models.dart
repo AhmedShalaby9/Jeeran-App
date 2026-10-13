@@ -28,29 +28,42 @@ class SavedCounts extends Equatable {
 
   factory SavedCounts.fromJson(Map<String, dynamic> j) => SavedCounts(
     listings: (j['listings'] as num?)?.toInt() ?? 0,
-    compounds: (j['compounds'] as num?)?.toInt() ?? 0,
+    // the older API dialect (no X-Api-Version header) calls them "projects"
+    compounds: ((j['compounds'] ?? j['projects']) as num?)?.toInt() ?? 0,
     developers: (j['developers'] as num?)?.toInt() ?? 0,
     priceDrops: (j['price_drops'] as num?)?.toInt() ?? 0,
     sold: (j['sold'] as num?)?.toInt() ?? 0,
     unavailable: (j['unavailable'] as num?)?.toInt() ?? 0,
     freshCompounds: (j['fresh_compounds'] as num?)?.toInt() ?? 0,
-    developerProjects: (j['developer_projects'] as num?)?.toInt() ?? 0,
+    developerProjects:
+        ((j['developer_projects'] ?? j['developer_compounds']) as num?)
+            ?.toInt() ??
+        0,
   );
 
-  SavedCounts copyWith({int? listings, int? compounds, int? developers}) => SavedCounts(
-    listings: listings ?? this.listings,
-    compounds: compounds ?? this.compounds,
-    developers: developers ?? this.developers,
-    priceDrops: priceDrops,
-    sold: sold,
-    unavailable: unavailable,
-    freshCompounds: freshCompounds,
-    developerProjects: developerProjects,
-  );
+  SavedCounts copyWith({int? listings, int? compounds, int? developers}) =>
+      SavedCounts(
+        listings: listings ?? this.listings,
+        compounds: compounds ?? this.compounds,
+        developers: developers ?? this.developers,
+        priceDrops: priceDrops,
+        sold: sold,
+        unavailable: unavailable,
+        freshCompounds: freshCompounds,
+        developerProjects: developerProjects,
+      );
 
   @override
-  List<Object?> get props =>
-      [listings, compounds, developers, priceDrops, sold, unavailable, freshCompounds, developerProjects];
+  List<Object?> get props => [
+    listings,
+    compounds,
+    developers,
+    priceDrops,
+    sold,
+    unavailable,
+    freshCompounds,
+    developerProjects,
+  ];
 }
 
 /// A saved listing: the property plus how it has moved since it was saved.
@@ -85,7 +98,11 @@ class SavedUpdate extends Equatable {
   final String title;
   final bool isFresh;
 
-  const SavedUpdate({required this.id, required this.title, required this.isFresh});
+  const SavedUpdate({
+    required this.id,
+    required this.title,
+    required this.isFresh,
+  });
 
   static SavedUpdate? tryParse(dynamic raw) {
     if (raw is! Map<String, dynamic>) return null;
@@ -144,9 +161,14 @@ class SavedDeveloper extends Equatable {
 
   /// "TMG" for Talaat Moustafa Group, "EM" for Emaar Misr — the monogram in the logo tile.
   String get short {
-    final words = name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+    final words = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .toList();
     if (words.isEmpty) return '?';
-    if (words.length == 1) return words.first.characters.take(2).toString().toUpperCase();
+    if (words.length == 1)
+      return words.first.characters.take(2).toString().toUpperCase();
     return words.take(3).map((w) => w.characters.first).join().toUpperCase();
   }
 
@@ -162,5 +184,14 @@ class SavedDeveloper extends Equatable {
   );
 
   @override
-  List<Object?> get props => [id, nameAr, nameEn, logo, isVerified, projectsCount, listingsCount, latestUpdate];
+  List<Object?> get props => [
+    id,
+    nameAr,
+    nameEn,
+    logo,
+    isVerified,
+    projectsCount,
+    listingsCount,
+    latestUpdate,
+  ];
 }

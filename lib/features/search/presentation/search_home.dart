@@ -14,6 +14,7 @@ import '../../properties/presentation/pages/property_details_page.dart';
 import '../data/recent_searches.dart';
 import '../data/search_api.dart';
 import '../data/search_filters.dart';
+import '../../developers/presentation/pages/developer_page.dart';
 import 'all_developers_page.dart';
 import 'filter_sheet.dart';
 import 'launches_page.dart';
@@ -27,6 +28,9 @@ class SearchHome extends StatefulWidget {
   final ValueNotifier<bool>? resetNotifier;
   final SearchApi? api; // tests inject a fake
   const SearchHome({super.key, this.resetNotifier, this.api});
+
+  /// Other screens (e.g. Explore's Launches & offers) hand the Search tab a filter to show as results.
+  static final ValueNotifier<SearchFilters?> incoming = ValueNotifier(null);
 
   @override
   State<SearchHome> createState() => _SearchHomeState();
@@ -66,13 +70,24 @@ class _SearchHomeState extends State<SearchHome> {
     super.initState();
     _scroll.addListener(_onScroll);
     widget.resetNotifier?.addListener(_reset);
+    SearchHome.incoming.addListener(_takeIncoming);
     _loadRails();
     _reload();
+    // a filter may already be waiting (the tab is built lazily, after the hand-off)
+    WidgetsBinding.instance.addPostFrameCallback((_) => _takeIncoming());
+  }
+
+  void _takeIncoming() {
+    final f = SearchHome.incoming.value;
+    if (f == null || !mounted) return;
+    SearchHome.incoming.value = null;
+    _apply(f, toResults: true);
   }
 
   @override
   void dispose() {
     widget.resetNotifier?.removeListener(_reset);
+    SearchHome.incoming.removeListener(_takeIncoming);
     _suggestTimer?.cancel();
     _scroll.dispose();
     _entryCtrl.dispose();
@@ -231,10 +246,8 @@ class _SearchHomeState extends State<SearchHome> {
       MaterialPageRoute(
         builder: (ctx) => AllDevelopersPage(
           api: _api,
-          onOpen: (d) {
-            Navigator.pop(ctx);
-            _pickDeveloper(d);
-          },
+          // the developer's page opens over the list, so Back returns to the list
+          onOpen: _pickDeveloper,
         ),
       ),
     );
@@ -255,16 +268,17 @@ class _SearchHomeState extends State<SearchHome> {
     );
   }
 
-  void _pickDeveloper(DeveloperSummary d) => _apply(
-    SearchFilters(developerId: d.id, developerName: d.name(isArabic(context))),
-    toResults: true,
+  /// Tapping a developer opens the developer's page (compounds, listings, about) — not a search.
+  void _pickDeveloper(DeveloperSummary d) => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) =>
+          DeveloperPage(developerId: d.id, name: d.name(isArabic(context))),
+    ),
   );
 
   void _pickPromotion(PromotionItem p) => _apply(
-    SearchFilters(
-      compoundId: p.compoundId,
-      compoundName: p.compoundName(isArabic(context)),
-    ),
+    SearchFilters.forPromotion(p, ar: isArabic(context)),
     toResults: true,
   );
 

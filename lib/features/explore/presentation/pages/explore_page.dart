@@ -9,11 +9,18 @@ import '../../../../core/widgets/jv2.dart';
 import '../../../main/presentation/pages/main_page.dart';
 import '../../../voice/voice_page.dart';
 import '../../../news/v2/news_list_page.dart';
+import 'all_compounds_page.dart';
+import '../../../developers/presentation/pages/developer_page.dart';
+import '../../../search/presentation/widgets/search_widgets.dart'
+    show DevRailCard;
+import '../../../search/presentation/all_developers_page.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../search/presentation/search_home.dart';
+import '../../../search/presentation/launches_page.dart';
+import '../../../search/data/search_filters.dart';
+import '../../../search/data/search_api.dart';
 import '../../../listing/shortcut_hub.dart';
 import '../../../../core/storage/app_storage.dart';
-import '../../../projects/presentation/pages/projects_page.dart';
-import '../../../properties/domain/entities/property_filter_params.dart';
-import '../../../properties/presentation/pages/properties_screen.dart';
 import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
 import '../../../seller_request/presentation/bloc/seller_request_event.dart';
 import '../../../seller_request/presentation/bloc/seller_request_state.dart';
@@ -39,10 +46,51 @@ class ExplorePage extends StatelessWidget {
 class _ExploreView extends StatelessWidget {
   const _ExploreView();
 
-  void _openFiltered(BuildContext context, PropertyFilterParams params) {
+  /// "See all" on New launches: every live launch and offer, with the All / Launches / Offers tabs.
+  /// Tapping one shows its units in the Search tab.
+  void _openAllCompounds(BuildContext context) => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => AllCompoundsPage(api: SearchApi(sl<ApiClient>())),
+    ),
+  );
+
+  void _openDeveloper(BuildContext context, DeveloperSummary d) =>
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              DeveloperPage(developerId: d.id, name: d.name(isArabic(context))),
+        ),
+      );
+
+  void _openAllDevelopers(BuildContext context) => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => AllDevelopersPage(
+        api: SearchApi(sl<ApiClient>()),
+        onOpen: (d) => _openDeveloper(context, d),
+      ),
+    ),
+  );
+
+  void _openLaunches(BuildContext context, {int tab = 0}) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => PropertiesScreen(params: params)),
+      MaterialPageRoute(
+        builder: (ctx) => LaunchesPage(
+          initialTab: tab,
+          api: SearchApi(sl<ApiClient>()),
+          onOpen: (p) {
+            Navigator.pop(ctx);
+            SearchHome.incoming.value = SearchFilters.forPromotion(
+              p,
+              ar: isArabic(context),
+            );
+            MainPage.switchTab(MainPage.tabSearch);
+          },
+        ),
+      ),
     );
   }
 
@@ -75,8 +123,7 @@ class _ExploreView extends StatelessWidget {
             ExploreTopBar(
               // sellers list and re-price; everyone can set a price alert
               onShortcut:
-                  AppStorage.isLoggedIn &&
-                      !AppSettingsService.instance.inReview
+                  AppStorage.isLoggedIn && !AppSettingsService.instance.inReview
                   ? () => ShortcutHub.open(context)
                   : null,
             ),
@@ -102,38 +149,36 @@ class _ExploreView extends StatelessWidget {
     final showSeller =
         seller != null && (seller.isPending || seller.isRejected);
 
+    // "browse by who and where": totals are real, not estimates
+    int n(String k) => d.counts[k] ?? 0;
     final tiles = [
       QuickTile(
-        labelKey: 'explore.chalets',
-        count: d.typeCounts['chalet'] ?? 0,
+        labelKey: 'explore.q_compounds',
+        subKey: 'explore.q_compounds_n',
+        count: n('compounds_total'),
         tint: const Color(0x381A4A80),
-        onTap: () =>
-            _openFiltered(context, const PropertyFilterParams(type: 'chalet')),
+        onTap: () => _openAllCompounds(context),
       ),
       QuickTile(
-        labelKey: 'explore.villas',
-        count: d.typeCounts['villa'] ?? 0,
+        labelKey: 'explore.q_developers',
+        subKey: 'explore.q_developers_n',
+        count: n('developers_total'),
         tint: const Color(0x42B8893D),
-        onTap: () =>
-            _openFiltered(context, const PropertyFilterParams(type: 'villa')),
+        onTap: () => _openAllDevelopers(context),
       ),
       QuickTile(
-        labelKey: 'explore.apartments',
-        count: d.typeCounts['apartment'] ?? 0,
+        labelKey: 'explore.q_launches',
+        subKey: 'explore.q_launches_n',
+        count: n('launches_total'),
         tint: const Color(0x3312395F),
-        onTap: () => _openFiltered(
-          context,
-          const PropertyFilterParams(type: 'apartment'),
-        ),
+        onTap: () => _openLaunches(context, tab: 1),
       ),
       QuickTile(
-        labelKey: 'explore.for_rent',
-        count: d.statusCounts['for_rent'] ?? 0,
+        labelKey: 'explore.q_offers',
+        subKey: 'explore.q_offers_n',
+        count: n('offers_total'),
         tint: const Color(0x2E137A55),
-        onTap: () => _openFiltered(
-          context,
-          const PropertyFilterParams(status: 'for_rent'),
-        ),
+        onTap: () => _openLaunches(context, tab: 2),
       ),
     ];
 
@@ -168,10 +213,7 @@ class _ExploreView extends StatelessWidget {
           SectionHead(
             eyebrow: 'explore.primary'.tr(),
             title: 'explore.new_launches'.tr(),
-            onAction: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProjectsPage()),
-            ),
+            onAction: () => _openLaunches(context),
           ),
           LaunchStrip(projects: d.launches),
         ]),
@@ -208,15 +250,37 @@ class _ExploreView extends StatelessWidget {
           ),
           NewsRail(news: d.news),
         ]),
+      if (d.topDevelopers.isNotEmpty)
+        section([
+          SectionHead(
+            eyebrow: 'explore.devs_eyebrow'.tr(),
+            title: 'explore.top_developers'.tr(),
+            onAction: () => _openAllDevelopers(context),
+          ),
+          SizedBox(
+            height: 168,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: d.topDevelopers.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 11),
+              itemBuilder: (_, i) => DevRailCard(
+                d: d.topDevelopers[i],
+                onTap: () => _openDeveloper(context, d.topDevelopers[i]),
+              ),
+            ),
+          ),
+        ]),
       if (d.topCompounds.isNotEmpty)
         section([
           SectionHead(
-            eyebrow: (d.topIsByViews ? 'explore.top_eyebrow' : 'explore.top_eyebrow_units').tr(),
+            eyebrow:
+                (d.topIsByViews
+                        ? 'explore.top_eyebrow'
+                        : 'explore.top_eyebrow_units')
+                    .tr(),
             title: 'explore.top_compounds'.tr(),
-            onAction: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProjectsPage()),
-            ),
+            onAction: () => _openAllCompounds(context),
           ),
           TopCompoundsRail(projects: d.topCompounds),
         ]),

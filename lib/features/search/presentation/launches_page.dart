@@ -10,7 +10,15 @@ import 'widgets/search_widgets.dart';
 class LaunchesPage extends StatefulWidget {
   final SearchApi api;
   final void Function(PromotionItem) onOpen;
-  const LaunchesPage({super.key, required this.api, required this.onOpen});
+
+  /// 0 all · 1 launches · 2 offers (Explore's two tiles open the matching tab).
+  final int initialTab;
+  const LaunchesPage({
+    super.key,
+    required this.api,
+    required this.onOpen,
+    this.initialTab = 0,
+  });
 
   @override
   State<LaunchesPage> createState() => _LaunchesPageState();
@@ -19,7 +27,7 @@ class LaunchesPage extends StatefulWidget {
 class _LaunchesPageState extends State<LaunchesPage> {
   List<PromotionItem>? _all;
   bool _failed = false;
-  int _tab = 0; // 0 all · 1 launches · 2 offers
+  late int _tab = widget.initialTab; // 0 all · 1 launches · 2 offers
 
   @override
   void initState() {

@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'search_api.dart' show PromotionItem;
+
 /// Everything the Search screens can narrow by. One immutable value so the list, the live
 /// count and the "widen it" suggestions can never disagree: they all send [toQuery].
 class SearchFilters extends Equatable {
@@ -18,6 +20,8 @@ class SearchFilters extends Equatable {
   final Set<String> amenities;
   final int? areaId;
   final String? areaName; // display only
+  final int? promotionId; // the units of one launch/offer
+  final String? promotionName; // display only
   final int? compoundId;
   final String? compoundName; // display only
   final int? developerId;
@@ -42,6 +46,8 @@ class SearchFilters extends Equatable {
     this.amenities = const {},
     this.areaId,
     this.areaName,
+    this.promotionId,
+    this.promotionName,
     this.compoundId,
     this.compoundName,
     this.developerId,
@@ -50,6 +56,15 @@ class SearchFilters extends Equatable {
     this.verifiedOnly = false,
     this.sort = 'newest',
   });
+
+  /// What tapping a launch/offer shows: exactly its units when it has some, else its whole compound.
+  static SearchFilters forPromotion(PromotionItem p, {required bool ar}) =>
+      p.propertiesCount > 0
+      ? SearchFilters(promotionId: p.id, promotionName: p.title(ar))
+      : SearchFilters(
+          compoundId: p.compoundId,
+          compoundName: p.compoundName(ar),
+        );
 
   static const sorts = ['newest', 'price_asc', 'price_desc', 'largest'];
 
@@ -69,6 +84,7 @@ class SearchFilters extends Equatable {
     if (payment != null) 'payment': payment,
     if (amenities.isNotEmpty) 'amenities': amenities.join(','),
     if (areaId != null) 'area_id': areaId,
+    if (promotionId != null) 'promotion_id': promotionId,
     if (compoundId != null) 'compound_id': compoundId,
     if (developerId != null) 'developer_id': developerId,
     if (featured) 'is_featured': 'true',
@@ -101,6 +117,7 @@ class SearchFilters extends Equatable {
     if (payment != null) n++;
     n += amenities.length;
     if (areaId != null) n++;
+    if (promotionId != null) n++;
     if (compoundId != null) n++;
     if (developerId != null) n++;
     if (featured) n++;
@@ -126,6 +143,8 @@ class SearchFilters extends Equatable {
     Set<String>? amenities,
     Object? areaId = _nil,
     Object? areaName = _nil,
+    Object? promotionId = _nil,
+    Object? promotionName = _nil,
     Object? compoundId = _nil,
     Object? compoundName = _nil,
     Object? developerId = _nil,
@@ -149,6 +168,10 @@ class SearchFilters extends Equatable {
     amenities: amenities ?? this.amenities,
     areaId: areaId == _nil ? this.areaId : areaId as int?,
     areaName: areaName == _nil ? this.areaName : areaName as String?,
+    promotionId: promotionId == _nil ? this.promotionId : promotionId as int?,
+    promotionName: promotionName == _nil
+        ? this.promotionName
+        : promotionName as String?,
     compoundId: compoundId == _nil ? this.compoundId : compoundId as int?,
     compoundName: compoundName == _nil
         ? this.compoundName
@@ -167,6 +190,7 @@ class SearchFilters extends Equatable {
     'q' => copyWith(q: ''),
     'type' => copyWith(types: const {}),
     'status' => copyWith(status: null),
+    'promotion' => copyWith(promotionId: null, promotionName: null),
     'compound' => copyWith(compoundId: null, compoundName: null),
     'developer' => copyWith(developerId: null, developerName: null),
     'area' => copyWith(areaId: null, areaName: null),
@@ -201,6 +225,8 @@ class SearchFilters extends Equatable {
     'amenities': amenities.toList(),
     'areaId': areaId,
     'areaName': areaName,
+    'promotionId': promotionId,
+    'promotionName': promotionName,
     'compoundId': compoundId,
     'compoundName': compoundName,
     'developerId': developerId,
@@ -231,6 +257,8 @@ class SearchFilters extends Equatable {
       amenities: strings(j['amenities']),
       areaId: i(j['areaId']),
       areaName: s(j['areaName']),
+      promotionId: i(j['promotionId']),
+      promotionName: s(j['promotionName']),
       compoundId: i(j['compoundId']),
       compoundName: s(j['compoundName']),
       developerId: i(j['developerId']),
@@ -259,6 +287,7 @@ class SearchFilters extends Equatable {
     payment,
     amenities,
     areaId,
+    promotionId,
     compoundId,
     developerId,
     featured,

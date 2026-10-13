@@ -2,6 +2,9 @@ import '../../../core/network/api_client.dart';
 import 'search_filters.dart';
 
 String? _s(dynamic v) => v is String && v.isNotEmpty ? v : null;
+
+/// An image URL, or null when the field is empty or only spaces.
+String? _url(dynamic v) => v is String && v.trim().isNotEmpty ? v.trim() : null;
 int _i(dynamic v) =>
     v is num ? v.toInt() : (v is String ? int.tryParse(v) ?? 0 : 0);
 
@@ -45,6 +48,9 @@ class DeveloperSummary {
   final bool isVerified;
   final int compounds;
   final int units;
+
+  /// Optional cover photo; without one the card keeps its plain look.
+  final String? cover;
   const DeveloperSummary(
     this.id,
     this.nameAr,
@@ -52,17 +58,19 @@ class DeveloperSummary {
     this.logo,
     this.isVerified,
     this.compounds,
-    this.units,
-  );
+    this.units, {
+    this.cover,
+  });
 
   factory DeveloperSummary.fromJson(Map<String, dynamic> j) => DeveloperSummary(
     _i(j['id']),
     j['name_ar'] as String? ?? '',
     j['name_en'] as String? ?? '',
-    _s(j['logo']),
+    _url(j['logo']),
     j['is_verified'] == true,
     _i(j['compounds_count']),
     _i(j['units_count']),
+    cover: _url(j['cover_image']),
   );
 
   String name(bool ar) => ar
@@ -125,6 +133,9 @@ class PromotionItem {
   final double? minPrice;
   final DateTime? endsAt;
 
+  /// Primary units this launch/offer is about; 0 = it points at the whole compound.
+  final int propertiesCount;
+
   const PromotionItem({
     required this.id,
     required this.type,
@@ -142,6 +153,7 @@ class PromotionItem {
     required this.developerNameEn,
     required this.minPrice,
     required this.endsAt,
+    this.propertiesCount = 0,
   });
 
   factory PromotionItem.fromJson(Map<String, dynamic> j) {
@@ -168,12 +180,17 @@ class PromotionItem {
       compoundNameEn: c['name_en'] as String? ?? '',
       developerNameAr: d['name_ar'] as String? ?? '',
       developerNameEn: d['name_en'] as String? ?? '',
-      minPrice: c['min_price'] is num
-          ? (c['min_price'] as num).toDouble()
-          : null,
+      // a launch with its own units shows their starting price, not the whole compound's
+      minPrice:
+          (j['properties_count'] is num &&
+              (j['properties_count'] as num) > 0 &&
+              j['properties_min_price'] is num)
+          ? (j['properties_min_price'] as num).toDouble()
+          : (c['min_price'] is num ? (c['min_price'] as num).toDouble() : null),
       endsAt: j['ends_at'] is String
           ? DateTime.tryParse(j['ends_at'] as String)
           : null,
+      propertiesCount: (j['properties_count'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -243,6 +260,26 @@ class SearchApi {
     return _list(s).map(RelaxSuggestion.fromJson).toList();
   }
 
+  /// One page of developers (biggest first), searchable by name. `total` is the full count.
+  Future<({List<DeveloperSummary> items, int total})> developersPage({
+    int page = 1,
+    int limit = 20,
+    String q = '',
+  }) async {
+    final res = await client.get(
+      '/developers/summary',
+      queryParams: {
+        'page': page,
+        'limit': limit,
+        if (q.trim().isNotEmpty) 'q': q.trim(),
+      },
+    );
+    return (
+      items: _list(res.data['data']).map(DeveloperSummary.fromJson).toList(),
+      total: (res.data['total'] as num?)?.toInt() ?? 0,
+    );
+  }
+
   Future<List<DeveloperSummary>> developers({String? q, int? limit}) async {
     final res = await client.get(
       '/developers/summary',
@@ -266,6 +303,29 @@ class SearchApi {
   Future<List<AreaItem>> areas() async {
     final res = await client.get('/areas');
     return _list(res.data['data']).map(AreaItem.fromJson).toList();
+  }
+
+  /// One page of live compounds, searchable by compound or developer name and narrowed by area.
+  Future<({List<Map<String, dynamic>> items, int total})> compoundsPage({
+    int page = 1,
+    int limit = 20,
+    String q = '',
+    int? areaId,
+  }) async {
+    final res = await client.get(
+      '/compounds',
+      queryParams: {
+        'page': page,
+        'limit': limit,
+        if (q.isNotEmpty) 'q': q,
+        'area_id': ?areaId,
+      },
+      headers: ApiClient.apiV2,
+    );
+    return (
+      items: _list(res.data['data']),
+      total: (res.data['total'] as num?)?.toInt() ?? 0,
+    );
   }
 
   /// Live compounds for the compound picker.

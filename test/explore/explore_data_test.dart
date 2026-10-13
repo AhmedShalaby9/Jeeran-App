@@ -70,6 +70,18 @@ const _home = {
       },
     },
   ],
+  'counts': {'compounds_total': 412, 'developers_total': 86, 'launches_total': 24, 'offers_total': 17},
+  'top_developers': [
+    {
+      'id': 2,
+      'name_ar': 'بالم هيلز',
+      'name_en': 'Palm Hills',
+      'logo': null,
+      'is_verified': true,
+      'compounds_count': 9,
+      'units_count': 1240,
+    },
+  ],
   'top_compounds': [
     {
       'id': 1,
@@ -171,6 +183,18 @@ void main() {
     test('facets feed the quick grid', () {
       expect(d.typeCounts['chalet'], 1);
       expect(d.statusCounts['for_rent'], 1);
+    });
+
+    test('tile totals and the top developers come from the server', () {
+      final d = ExploreData.fromJson(Map<String, dynamic>.from(_home));
+      expect(d.counts, {
+        'compounds_total': 412,
+        'developers_total': 86,
+        'launches_total': 24,
+        'offers_total': 17,
+      });
+      expect(d.topDevelopers.single.nameEn, 'Palm Hills');
+      expect(d.topDevelopers.single.units, 1240);
     });
 
     test('top compounds arrive ranked, with price and units', () {

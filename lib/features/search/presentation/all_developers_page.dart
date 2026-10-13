@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/jv2.dart';
 import '../../compounds/presentation/widgets/page_widgets.dart';
+import '../../developers/presentation/widgets/developer_shimmer.dart';
 import '../data/search_api.dart';
 import 'widgets/search_widgets.dart';
 
@@ -17,47 +18,83 @@ class AllDevelopersPage extends StatefulWidget {
 }
 
 class _AllDevelopersPageState extends State<AllDevelopersPage> {
-  List<DeveloperSummary>? _all;
-  bool _failed = false;
+  static const _pageSize = 20;
+  final _scroll = ScrollController();
+  final _items = <DeveloperSummary>[];
   String _q = '';
+  int _page = 0, _total = 0;
+  bool _loading = true, _failed = false;
+  int _gen = 0; // a newer search makes older answers stale
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _scroll.addListener(() {
+      if (_scroll.position.extentAfter < 400) _more();
+    });
+    _reload();
   }
 
-  Future<void> _load() async {
-    setState(() => _failed = false);
+  @override
+  void dispose() {
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  Future<void> _reload() async {
+    final gen = ++_gen;
+    setState(() {
+      _items.clear();
+      _page = 0;
+      _total = 0;
+      _loading = true;
+      _failed = false;
+    });
+    await _fetch(gen);
+  }
+
+  Future<void> _more() async {
+    if (_loading || _failed || _items.length >= _total) return;
+    setState(() => _loading = true);
+    await _fetch(_gen);
+  }
+
+  Future<void> _fetch(int gen) async {
     try {
-      final list = await widget.api.developers();
-      if (mounted) setState(() => _all = list);
+      final r = await widget.api.developersPage(
+        page: _page + 1,
+        limit: _pageSize,
+        q: _q,
+      );
+      if (!mounted || gen != _gen) return;
+      setState(() {
+        _page++;
+        _total = r.total;
+        _items.addAll(r.items);
+        _loading = false;
+      });
     } catch (_) {
-      if (mounted) setState(() => _failed = true);
+      if (mounted && gen == _gen) {
+        setState(() {
+          _loading = false;
+          _failed = true;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final q = _q.trim().toLowerCase();
-    final list = (_all ?? const <DeveloperSummary>[])
-        .where(
-          (d) =>
-              q.isEmpty ||
-              d.nameAr.toLowerCase().contains(q) ||
-              d.nameEn.toLowerCase().contains(q),
-        )
-        .toList();
     return Scaffold(
       backgroundColor: JV2.bgDeep,
       body: Column(
         children: [
           SearchSubHeader(
             title: 'find.developers'.tr(),
-            trailing: _all == null ? null : '${_all!.length}',
+            trailing: _total > 0 ? '$_total' : null,
           ),
           Expanded(
-            child: _failed
+            child: _failed && _items.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -70,17 +107,14 @@ class _AllDevelopersPageState extends State<AllDevelopersPage> {
                         JV2PrimaryButton(
                           width: 160,
                           height: 46,
-                          onPressed: _load,
+                          onPressed: _reload,
                           child: Text('explore.try_again'.tr()),
                         ),
                       ],
                     ),
                   )
-                : _all == null
-                ? const Center(
-                    child: CircularProgressIndicator(color: JV2.navy),
-                  )
                 : ListView(
+                    controller: _scroll,
                     padding: const EdgeInsets.fromLTRB(
                       kSearchPad,
                       16,
@@ -106,7 +140,11 @@ class _AllDevelopersPageState extends State<AllDevelopersPage> {
                             const SizedBox(width: 9),
                             Expanded(
                               child: TextField(
-                                onChanged: (v) => setState(() => _q = v),
+                                key: const Key('dev-q'),
+                                onChanged: (v) {
+                                  _q = v.trim();
+                                  _reload();
+                                },
                                 style: const TextStyle(
                                   fontSize: 14.5,
                                   color: JV2.ink,
@@ -122,19 +160,21 @@ class _AllDevelopersPageState extends State<AllDevelopersPage> {
                         ),
                       ),
                       const SizedBox(height: 14),
-                      if (_all!.isEmpty)
+                      if (_loading && _items.isEmpty)
+                        const DevListShimmer()
+                      else if (_items.isEmpty && _q.isEmpty && !_loading)
                         EmptyBlock(
                           icon: Icons.business_rounded,
                           title: 'find.dev_empty'.tr(),
                         )
-                      else if (list.isEmpty)
+                      else if (_items.isEmpty && !_loading)
                         EmptyBlock(
                           icon: Icons.search_off_rounded,
                           title: 'find.no_dev_title'.tr(),
                           sub: 'find.no_dev_sub'.tr(),
                         )
                       else
-                        for (final d in list)
+                        for (final d in _items)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 9),
                             child: DevListRow(
@@ -142,6 +182,15 @@ class _AllDevelopersPageState extends State<AllDevelopersPage> {
                               onTap: () => widget.onOpen(d),
                             ),
                           ),
+                      if (_loading && _items.isNotEmpty)
+                        const DevListShimmer(rows: 2),
+                      if (_failed)
+                        Center(
+                          child: TextButton(
+                            onPressed: _more,
+                            child: Text('explore.try_again'.tr()),
+                          ),
+                        ),
                     ],
                   ),
           ),

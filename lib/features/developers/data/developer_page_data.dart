@@ -57,6 +57,7 @@ class DeveloperPageData {
   final String? cover;
   final bool isVerified;
   final bool isFollowing;
+  final bool alertsOn; // following and not muted
   final int followersCount;
   final int compoundsCount;
   final int unitsCount;
@@ -75,6 +76,7 @@ class DeveloperPageData {
     required this.cover,
     required this.isVerified,
     required this.isFollowing,
+    this.alertsOn = false,
     required this.followersCount,
     required this.compoundsCount,
     required this.unitsCount,
@@ -106,6 +108,7 @@ class DeveloperPageData {
       cover: _str(j['cover_image']),
       isVerified: verified,
       isFollowing: j['is_following'] == true,
+      alertsOn: j['is_following'] == true && j['alerts_enabled'] != false,
       followersCount: _int(j['followers_count']) ?? 0,
       compoundsCount: _int(stats['compounds_count']) ?? compounds.length,
       unitsCount: _int(stats['units_count']) ?? 0,
