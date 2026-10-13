@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_snackbar.dart';
-import '../../../subscription/presentation/bloc/subscription_bloc.dart';
-import '../../../subscription/presentation/bloc/subscription_event.dart';
-import '../../../subscription/presentation/bloc/subscription_state.dart';
+// PACKAGES DISABLED: import '../../../subscription/presentation/bloc/subscription_bloc.dart';
+// PACKAGES DISABLED: import '../../../subscription/presentation/bloc/subscription_event.dart';
+// PACKAGES DISABLED: import '../../../subscription/presentation/bloc/subscription_state.dart';
 import '../../../listing/listing_flow.dart';
 import '../../domain/entities/property.dart';
 import '../../domain/entities/property_filter_params.dart';
@@ -31,10 +31,11 @@ class MyPropertiesPage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<MyPropertiesBloc>()),
-        BlocProvider(
-          create: (_) =>
-              sl<SubscriptionBloc>()..add(const FetchMySubscriptionEvent()),
-        ),
+        // PACKAGES DISABLED:
+        // BlocProvider(
+        //   create: (_) =>
+        //       sl<SubscriptionBloc>()..add(const FetchMySubscriptionEvent()),
+        // ),
       ],
       child: const _MyPropertiesView(),
     );
@@ -134,13 +135,17 @@ class _MyPropertiesViewState extends State<_MyPropertiesView>
           if (properties == null) return const SizedBox.shrink();
           if (properties.isEmpty) return _EmptyView();
 
-          return BlocBuilder<SubscriptionBloc, SubscriptionState>(
-            buildWhen: (_, curr) =>
-                curr is MySubscriptionLoaded || curr is MySubscriptionLoading,
-            builder: (context, subState) {
-              final remainingFeatured = subState is MySubscriptionLoaded
-                  ? subState.subscription.remainingFeatured
-                  : 0;
+          // PACKAGES DISABLED: no subscription to read featured slots from; sellers cannot self-feature.
+          // return BlocBuilder<SubscriptionBloc, SubscriptionState>(
+          //   buildWhen: (_, curr) =>
+          //       curr is MySubscriptionLoaded || curr is MySubscriptionLoading,
+          //   builder: (context, subState) {
+          //     final remainingFeatured = subState is MySubscriptionLoaded
+          //         ? subState.subscription.remainingFeatured
+          //         : 0;
+          return StatefulBuilder(
+            builder: (context, _) {
+              const remainingFeatured = 0;
               return ListView.separated(
                 controller: _scrollController,
                 padding: const EdgeInsets.symmetric(
@@ -294,49 +299,50 @@ class _PropertyCardWithFeaturedToggleState
             ),
           ),
         ),
-        Positioned(
-          top: 8,
-          right: 8,
-          child: GestureDetector(
-            onTap: _loading ? null : _toggle,
-            child: Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: widget.property.isFeatured
-                    ? const Color(0xFFF59E0B)
-                    : Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.12),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: _loading
-                  ? const Padding(
-                      padding: EdgeInsets.all(8),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.primary,
-                      ),
-                    )
-                  : Icon(
-                      widget.property.isFeatured
-                          ? Icons.star_rounded
-                          : Icons.star_border_rounded,
-                      size: 18,
-                      color: widget.property.isFeatured
-                          ? Colors.white
-                          : canToggleOn
-                          ? AppColors.inkSub
-                          : AppColors.inkMute,
-                    ),
-            ),
-          ),
-        ),
+        // PACKAGES DISABLED: featured star toggle (it spent a package's featured slots)
+        // Positioned(
+        //   top: 8,
+        //   right: 8,
+        //   child: GestureDetector(
+        //     onTap: _loading ? null : _toggle,
+        //     child: Container(
+        //       width: 34,
+        //       height: 34,
+        //       decoration: BoxDecoration(
+        //         color: widget.property.isFeatured
+        //             ? const Color(0xFFF59E0B)
+        //             : Colors.white,
+        //         shape: BoxShape.circle,
+        //         boxShadow: [
+        //           BoxShadow(
+        //             color: Colors.black.withValues(alpha: 0.12),
+        //             blurRadius: 6,
+        //             offset: const Offset(0, 2),
+        //           ),
+        //         ],
+        //       ),
+        //       child: _loading
+        //           ? const Padding(
+        //               padding: EdgeInsets.all(8),
+        //               child: CircularProgressIndicator(
+        //                 strokeWidth: 2,
+        //                 color: AppColors.primary,
+        //               ),
+        //             )
+        //           : Icon(
+        //               widget.property.isFeatured
+        //                   ? Icons.star_rounded
+        //                   : Icons.star_border_rounded,
+        //               size: 18,
+        //               color: widget.property.isFeatured
+        //                   ? Colors.white
+        //                   : canToggleOn
+        //                   ? AppColors.inkSub
+        //                   : AppColors.inkMute,
+        //             ),
+        //     ),
+        //   ),
+        // ),
       ],
     );
   }

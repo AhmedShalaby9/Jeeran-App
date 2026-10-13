@@ -9,7 +9,7 @@ import '../../compounds/presentation/pages/compound_page.dart';
 import '../../developers/presentation/pages/developer_page.dart';
 import '../../news/v2/news_list_page.dart';
 import '../../news/v2/news_article_page.dart';
-import '../../packages/presentation/pages/packages_destination.dart';
+// PACKAGES DISABLED: import '../../packages/presentation/pages/packages_destination.dart';
 import '../../properties/data/models/property_model.dart';
 import '../../properties/presentation/pages/property_details_page.dart';
 import 'notif_api.dart';
@@ -50,11 +50,12 @@ NotifAction? actionFor(InboxItem n, {required bool ar}) {
         'notif.a_view_developer',
         (c) => _push(c, DeveloperPage(developerId: id)),
       );
-    case 'subscription':
-      return NotifAction(
-        'notif.a_upgrade',
-        (c) => _push(c, const PackagesDestination()),
-      );
+    // PACKAGES DISABLED: no "Upgrade" action on plan notifications.
+    // case 'subscription':
+    //   return NotifAction(
+    //     'notif.a_upgrade',
+    //     (c) => _push(c, const PackagesDestination()),
+    //   );
     case 'news':
       return NotifAction(
         'notif.a_open_news',

@@ -19,7 +19,7 @@ import '../../features/news/data/datasources/news_remote_data_source.dart';
 import '../../features/news/data/repositories/news_repository_impl.dart';
 import '../../features/news/domain/repositories/news_repository.dart';
 import '../../features/news/presentation/bloc/news_bloc.dart';
-import '../../features/plans/presentation/bloc/plans_bloc.dart';
+// PACKAGES DISABLED: import '../../features/plans/presentation/bloc/plans_bloc.dart';
 import '../../features/projects/data/datasources/project_remote_data_source.dart';
 import '../../features/projects/data/repositories/project_repository_impl.dart';
 import '../../features/projects/domain/repositories/project_repository.dart';
@@ -35,9 +35,9 @@ import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../features/plans/data/datasources/plan_remote_data_source.dart';
-import '../../features/plans/data/repositories/plan_repository_impl.dart';
-import '../../features/plans/domain/repositories/plan_repository.dart';
+// PACKAGES DISABLED: import '../../features/plans/data/datasources/plan_remote_data_source.dart';
+// PACKAGES DISABLED: import '../../features/plans/data/repositories/plan_repository_impl.dart';
+// PACKAGES DISABLED: import '../../features/plans/domain/repositories/plan_repository.dart';
 import '../../features/favorites/data/datasources/favorites_remote_data_source.dart';
 import '../../features/favorites/data/repositories/favorites_repository_impl.dart';
 import '../../features/favorites/domain/repositories/favorites_repository.dart';
@@ -46,10 +46,10 @@ import '../../features/seller_request/data/datasources/seller_request_remote_dat
 import '../../features/seller_request/data/repositories/seller_request_repository_impl.dart';
 import '../../features/seller_request/domain/repositories/seller_request_repository.dart';
 import '../../features/seller_request/presentation/bloc/seller_request_bloc.dart';
-import '../../features/subscription/data/datasources/subscription_remote_data_source.dart';
-import '../../features/subscription/data/repositories/subscription_repository_impl.dart';
-import '../../features/subscription/domain/repositories/subscription_repository.dart';
-import '../../features/subscription/presentation/bloc/subscription_bloc.dart';
+// PACKAGES DISABLED: import '../../features/subscription/data/datasources/subscription_remote_data_source.dart';
+// PACKAGES DISABLED: import '../../features/subscription/data/repositories/subscription_repository_impl.dart';
+// PACKAGES DISABLED: import '../../features/subscription/domain/repositories/subscription_repository.dart';
+// PACKAGES DISABLED: import '../../features/subscription/presentation/bloc/subscription_bloc.dart';
 import '../../features/notifications/data/datasources/notification_remote_data_source.dart';
 import '../../features/notifications/data/repositories/notification_repository_impl.dart';
 import '../../features/notifications/domain/repositories/notification_repository.dart';
@@ -79,11 +79,11 @@ Future<void> init() async {
   sl.registerFactory(() => MyPropertiesBloc(repository: sl()));
   sl.registerFactory(() => PropertySimilarBloc(repository: sl()));
   sl.registerLazySingleton(() => NewsBloc(repository: sl()));
-  sl.registerFactory(() => PlansBloc(repository: sl()));
+  // PACKAGES DISABLED: sl.registerFactory(() => PlansBloc(repository: sl()));
   sl.registerFactory(() => AuthBloc(repository: sl()));
   sl.registerLazySingleton(() => FavoritesBloc(repository: sl()));
   sl.registerFactory(() => SellerRequestBloc(repository: sl()));
-  sl.registerFactory(() => SubscriptionBloc(repository: sl()));
+  // PACKAGES DISABLED: sl.registerFactory(() => SubscriptionBloc(repository: sl()));
   sl.registerFactory(() => NotificationBloc(repository: sl()));
   sl.registerLazySingleton(() => UnreadCountCubit(repository: sl()));
   sl.registerFactory(() => AiAdsBloc(repository: sl()));
@@ -110,9 +110,10 @@ Future<void> init() async {
   sl.registerLazySingleton<NewsRepository>(
     () => NewsRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
-  sl.registerLazySingleton<PlanRepository>(
-    () => PlanRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
-  );
+  // PACKAGES DISABLED:
+  // sl.registerLazySingleton<PlanRepository>(
+  // () => PlanRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  // );
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
@@ -122,9 +123,10 @@ Future<void> init() async {
   sl.registerLazySingleton<SellerRequestRepository>(
     () => SellerRequestRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
-  sl.registerLazySingleton<SubscriptionRepository>(
-    () => SubscriptionRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
-  );
+  // PACKAGES DISABLED:
+  // sl.registerLazySingleton<SubscriptionRepository>(
+  // () => SubscriptionRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
+  // );
   sl.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
@@ -151,9 +153,10 @@ sl.registerLazySingleton<HomeLocalDataSource>(
   sl.registerLazySingleton<NewsRemoteDataSource>(
     () => NewsRemoteDataSourceImpl(apiClient: sl()),
   );
-  sl.registerLazySingleton<PlanRemoteDataSource>(
-    () => PlanRemoteDataSourceImpl(apiClient: sl()),
-  );
+  // PACKAGES DISABLED:
+  // sl.registerLazySingleton<PlanRemoteDataSource>(
+  // () => PlanRemoteDataSourceImpl(apiClient: sl()),
+  // );
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(apiClient: sl()),
   );
@@ -163,9 +166,10 @@ sl.registerLazySingleton<HomeLocalDataSource>(
   sl.registerLazySingleton<SellerRequestRemoteDataSource>(
     () => SellerRequestRemoteDataSourceImpl(apiClient: sl()),
   );
-  sl.registerLazySingleton<SubscriptionRemoteDataSource>(
-    () => SubscriptionRemoteDataSourceImpl(apiClient: sl()),
-  );
+  // PACKAGES DISABLED:
+  // sl.registerLazySingleton<SubscriptionRemoteDataSource>(
+  // () => SubscriptionRemoteDataSourceImpl(apiClient: sl()),
+  // );
   sl.registerLazySingleton<NotificationRemoteDataSource>(
     () => NotificationRemoteDataSourceImpl(apiClient: sl()),
   );

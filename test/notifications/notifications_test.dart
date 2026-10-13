@@ -356,8 +356,9 @@ void main() {
         'notif.a_view_developer',
       );
       expect(
+        // PACKAGES DISABLED: plan notifications carry no "Upgrade" action
         actionFor(n('subscription', 'x', entity: null), ar: false)?.labelKey,
-        'notif.a_upgrade',
+        isNull,
       );
       expect(
         actionFor(n('news', 'x'), ar: false)?.labelKey,
@@ -423,7 +424,7 @@ void main() {
         expect(find.text('Your listing is live'), findsOneWidget);
         expect(find.text('notif.a_view_listing'.tr()), findsOneWidget);
         expect(find.text('notif.a_see_units'.tr()), findsOneWidget);
-        expect(find.text('notif.a_upgrade'.tr()), findsOneWidget);
+        expect(find.text('notif.a_upgrade'.tr()), findsNothing); // PACKAGES DISABLED
         expect(find.text('notif.a_read_reason'.tr()), findsOneWidget);
 
         // filter chips carry their own unread counts and narrow the list from the server

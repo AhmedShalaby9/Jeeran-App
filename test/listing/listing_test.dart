@@ -464,7 +464,7 @@ void main() {
         await settle();
         expect(find.byKey(const Key('path-ai')), findsOneWidget);
         expect(find.byKey(const Key('path-form')), findsOneWidget);
-        expect(find.textContaining('18'), findsWidgets);
+        // PACKAGES DISABLED: no "N of M listings used" line any more
         expect(tester.takeException(), isNull);
 
         // ── the assistant: a sentence fills the card and asks for the price

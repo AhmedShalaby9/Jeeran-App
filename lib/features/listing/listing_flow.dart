@@ -566,7 +566,8 @@ class _ListingFlowState extends State<ListingFlow> {
 
   Widget _footer() {
     final review = _view == ListingView.review;
-    final left = _me?.plan?.left;
+    // PACKAGES DISABLED: final left = _me?.plan?.left;
+    const int? left = null;
     final label = review
         ? (_editing ? 'listing.save_changes'.tr() : 'listing.publish'.tr())
         : _step == 4
@@ -640,7 +641,7 @@ class _ListingFlowState extends State<ListingFlow> {
   // ── start ──────────────────────────────────────────────────
 
   Widget _start() {
-    final plan = _me?.plan;
+    // PACKAGES DISABLED: final plan = _me?.plan;
     return ListView(
       padding: const EdgeInsets.fromLTRB(kListPad, 24, kListPad, 24),
       children: [
@@ -820,17 +821,18 @@ class _ListingFlowState extends State<ListingFlow> {
             ),
           ),
         ),
-        if (plan != null) ...[
-          const SizedBox(height: 18),
-          Center(
-            child: Text(
-              'listing.plan_line'.tr(
-                args: [plan.name(_ar), '${plan.used}', '${plan.total}'],
-              ),
-              style: const TextStyle(fontSize: 12, color: JV2.inkSub),
-            ),
-          ),
-        ],
+        // PACKAGES DISABLED: "N of M listings used" line
+        // if (plan != null) ...[
+        //   const SizedBox(height: 18),
+        //   Center(
+        //     child: Text(
+        //       'listing.plan_line'.tr(
+        //         args: [plan.name(_ar), '${plan.used}', '${plan.total}'],
+        //       ),
+        //       style: const TextStyle(fontSize: 12, color: JV2.inkSub),
+        //     ),
+        //   ),
+        // ],
       ],
     );
   }
@@ -1871,7 +1873,7 @@ class _ListingFlowState extends State<ListingFlow> {
   }
 
   Widget _done() {
-    final plan = _me?.plan;
+    // PACKAGES DISABLED: final plan = _me?.plan;
     return Scaffold(
       backgroundColor: JV2.bgDeep,
       body: SafeArea(
@@ -1932,7 +1934,7 @@ class _ListingFlowState extends State<ListingFlow> {
                       textAlign: TextAlign.center,
                       style: JV2.sub,
                     ),
-                    if (plan != null && !_editing) ...[
+                    if (!_editing) ...[
                       const SizedBox(height: 18),
                       Container(
                         decoration: BoxDecoration(
@@ -1943,12 +1945,13 @@ class _ListingFlowState extends State<ListingFlow> {
                         child: Row(
                           children: [
                             for (final (i, e) in [
-                              (
-                                'listing.plan'.tr(),
-                                'listing.used_of'.tr(
-                                  args: ['${plan.used}', '${plan.total}'],
-                                ),
-                              ),
+                              // PACKAGES DISABLED: the "plan: used of total" cell
+                              // (
+                              //   'listing.plan'.tr(),
+                              //   'listing.used_of'.tr(
+                              //     args: ['${plan.used}', '${plan.total}'],
+                              //   ),
+                              // ),
                               ('listing.status'.tr(), 'listing.in_review'.tr()),
                             ].indexed)
                               Expanded(

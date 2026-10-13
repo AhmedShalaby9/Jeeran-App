@@ -12,8 +12,8 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../notifications/presentation/bloc/unread_count_cubit.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
-import '../../../plans/presentation/pages/plans_page.dart';
-import '../../../subscription/presentation/pages/subscription_details_page.dart';
+// PACKAGES DISABLED: import '../../../plans/presentation/pages/plans_page.dart';
+// PACKAGES DISABLED: import '../../../subscription/presentation/pages/subscription_details_page.dart';
 
 class HomeSliverAppBar extends StatelessWidget {
   const HomeSliverAppBar({super.key});
@@ -73,28 +73,29 @@ class _HomeSliverAppBarViewState extends State<_HomeSliverAppBarView> {
       ),
       actions: [
         // ── Seller subscription badge ────────────────────────────
-        if (showSubscribeBtn)
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: _SubscribeButton(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PlansPage()),
-              ),
-            ),
-          ),
-        if (showPremiumBadge)
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: _PremiumBadge(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const SubscriptionDetailsPage(),
-                ),
-              ),
-            ),
-          ),
+        // PACKAGES DISABLED: subscribe button and premium badge
+        // if (showSubscribeBtn)
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 8),
+        //     child: _SubscribeButton(
+        //       onTap: () => Navigator.push(
+        //         context,
+        //         MaterialPageRoute(builder: (_) => const PlansPage()),
+        //       ),
+        //     ),
+        //   ),
+        // if (showPremiumBadge)
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 8),
+        //     child: _PremiumBadge(
+        //       onTap: () => Navigator.push(
+        //         context,
+        //         MaterialPageRoute(
+        //           builder: (_) => const SubscriptionDetailsPage(),
+        //         ),
+        //       ),
+        //     ),
+        //   ),
 
         // ── Notifications bell ────────────────────────────────────
         BlocBuilder<UnreadCountCubit, int>(

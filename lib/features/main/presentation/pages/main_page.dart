@@ -20,7 +20,7 @@ import '../../../../core/widgets/lazy_indexed_stack.dart';
 import '../../../notifications/domain/repositories/notification_repository.dart';
 import '../../../notifications/presentation/bloc/unread_count_cubit.dart';
 import '../../../notifications/presentation/pages/notifications_page.dart';
-import '../../../packages/presentation/pages/packages_destination.dart';
+// PACKAGES DISABLED: import '../../../packages/presentation/pages/packages_destination.dart';
 import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../developers/presentation/pages/developer_page.dart';
 import '../../../search/presentation/search_home.dart';
@@ -126,13 +126,14 @@ class _MainPageState extends State<MainPage> {
           );
           return;
         }
-      case 'subscription':
-        // Plans & billing used to be a seller-only tab; it now opens from You.
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const PackagesDestination()),
-        );
-        return;
+      // PACKAGES DISABLED: old 'subscription' notifications now fall through to the notifications list.
+      // case 'subscription':
+      //   // Plans & billing used to be a seller-only tab; it now opens from You.
+      //   Navigator.push(
+      //     context,
+      //     MaterialPageRoute(builder: (_) => const PackagesDestination()),
+      //   );
+      //   return;
       default:
         break;
     }

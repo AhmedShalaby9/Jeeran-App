@@ -18,7 +18,7 @@ import '../explore/presentation/widgets/explore_widgets.dart';
 import '../main/presentation/pages/main_page.dart';
 import '../more/presentation/pages/contact_us_page.dart';
 import '../notifications/presentation/pages/notification_settings_page.dart';
-import '../packages/presentation/pages/packages_destination.dart';
+// PACKAGES DISABLED: import '../packages/presentation/pages/packages_destination.dart';
 import '../profile/profile_page.dart';
 import '../properties/presentation/pages/add_property_page.dart';
 import '../properties/presentation/pages/my_properties_page.dart';
@@ -296,7 +296,7 @@ class _YouPageState extends State<YouPage> {
   // ── body ──
 
   Widget _content(YouSummary s) {
-    final ar = isArabic(context);
+    // PACKAGES DISABLED:     final ar = isArabic(context);
     final seller = s.isSeller;
     final canList = (seller && !_inReview) || s.isAdmin;
     final lang = context.locale.languageCode;
@@ -306,7 +306,7 @@ class _YouPageState extends State<YouPage> {
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.only(top: 18, bottom: 30),
       children: [
-        if (seller && !_inReview) ...[_planCard(s), const SizedBox(height: 22)],
+        // PACKAGES DISABLED: if (seller && !_inReview) ...[_planCard(s), const SizedBox(height: 22)],
         if (canList) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: _pad),
@@ -401,6 +401,7 @@ class _YouPageState extends State<YouPage> {
                     AppSettingsService.instance.settings!.aiGuideVideoUrl!,
                   ),
                 ),
+              /* PACKAGES DISABLED
               _Row(
                 icon: Icons.credit_card_rounded,
                 label: 'bottom_nav.packages'.tr(),
@@ -409,6 +410,7 @@ class _YouPageState extends State<YouPage> {
                     : '${s.plan!.name(ar)}${s.plan!.endsAt == null ? '' : ' · ${(s.plan!.isFree ? 'you.plan_ends' : 'you.plan_renews').tr(args: [DateFormat.MMMd(context.locale.toString()).format(s.plan!.endsAt!)])}'}',
                 onTap: () => _go(const PackagesDestination()),
               ),
+              */
             ],
           ),
           const SizedBox(height: 22),
@@ -529,6 +531,7 @@ class _YouPageState extends State<YouPage> {
 
   // ── pieces ──
 
+  /* PACKAGES DISABLED
   Widget _planCard(YouSummary s) {
     final ar = isArabic(context);
     final p = s.plan;
@@ -723,6 +726,7 @@ class _YouPageState extends State<YouPage> {
       ),
     );
   }
+  */
 
   Widget _upsell() {
     return BlocBuilder<SellerRequestBloc, SellerRequestState>(

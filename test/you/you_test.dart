@@ -236,10 +236,11 @@ void main() {
           ),
         );
         expect(find.text('you.role_seller'.tr().toUpperCase()), findsOneWidget);
-        expect(find.text(lang == 'ar' ? 'نمو' : 'Growth'), findsWidgets);
-        expect(find.text('18 / 20'), findsOneWidget);
-        expect(find.text('you.plan_upgrade'.tr()), findsOneWidget);
-        expect(find.text('you.plan_left'.plural(2)), findsOneWidget);
+        // PACKAGES DISABLED: no plan card, no packages row, even when the server still sent a plan
+        expect(find.text(lang == 'ar' ? 'نمو' : 'Growth'), findsNothing);
+        expect(find.text('18 / 20'), findsNothing);
+        expect(find.text('you.plan_upgrade'.tr()), findsNothing);
+        expect(find.text('bottom_nav.packages'.tr()), findsNothing);
         expect(find.text('you.list_property'.tr()), findsOneWidget);
         expect(find.text('you.g_selling'.tr().toUpperCase()), findsOneWidget);
         expect(
@@ -262,8 +263,7 @@ void main() {
             },
           ),
         );
-        expect(find.text('you.plan_manage'.tr()), findsOneWidget);
-        expect(find.textContaining('you.plan_left'.plural(16)), findsNothing);
+        expect(find.text('you.plan_manage'.tr()), findsNothing);
 
         // always there: account rows and sign out can be reached
         expect(find.text('more.language'.tr()), findsOneWidget);
