@@ -33,7 +33,15 @@ class _Recorder implements VoiceRecorder {
 class _Speaker implements VoiceSpeaker {
   final said = <String>[];
   @override
-  Future<void> speak(String text, String lang) async => said.add(text);
+  Future<void> speak(
+    String text,
+    String lang, {
+    void Function()? onDone,
+  }) async {
+    said.add(text);
+    onDone?.call();
+  }
+
   @override
   Future<void> stop() async {}
 }
@@ -64,6 +72,13 @@ class _FakeClient extends ApiClient {
     uploaded = {'path': path, 'field': fileField, ...?fields};
     return _ok(path, {'id': 41, 'transcript': transcript, 'language': 'en'});
   }
+
+  @override
+  Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParams,
+    Map<String, dynamic>? headers,
+  }) async => _ok(path, <dynamic>[]);
 
   @override
   Future<Response> post(
@@ -171,49 +186,80 @@ void main() {
       expect(find.text('voice.idle_title'.tr()), findsOneWidget);
       expect(tester.takeException(), isNull);
 
-      // denied mic → notice, nothing recorded
+      // denied mic → notice with a way to settings, nothing recorded
       rec.started = 0;
       rec.allowed = false;
       await tester.tap(find.byKey(const Key('voice-mic')));
       await tester.pump(const Duration(milliseconds: 100));
       expect(find.text('voice.denied_title'.tr()), findsOneWidget);
+      expect(find.text('voice.open_settings'.tr()), findsOneWidget);
       expect(rec.started, 0);
-      await tester.tap(find.text('voice.try_again'.tr()));
+      await tester.tap(find.byKey(const Key('voice-notice-primary')));
       await tester.pump();
       rec.allowed = true;
 
-      // record 3 seconds, stop
+      // the language chip cycles auto → ar → en and is what the recording is sent as
+      await tester.tap(find.byKey(const Key('voice-lang')));
+      await tester.pump();
+      expect(find.text('voice.lang_ar'.tr()), findsWidgets);
+
+      // record 3 seconds: the live card is shown, then stop
       await tester.tap(find.byKey(const Key('voice-mic')));
       await tester.pump(const Duration(milliseconds: 100));
       expect(rec.started, 1);
+      expect(find.byKey(const Key('voice-live')), findsOneWidget);
+      expect(find.text('voice.hearing'.tr().toUpperCase()), findsOneWidget);
       await tester.pump(const Duration(seconds: 3));
       await tester.tap(find.byKey(const Key('voice-mic')));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 300));
 
-      // upload carried the audio field and the length
+      // upload carried the audio field, the length and the chosen language
       expect(client.uploaded!['path'], '/voice/transcribe');
       expect(client.uploaded!['field'], 'audio');
       expect(client.uploaded!['duration'], greaterThanOrEqualTo(3));
+      expect(client.uploaded!['language'], 'ar');
 
-      // the transcript is shown and editable
-      expect(find.text('voice.heard'.tr().toUpperCase()), findsOneWidget);
+      // no confirm step: it searches straight away, on this screen, and reads the answer back
+      expect(
+        client.sentMessage!['content'],
+        'Chalets in Sahel under twelve million',
+      );
+      expect(client.sentMessage!['voice_id'], 41);
+      expect(speaker.said, ['Six chalets match.']);
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.byKey(const Key('voice-reply')), findsOneWidget);
+      expect(find.text('Six chalets match.'), findsOneWidget);
+      // what was heard stays visible, with a way to fix it
+      expect(
+        find.text('Chalets in Sahel under twelve million'),
+        findsOneWidget,
+      );
+      expect(find.byType(AskView), findsNothing);
+
+      // fix the text and send it again
+      await tester.tap(find.byKey(const Key('voice-edit')));
+      await tester.pump();
       await tester.enterText(
         find.byKey(const Key('voice-text')),
         'Chalets in Sahel under 11 million',
       );
-
-      // ask → the Ask screen opens with the (edited) question, linked to the recording, answer spoken
-      await tester.tap(find.text('voice.ask'.tr()));
+      await tester.tap(find.byKey(const Key('voice-send')));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
-      expect(find.byType(AskView), findsOneWidget);
+      await tester.pump(const Duration(seconds: 1));
       expect(
         client.sentMessage!['content'],
         'Chalets in Sahel under 11 million',
       );
-      expect(client.sentMessage!['voice_id'], 41);
-      expect(speaker.said, ['Six chalets match.']);
+      expect(client.sentMessage!.containsKey('voice_id'), isFalse);
+
+      // continue in Ask → the same conversation opens in the chat
+      await tester.tap(find.byKey(const Key('voice-continue')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.byType(AskView), findsOneWidget);
+      expect(tester.takeException(), isNull);
       await tester.pump(const Duration(seconds: 2));
     });
   }

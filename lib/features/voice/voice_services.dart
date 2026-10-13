@@ -55,7 +55,8 @@ class DeviceRecorder implements VoiceRecorder {
 
 /// Reads an answer aloud.
 abstract class VoiceSpeaker {
-  Future<void> speak(String text, String lang);
+  /// [onDone] runs when the reading ends or is stopped.
+  Future<void> speak(String text, String lang, {void Function()? onDone});
   Future<void> stop();
 }
 
@@ -63,8 +64,15 @@ class DeviceSpeaker implements VoiceSpeaker {
   final FlutterTts _tts = FlutterTts();
 
   @override
-  Future<void> speak(String text, String lang) async {
+  Future<void> speak(
+    String text,
+    String lang, {
+    void Function()? onDone,
+  }) async {
     await _tts.setLanguage(lang == 'ar' ? 'ar-EG' : 'en-US');
+    _tts.setCompletionHandler(() => onDone?.call());
+    _tts.setCancelHandler(() => onDone?.call());
+    _tts.setErrorHandler((_) => onDone?.call());
     await _tts.speak(text);
   }
 

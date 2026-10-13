@@ -444,13 +444,13 @@ class AskAssistantMsg extends StatelessWidget {
                 _md(typing ? '$text▍' : text),
                 if (done && refs.properties.isNotEmpty) ...[
                   const SizedBox(height: 14),
-                  _PropertyRail(items: refs.properties, onTap: onProperty),
+                  AskPropertyRail(items: refs.properties, onTap: onProperty),
                 ],
                 if (done && refs.projects.isNotEmpty) ...[
                   const SizedBox(height: 14),
                   _Label('concierge.compounds'.tr()),
                   const SizedBox(height: 8),
-                  _CompoundChips(items: refs.projects, onTap: onCompound),
+                  AskCompoundChips(items: refs.projects, onTap: onCompound),
                 ],
                 if (done && refs.news.isNotEmpty) ...[
                   const SizedBox(height: 14),
@@ -497,10 +497,10 @@ String _pick(BuildContext c, Map<String, dynamic> m, String key) {
   return isArabic(c) ? (ar.isNotEmpty ? ar : en) : (en.isNotEmpty ? en : ar);
 }
 
-class _PropertyRail extends StatelessWidget {
+class AskPropertyRail extends StatelessWidget {
   final List<Map<String, dynamic>> items;
   final void Function(Map<String, dynamic>) onTap;
-  const _PropertyRail({required this.items, required this.onTap});
+  const AskPropertyRail({required this.items, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -592,10 +592,10 @@ class _PropertyRail extends StatelessWidget {
   }
 }
 
-class _CompoundChips extends StatelessWidget {
+class AskCompoundChips extends StatelessWidget {
   final List<Map<String, dynamic>> items;
   final void Function(int id, String name) onTap;
-  const _CompoundChips({required this.items, required this.onTap});
+  const AskCompoundChips({required this.items, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
