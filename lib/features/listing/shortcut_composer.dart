@@ -191,6 +191,7 @@ class _ShortcutComposerState extends State<ShortcutComposer> {
                   Expanded(
                     child: Container(
                       height: 48,
+                      alignment: AlignmentDirectional.centerStart,
                       padding: const EdgeInsets.symmetric(horizontal: 15),
                       decoration: BoxDecoration(
                         color: JV2.surface,
@@ -204,8 +205,14 @@ class _ShortcutComposerState extends State<ShortcutComposer> {
                         onSubmitted: (_) => _send(),
                         textInputAction: TextInputAction.send,
                         style: const TextStyle(fontSize: 14, color: JV2.ink),
+                        textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
                           border: InputBorder.none,
+                          filled: false,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
                           hintText: widget.hint,
                           hintStyle: const TextStyle(color: JV2.inkMute),
                         ),

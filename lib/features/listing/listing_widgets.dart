@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../core/widgets/jv2.dart';
+import 'listing_api.dart';
+import 'listing_draft.dart';
 
 const double kListPad = 20;
 const Color _aiFill = Color(0x0FB8893D);
@@ -177,8 +179,13 @@ class _ListingInputState extends State<ListingInput> {
                   minLines: widget.multiline ? 3 : 1,
                   maxLines: widget.multiline ? 8 : 1,
                   style: const TextStyle(fontSize: 15, color: JV2.ink),
+                  textAlignVertical: TextAlignVertical.center,
                   decoration: InputDecoration(
                     border: InputBorder.none,
+                    filled: false,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
                     isDense: true,
                     hintText: widget.hint,
                     hintStyle: const TextStyle(
@@ -373,3 +380,112 @@ String money(num n) {
 }
 
 String grouped(num n) => NumberFormat('#,###').format(n);
+
+/// Bottom sheet that picks the compound a listing belongs to.
+class CompoundPicker extends StatefulWidget {
+  final ListingApi api;
+  final bool ar;
+  const CompoundPicker({required this.api, required this.ar});
+
+  @override
+  State<CompoundPicker> createState() => CompoundPickerState();
+}
+
+class CompoundPickerState extends State<CompoundPicker> {
+  List<CompoundRef>? _all;
+  bool _failed = false;
+  String _q = '';
+
+  @override
+  void initState() {
+    super.initState();
+    widget.api
+        .compounds()
+        .then((l) {
+          if (mounted) setState(() => _all = l);
+        })
+        .catchError((_) {
+          if (mounted) setState(() => _failed = true);
+        });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _q.trim().toLowerCase();
+    final list = (_all ?? [])
+        .where(
+          (c) =>
+              q.isEmpty ||
+              '${c.nameAr} ${c.nameEn} ${c.developerEn ?? ''} ${c.developerAr ?? ''}'
+                  .toLowerCase()
+                  .contains(q),
+        )
+        .toList();
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: SizedBox(
+          height: MediaQuery.sizeOf(context).height * .75,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(kListPad, 18, kListPad, 10),
+                child: TextField(
+                  key: const Key('compound-search'),
+                  autofocus: false,
+                  onChanged: (v) => setState(() => _q = v),
+                  decoration: InputDecoration(
+                    hintText: 'listing.search_compound'.tr(),
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    filled: true,
+                    fillColor: JV2.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: JV2.line),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: _all == null
+                    ? Center(
+                        child: _failed
+                            ? Text('listing.load_failed'.tr())
+                            : const CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: JV2.goldHi,
+                              ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: kListPad,
+                        ),
+                        itemCount: list.length,
+                        itemBuilder: (_, i) => ListTile(
+                          key: Key('compound-${list[i].id}'),
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            list[i].name(widget.ar),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: list[i].sub(widget.ar).isEmpty
+                              ? null
+                              : Text(
+                                  list[i].sub(widget.ar),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                          onTap: () => Navigator.pop(context, list[i]),
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

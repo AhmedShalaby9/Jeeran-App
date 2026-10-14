@@ -83,6 +83,20 @@ class ApiClient {
     }
   }
 
+  /// POST that answers with a file (audio), returned as bytes.
+  Future<List<int>> postForBytes(String path, {required Map<String, dynamic> data}) async {
+    try {
+      final res = await _dio.post<List<int>>(
+        path,
+        data: data,
+        options: Options(responseType: ResponseType.bytes, receiveTimeout: const Duration(seconds: 25)),
+      );
+      return res.data ?? const [];
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
   Future<Response> put(String path, {dynamic data}) async {
     try {
       return await _dio.put(path, data: data);

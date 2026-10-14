@@ -9,6 +9,7 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/double_back_exit.dart';
 import '../../../../core/widgets/jv2.dart';
 import '../../../ai_chat/ask/ask_view.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -181,13 +182,18 @@ class _MainPageState extends State<MainPage> {
         BlocProvider.value(value: sl<FavoritesBloc>()),
         BlocProvider.value(value: sl<UnreadCountCubit>()),
       ],
-      child: Scaffold(
-        backgroundColor: JV2.bgDeep,
-        body: LazyIndexedStack(index: _selectedIndex, children: _pages),
-        bottomNavigationBar: _JeeranTabBar(
-          tabs: _tabs,
-          selectedIndex: _selectedIndex,
-          onTap: _onItemTapped,
+      // back never closes the app at once: other tabs go to Explore, Explore asks for a second press
+      child: DoubleBackExit(
+        atHome: _selectedIndex == 0,
+        goHome: () => _onItemTapped(0),
+        child: Scaffold(
+          backgroundColor: JV2.bgDeep,
+          body: LazyIndexedStack(index: _selectedIndex, children: _pages),
+          bottomNavigationBar: _JeeranTabBar(
+            tabs: _tabs,
+            selectedIndex: _selectedIndex,
+            onTap: _onItemTapped,
+          ),
         ),
       ),
     );

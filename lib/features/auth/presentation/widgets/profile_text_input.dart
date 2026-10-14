@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/jv2.dart';
 
 class ProfileTextInput extends StatelessWidget {
   final TextEditingController controller;
@@ -19,14 +20,16 @@ class ProfileTextInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 52,
+    // no fixed height: the vertical padding sets the box, so the hint and the text sit exactly in the middle
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 52),
       child: TextField(
         controller: controller,
         keyboardType: type,
         onChanged: onChanged,
         readOnly: readOnly,
         enabled: !readOnly,
+        textAlignVertical: TextAlignVertical.center,
         style: TextStyle(
           fontSize: 16,
           color: readOnly ? AppColors.inkSub : AppColors.ink,
@@ -35,23 +38,27 @@ class ProfileTextInput extends StatelessWidget {
           hintText: hint,
           hintStyle: const TextStyle(color: AppColors.inkMute, fontSize: 16),
           filled: true,
-          fillColor: readOnly ? const Color(0xFFECEDF0) : const Color(0xFFF5F6F8),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          fillColor: readOnly ? JV2.fillHi : JV2.surface,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 15,
+          ),
+
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.hairline, width: 1.5),
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: JV2.line),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.hairline, width: 1.5),
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: JV2.line),
           ),
           disabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.hairline, width: 1.5),
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: JV2.line),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: JV2.navy, width: 1.5),
           ),
         ),
       ),

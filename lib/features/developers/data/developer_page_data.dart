@@ -56,6 +56,7 @@ class DeveloperPageData {
   final String? logo;
   final String? cover;
   final bool isVerified;
+  final bool isTop; // the source's "top developer" mark — not Jeeran's verified tick
   final bool isFollowing;
   final bool alertsOn; // following and not muted
   final int followersCount;
@@ -75,6 +76,7 @@ class DeveloperPageData {
     required this.logo,
     required this.cover,
     required this.isVerified,
+    this.isTop = false,
     required this.isFollowing,
     this.alertsOn = false,
     required this.followersCount,
@@ -107,6 +109,7 @@ class DeveloperPageData {
       logo: _str(j['logo']),
       cover: _str(j['cover_image']),
       isVerified: verified,
+      isTop: j['is_top'] == true,
       isFollowing: j['is_following'] == true,
       alertsOn: j['is_following'] == true && j['alerts_enabled'] != false,
       followersCount: _int(j['followers_count']) ?? 0,

@@ -431,6 +431,8 @@ class _AskViewState extends State<AskView> {
         context,
         MaterialPageRoute(builder: (_) => const NewsListPage()),
       ),
+      onAnswer: _send,
+      canAnswer: i == _turns.length - 1 && !_thinking,
     );
   }
 }

@@ -10,6 +10,7 @@ import '../../../news/domain/entities/news.dart';
 import '../../../news/presentation/bloc/news_bloc.dart';
 import '../../../news/presentation/bloc/news_event.dart';
 import '../../../news/presentation/bloc/news_state.dart';
+import '../../../../core/widgets/jv2.dart';
 
 class AdminNewsFormPage extends StatefulWidget {
   final News? news; // null = create mode
@@ -391,18 +392,18 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
       onChanged: onChanged,
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: JV2.surface,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: JV2.line),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: JV2.line),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.secondary),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: JV2.navy, width: 1.5),
         ),
       ),
       validator: required

@@ -273,7 +273,7 @@ class _ListingFlowState extends State<ListingFlow> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
-      builder: (_) => _CompoundPicker(api: _api, ar: _ar),
+      builder: (_) => CompoundPicker(api: _api, ar: _ar),
     );
     if (picked != null) _touch('compound', () => _d.compound = picked);
   }
@@ -344,8 +344,65 @@ class _ListingFlowState extends State<ListingFlow> {
     }
   }
 
+  /// "Review & publish" on the assistant's card. The card has no title or description, so write them
+  /// first; if that is not possible, take the person to the step where they can type them.
+  Future<void> _reviewFromAssistant() async {
+    if (_d.title.trim().isEmpty || _d.description.trim().isEmpty) {
+      _toast('listing.writing_text'.tr());
+      await _writeForMe();
+    }
+    if (!mounted) return;
+    // the assistant could not write it: build a plain title and description from the card so the person
+    // is never stuck (they can still edit both in the form)
+    if (_d.title.trim().isEmpty || _d.description.trim().isEmpty) {
+      _fillTextFromFields();
+    }
+    if (_d.mediaValid) {
+      setState(() => _view = ListingView.review);
+    } else {
+      setState(() {
+        _view = ListingView.form;
+        _step = 4;
+      });
+      _toast('listing.err_media'.tr());
+    }
+  }
+
+  /// A plain, factual title and description from the fields, used when the assistant is unavailable.
+  void _fillTextFromFields() {
+    final d = _d;
+    if (d.type == null || d.compound == null) return;
+    final type = 'listing.t_${d.type}'.tr();
+    final name = d.compound!.name(_ar);
+    final facts = [
+      if (!d.noRooms && d.bedroomsSet)
+        '${'listing.f_beds'.tr()}: ${d.bedrooms}',
+      if (d.sizeValue != null) '${'listing.f_size'.tr()}: ${d.size} m²',
+      if (d.level.trim().isNotEmpty)
+        '${'listing.f_floor'.tr()}: ${d.level.trim()}',
+      if (d.view != null)
+        '${'listing.f_view'.tr()}: ${'listing.v_${d.view}'.tr()}',
+      if (d.delivery != null)
+        '${'listing.f_delivery'.tr()}: ${d.delivery == 'ready' ? 'listing.d_ready'.tr() : d.delivery}',
+    ];
+    setState(() {
+      if (d.title.trim().isEmpty) d.title = '$type · $name';
+      if (d.description.trim().isEmpty)
+        d.description = '$type · $name. ${facts.join(' · ')}';
+    });
+  }
+
   Future<void> _publish() async {
     if (_publishing) return;
+    // the server refuses a listing without a title, so never send one
+    if (!_d.mediaValid) {
+      setState(() {
+        _view = ListingView.form;
+        _step = 4;
+      });
+      _toast('listing.err_media'.tr());
+      return;
+    }
     setState(() => _publishing = true);
     try {
       final urls = <String>[..._d.existingImages];
@@ -424,7 +481,7 @@ class _ListingFlowState extends State<ListingFlow> {
           onClose: () => widget.initialView == ListingView.assistant
               ? Navigator.maybePop(context)
               : setState(() => _view = ListingView.start),
-          onReview: () => setState(() => _view = ListingView.review),
+          onReview: _reviewFromAssistant,
           onOpenForm: () => setState(() {
             _view = ListingView.form;
             _step = 1;
@@ -2111,114 +2168,6 @@ class _BandBar extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _CompoundPicker extends StatefulWidget {
-  final ListingApi api;
-  final bool ar;
-  const _CompoundPicker({required this.api, required this.ar});
-
-  @override
-  State<_CompoundPicker> createState() => _CompoundPickerState();
-}
-
-class _CompoundPickerState extends State<_CompoundPicker> {
-  List<CompoundRef>? _all;
-  bool _failed = false;
-  String _q = '';
-
-  @override
-  void initState() {
-    super.initState();
-    widget.api
-        .compounds()
-        .then((l) {
-          if (mounted) setState(() => _all = l);
-        })
-        .catchError((_) {
-          if (mounted) setState(() => _failed = true);
-        });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final q = _q.trim().toLowerCase();
-    final list = (_all ?? [])
-        .where(
-          (c) =>
-              q.isEmpty ||
-              '${c.nameAr} ${c.nameEn} ${c.developerEn ?? ''} ${c.developerAr ?? ''}'
-                  .toLowerCase()
-                  .contains(q),
-        )
-        .toList();
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: SizedBox(
-          height: MediaQuery.sizeOf(context).height * .75,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(kListPad, 18, kListPad, 10),
-                child: TextField(
-                  key: const Key('compound-search'),
-                  autofocus: false,
-                  onChanged: (v) => setState(() => _q = v),
-                  decoration: InputDecoration(
-                    hintText: 'listing.search_compound'.tr(),
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    filled: true,
-                    fillColor: JV2.surface,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: const BorderSide(color: JV2.line),
-                    ),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: _all == null
-                    ? Center(
-                        child: _failed
-                            ? Text('listing.load_failed'.tr())
-                            : const CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: JV2.goldHi,
-                              ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: kListPad,
-                        ),
-                        itemCount: list.length,
-                        itemBuilder: (_, i) => ListTile(
-                          key: Key('compound-${list[i].id}'),
-                          contentPadding: EdgeInsets.zero,
-                          title: Text(
-                            list[i].name(widget.ar),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          subtitle: list[i].sub(widget.ar).isEmpty
-                              ? null
-                              : Text(
-                                  list[i].sub(widget.ar),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                          onTap: () => Navigator.pop(context, list[i]),
-                        ),
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

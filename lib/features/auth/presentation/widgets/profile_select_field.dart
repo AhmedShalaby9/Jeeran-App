@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/jv2.dart';
 
 class ProfileSelectField extends StatelessWidget {
   final String? value;
@@ -21,9 +22,9 @@ class ProfileSelectField extends StatelessWidget {
         height: 52,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFFF5F6F8),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.hairline, width: 1.5),
+          color: JV2.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: JV2.line),
         ),
         child: Row(
           children: [

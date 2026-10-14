@@ -109,11 +109,13 @@ class PageTabs extends StatelessWidget {
   final List<String> labels;
   final int index;
   final ValueChanged<int> onChanged;
+  final List<int?>? counts; // a small number beside a label (units in the Primary / Resale tabs)
   const PageTabs({
     super.key,
     required this.labels,
     required this.index,
     required this.onChanged,
+    this.counts,
   });
 
   @override
@@ -140,15 +142,46 @@ class PageTabs extends StatelessWidget {
                       ),
                     ),
                   ),
-                  child: Text(
-                    labels[i],
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: i == index
-                          ? FontWeight.w800
-                          : FontWeight.w600,
-                      color: i == index ? JV2.navy : JV2.inkMute,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          labels[i],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: i == index
+                                ? FontWeight.w800
+                                : FontWeight.w600,
+                            color: i == index ? JV2.navy : JV2.inkMute,
+                          ),
+                        ),
+                      ),
+                      if (counts != null && i < counts!.length && counts![i] != null) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          key: Key('tab-count-$i'),
+                          constraints: const BoxConstraints(minWidth: 20),
+                          height: 18,
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: i == index ? JV2.navy : JV2.fillHi,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: Text(
+                            '${counts![i]}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: i == index ? Colors.white : JV2.inkSub,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
               ),

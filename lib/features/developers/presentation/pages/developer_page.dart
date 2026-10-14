@@ -1,4 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
+import '../../../compounds/presentation/widgets/compound_units.dart'
+    show LogoTile, TopBadge;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -156,6 +158,31 @@ class _DeveloperPageState extends State<DeveloperPage> {
                     d.name.pick(_ar),
                   ),
                 ),
+                if (d.unitsCount == 0) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    key: const Key('dev-no-units'),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: JV2.fillFaint,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: JV2.line),
+                    ),
+                    child: Text(
+                      'unit.dev_no_units'.tr(
+                        namedArgs: {'name': d.name.pick(_ar)},
+                      ),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        height: 1.5,
+                        color: JV2.ink,
+                      ),
+                    ),
+                  ),
+                ],
                 if (_follow != null) ...[
                   const SizedBox(height: 16),
                   AlertsStrip(c: _follow!),
@@ -234,28 +261,7 @@ class _DeveloperPageState extends State<DeveloperPage> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  clipBehavior: Clip.antiAlias,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: JV2.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: JV2.line, width: 1),
-                    boxShadow: JV2.shadowMd,
-                  ),
-                  child: (d?.logo ?? '').isNotEmpty
-                      ? Photo(url: d!.logo, width: 72, height: 72, radius: 20)
-                      : Text(
-                          name.isEmpty
-                              ? '?'
-                              : name.characters.first.toUpperCase(),
-                          style: JV2
-                              .display(context, 30)
-                              .copyWith(color: JV2.navy),
-                        ),
-                ),
+                LogoTile(name: name, logo: d?.logo, size: 72),
                 if (_follow != null) ...[
                   const SizedBox(width: 13),
                   Expanded(child: FollowCta(c: _follow!, height: 44)),
@@ -296,6 +302,10 @@ class _DeveloperPageState extends State<DeveloperPage> {
                           '  ·  ',
                           style: TextStyle(color: JV2.inkMute),
                         ),
+                      ],
+                      if (d.isTop) ...[
+                        const TopBadge(),
+                        const SizedBox(width: 10),
                       ],
                       Text(
                         'developer.followers'.plural(d.followersCount),
@@ -449,7 +459,9 @@ class _CompoundRow extends StatelessWidget {
     final name = c.name.pick(ar);
     final meta = <String>[
       if (c.area.pick(ar).isNotEmpty) c.area.pick(ar),
-      'developer.n_units'.plural(c.unitsCount),
+      c.unitsCount == 0
+          ? 'unit.no_units_yet'.tr()
+          : 'developer.n_units'.plural(c.unitsCount),
     ].join(' · ');
     return GestureDetector(
       onTap: () => Navigator.push(

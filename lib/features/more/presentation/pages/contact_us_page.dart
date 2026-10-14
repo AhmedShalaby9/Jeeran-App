@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../../core/widgets/jv2.dart';
 
 class ContactUsPage extends StatefulWidget {
   const ContactUsPage({super.key});
@@ -44,9 +45,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text('more.contact_us'.tr()),
-      ),
+      appBar: AppBar(title: Text('more.contact_us'.tr())),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -136,22 +135,19 @@ class _ContactUsPageState extends State<ContactUsPage> {
                       ? 'اكتب رسالتك هنا...'
                       : 'Write your chat here...',
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: JV2.surface,
                   contentPadding: const EdgeInsets.all(16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                    borderSide: const BorderSide(color: JV2.line),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                    borderSide: const BorderSide(color: JV2.line),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
+                    borderSide: const BorderSide(color: JV2.navy, width: 1.5),
                   ),
                 ),
               ),
@@ -203,7 +199,10 @@ class _ContactUsPageState extends State<ContactUsPage> {
                     onTap: () async {
                       final uri = Uri.parse('https://wa.me/201155464666');
                       if (await canLaunchUrl(uri)) {
-                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
                       }
                     },
                   ),

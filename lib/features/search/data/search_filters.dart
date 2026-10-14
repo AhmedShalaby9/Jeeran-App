@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:equatable/equatable.dart';
 
 import 'search_api.dart' show PromotionItem;
@@ -28,7 +29,11 @@ class SearchFilters extends Equatable {
   final String? developerName; // display only
   final bool featured;
   final bool verifiedOnly;
-  final String sort; // newest | price_asc | price_desc | largest
+  final bool launch; // developer launches only
+  final bool offer; // units with an offer only
+  final String? maxDown; // the biggest down payment (%) the buyer accepts: 0 | 5 | 10 | 20
+  final String? minYears; // the shortest instalment length (years): 5 | 8 | 10
+  final String sort; // newest | price_asc | price_desc | largest | discount
 
   const SearchFilters({
     this.q = '',
@@ -54,6 +59,10 @@ class SearchFilters extends Equatable {
     this.developerName,
     this.featured = false,
     this.verifiedOnly = false,
+    this.launch = false,
+    this.offer = false,
+    this.maxDown,
+    this.minYears,
     this.sort = 'newest',
   });
 
@@ -66,7 +75,7 @@ class SearchFilters extends Equatable {
           compoundName: p.compoundName(ar),
         );
 
-  static const sorts = ['newest', 'price_asc', 'price_desc', 'largest'];
+  static const sorts = ['newest', 'price_asc', 'price_desc', 'largest', 'discount'];
 
   /// Query parameters for `/properties`, `/properties/count` and `/properties/relax`.
   Map<String, dynamic> toQuery() => {
@@ -79,8 +88,12 @@ class SearchFilters extends Equatable {
     if (maxPrice != null) 'max_price': maxPrice,
     if (minSize != null) 'min_size': minSize,
     if (maxSize != null) 'max_size': maxSize,
-    if (delivery != null) 'delivery': delivery,
+    if (delivery != null) 'delivery': deliveryQuery(delivery!),
     if (finishing != null) 'finishing': finishing,
+    if (launch) 'launch': '1',
+    if (offer) 'offer': '1',
+    if (maxDown != null) 'down_max': maxDown,
+    if (minYears != null) 'years_min': minYears,
     if (payment != null) 'payment': payment,
     if (amenities.isNotEmpty) 'amenities': amenities.join(','),
     if (areaId != null) 'area_id': areaId,
@@ -96,6 +109,7 @@ class SearchFilters extends Equatable {
     'price_asc' => {'sort': 'price', 'order': 'ASC'},
     'price_desc' => {'sort': 'price', 'order': 'DESC'},
     'largest' => {'sort': 'size', 'order': 'DESC'},
+    'discount' => {'sort': 'offer_discount_percent', 'order': 'DESC'},
     _ => {'sort': 'created_at', 'order': 'DESC'},
   };
 
@@ -122,6 +136,10 @@ class SearchFilters extends Equatable {
     if (developerId != null) n++;
     if (featured) n++;
     if (verifiedOnly) n++;
+    if (launch) n++;
+    if (offer) n++;
+    if (maxDown != null) n++;
+    if (minYears != null) n++;
     return n;
   }
 
@@ -151,6 +169,10 @@ class SearchFilters extends Equatable {
     Object? developerName = _nil,
     bool? featured,
     bool? verifiedOnly,
+    bool? launch,
+    bool? offer,
+    Object? maxDown = _nil,
+    Object? minYears = _nil,
     String? sort,
   }) => SearchFilters(
     q: q ?? this.q,
@@ -182,6 +204,10 @@ class SearchFilters extends Equatable {
         : developerName as String?,
     featured: featured ?? this.featured,
     verifiedOnly: verifiedOnly ?? this.verifiedOnly,
+    launch: launch ?? this.launch,
+    offer: offer ?? this.offer,
+    maxDown: maxDown == _nil ? this.maxDown : maxDown as String?,
+    minYears: minYears == _nil ? this.minYears : minYears as String?,
     sort: sort ?? this.sort,
   );
 
@@ -206,6 +232,10 @@ class SearchFilters extends Equatable {
     'amenities' => copyWith(amenities: const {}),
     'featured' => copyWith(featured: false),
     'verified' => copyWith(verifiedOnly: false),
+    'launch' => copyWith(launch: false),
+    'offer' => copyWith(offer: false),
+    'down_max' => copyWith(maxDown: null),
+    'years_min' => copyWith(minYears: null),
     _ => this,
   };
 
@@ -233,6 +263,10 @@ class SearchFilters extends Equatable {
     'developerName': developerName,
     'featured': featured,
     'verifiedOnly': verifiedOnly,
+    'launch': launch,
+    'offer': offer,
+    'maxDown': maxDown,
+    'minYears': minYears,
     'sort': sort,
   };
 
@@ -265,6 +299,10 @@ class SearchFilters extends Equatable {
       developerName: s(j['developerName']),
       featured: j['featured'] == true,
       verifiedOnly: j['verifiedOnly'] == true,
+      launch: j['launch'] == true,
+      offer: j['offer'] == true,
+      maxDown: s(j['maxDown']),
+      minYears: s(j['minYears']),
       sort: SearchFilters.sorts.contains(j['sort'])
           ? j['sort'] as String
           : 'newest',
@@ -292,6 +330,10 @@ class SearchFilters extends Equatable {
     developerId,
     featured,
     verifiedOnly,
+    launch,
+    offer,
+    maxDown,
+    minYears,
     sort,
   ];
 }
@@ -310,6 +352,10 @@ class SearchOptions {
     'duplex',
     'studio',
     'land',
+    'penthouse',
+    'loft',
+    'cabin',
+    'family_house',
     'office',
     'clinic',
     'shop',
@@ -327,7 +373,9 @@ class SearchOptions {
     'land',
   ];
   static const counts = ['1', '2', '3', '4', '5+'];
-  static const deliveries = ['ready', '2026', '2027', '2028', '2029+'];
+  static const deliveries = ['ready', '2026', '2027', '2028', '2029', '2030', '2031+'];
+  static const downPayments = ['0', '5', '10', '20'];
+  static const instalmentYears = ['5', '8', '10'];
   static const finishings = [
     'fully_finished',
     'semi_finished',
@@ -357,4 +405,19 @@ class SearchOptions {
 
   static const priceMin = 1000000;
   static const priceMax = 50000000; // the slider's right end means "no cap"
+}
+
+/// "By 2028" means everything delivered up to the end of 2028 (units already ready included);
+/// "2031+" means 2031 or later; "ready" is what is delivered today. The server takes a list of those.
+String deliveryQuery(String d) {
+  final year = int.tryParse(d);
+  if (year == null) return d;
+  return ['ready', for (var y = 2026; y <= year; y++) '$y'].join(',');
+}
+
+/// "Ready", "By 2028" or "2031+" — how a delivery choice reads on a chip.
+String deliveryLabel(String d) {
+  if (d == 'ready') return 'find.ready'.tr();
+  if (int.tryParse(d) != null) return 'find.by_year'.tr(namedArgs: {'y': d});
+  return d;
 }

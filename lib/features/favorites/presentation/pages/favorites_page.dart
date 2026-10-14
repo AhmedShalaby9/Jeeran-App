@@ -1,3 +1,4 @@
+import '../../../units/presentation/unit_card.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,17 +8,15 @@ import '../widgets/favorites_shimmer.dart';
 import '../../../properties/domain/entities/property.dart';
 import '../../../properties/domain/entities/property_filter_params.dart';
 import '../../../properties/presentation/pages/properties_screen.dart';
-import '../../../properties/presentation/widgets/property_card.dart';
-import '../../../properties/presentation/pages/property_details_page.dart';
 import '../bloc/favorites_bloc.dart';
 
 class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});
 
   static Future<void> push(BuildContext context) => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const FavoritesPage()),
-      );
+    context,
+    MaterialPageRoute(builder: (_) => const FavoritesPage()),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -59,9 +58,9 @@ class _FavoritesViewState extends State<_FavoritesView> {
           if (state is FavoritesError) {
             return _ErrorView(
               message: state.message,
-              onRetry: () => context
-                  .read<FavoritesBloc>()
-                  .add(const FetchFavoritesEvent()),
+              onRetry: () => context.read<FavoritesBloc>().add(
+                const FetchFavoritesEvent(),
+              ),
             );
           }
           return const SizedBox.shrink();
@@ -83,15 +82,7 @@ class _FavoritesList extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final property = properties[index];
-        return PropertyCard.horizontalCard(
-          property: property,
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => PropertyDetailsPage(property: property),
-            ),
-          ),
-        );
+        return UnitCard(property: property);
       },
     );
   }
@@ -148,8 +139,7 @@ class _EmptyFavorites extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -174,8 +164,7 @@ class _ErrorView extends StatelessWidget {
         children: [
           Icon(Icons.error_outline, size: 48, color: AppColors.grey),
           const SizedBox(height: 16),
-          Text(message,
-              style: TextStyle(fontSize: 14, color: AppColors.grey)),
+          Text(message, style: TextStyle(fontSize: 14, color: AppColors.grey)),
           const SizedBox(height: 16),
           TextButton(onPressed: onRetry, child: const Text('Retry')),
         ],

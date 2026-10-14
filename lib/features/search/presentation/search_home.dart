@@ -432,9 +432,7 @@ class _SearchHomeState extends State<SearchHome> {
         : f.types.map((t) => 'type.$t'.tr()).join(' · ');
     String bedsLabel(String b) =>
         b == '5+' ? 'find.beds_plus'.tr() : 'find.n_beds'.plural(int.parse(b));
-    final deliveryLabel = f.delivery == null
-        ? null
-        : (f.delivery == 'ready' ? 'find.ready'.tr() : f.delivery!);
+    final deliveryValue = f.delivery == null ? null : deliveryLabel(f.delivery!);
 
     return SizedBox(
       height: 40,
@@ -484,12 +482,12 @@ class _SearchHomeState extends State<SearchHome> {
           const SizedBox(width: 8),
           QuickChip<String>(
             label: 'find.chip_delivery'.tr(),
-            value: deliveryLabel,
+            value: deliveryValue,
             selected: f.delivery,
             options: [
               (null, 'find.any'.tr()),
               for (final d in SearchOptions.deliveries)
-                (d, d == 'ready' ? 'find.ready'.tr() : d),
+                (d, deliveryLabel(d)),
             ],
             onPick: (v) => _apply(f.copyWith(delivery: v)),
           ),
@@ -777,8 +775,14 @@ class _SearchHomeState extends State<SearchHome> {
                             fontSize: 14.5,
                             color: JV2.ink,
                           ),
+                          textAlignVertical: TextAlignVertical.center,
                           decoration: InputDecoration(
                             border: InputBorder.none,
+                            filled: false,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
                             isDense: true,
                             hintText: 'find.placeholder'.tr(),
                           ),

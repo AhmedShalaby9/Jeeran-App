@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/shared_photo.dart';
 
 import '../../../../core/widgets/jv2.dart';
 import '../../../explore/presentation/widgets/explore_widgets.dart';
@@ -78,6 +79,8 @@ class PropGallery extends StatelessWidget {
   final ValueChanged<int> onPage;
   final ValueChanged<int> onTapMedia;
   final VoidCallback onSave;
+  final Widget? tags; // Launch / Offer marks, bottom-start
+  final Object? heroTag; // the first photo is the end of a shared-element flight from the card
 
   const PropGallery({
     super.key,
@@ -90,6 +93,8 @@ class PropGallery extends StatelessWidget {
     required this.onPage,
     required this.onTapMedia,
     required this.onSave,
+    this.tags,
+    this.heroTag,
   });
 
   Widget _glass(Widget child, VoidCallback onTap) => GestureDetector(
@@ -134,7 +139,10 @@ class PropGallery extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Photo(url: m.url, radius: 0),
+                      if (heroTag != null && i == 0 && m.kind == 'image')
+                        SharedPhoto(tag: heroTag!, child: Photo(url: m.url, radius: 0))
+                      else
+                        Photo(url: m.url, radius: 0),
                       if (m.kind == 'plan')
                         Container(color: const Color(0xCCFFFFFF)),
                       if (m.kind == 'plan' && m.url != null)
@@ -214,6 +222,7 @@ class PropGallery extends StatelessWidget {
               ],
             ),
           ),
+          if (tags != null) PositionedDirectional(start: kPropPad, bottom: 34, child: tags!),
           if (aiCover && index == 0)
             PositionedDirectional(
               end: kPropPad,

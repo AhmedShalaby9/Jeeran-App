@@ -66,6 +66,10 @@ class ListingDraft {
   XFile? floorPlan;
   final Set<String> ai = {};
 
+  /// What the seller wrote or said to the assistant, so the written title and description can use details
+  /// that have no field of their own ("ground floor with a garden").
+  final List<String> said = [];
+
   /// Editing a live listing: its id, the photos already on the server, and what we must not clobber.
   int? editingId;
   final List<String> existingImages = [];

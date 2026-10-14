@@ -1,3 +1,8 @@
+import '../widgets/property_shimmer.dart';
+import '../../../units/data/payment_plan.dart';
+import '../../../units/data/unit_format.dart';
+import '../../../units/presentation/request_call_bar.dart';
+import '../../../units/presentation/unit_widgets.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,7 +33,8 @@ import 'property_image_viewer_page.dart';
 class PropertyDetailsPage extends StatefulWidget {
   final Property property;
   final AskScopeApi? askApi; // tests inject a fake
-  const PropertyDetailsPage({super.key, required this.property, this.askApi});
+  final Object? heroTag; // the card's photo flies into the gallery when this is set (see SharedPhoto)
+  const PropertyDetailsPage({super.key, required this.property, this.askApi, this.heroTag});
 
   @override
   State<PropertyDetailsPage> createState() => _PropertyDetailsPageState();
@@ -131,6 +137,14 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
       agentPicture: null,
       sellerVerified: false,
       isFavorited: p.isFavorited,
+      priceMin: p.priceMin,
+      priceMax: p.priceMax,
+      sizeMin: p.sizeMin,
+      sizeMax: p.sizeMax,
+      isLaunch: p.isLaunch,
+      hasOffer: p.hasOffer,
+      offerPct: (p.offerDiscountPercent ?? 0) > 0 ? p.offerDiscountPercent : null,
+      devInventory: false,
     );
   }
 
@@ -153,7 +167,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     for (final u in d.images) PropMedia('image', u),
     if (d.videoUrl != null)
       PropMedia('video', d.images.isEmpty ? null : d.images.first),
-    if (d.floorPlan != null) PropMedia('plan', d.floorPlan),
+    if (d.floorPlan != null && !(d.floorPlans.isNotEmpty && (d.devInventory || d.floorPlans.length > 1))) PropMedia('plan', d.floorPlan),
   ];
 
   void _openMedia(PropertyPageData d, List<PropMedia> media, int i) {
@@ -216,6 +230,13 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                     onPage: (i) => setState(() => _media = i),
                     onTapMedia: (i) => _openMedia(d, media, i),
                     onSave: _toggleSave,
+                    heroTag: widget.heroTag,
+                    tags: (d.isLaunch || d.hasOffer)
+                        ? Row(mainAxisSize: MainAxisSize.min, children: [
+                            if (d.isLaunch) ...[const UnitTag.launch(), const SizedBox(width: 6)],
+                            if (d.hasOffer) UnitTag.offer(pct: d.offerPct),
+                          ])
+                        : null,
                   ),
                   if (_failed)
                     Padding(
@@ -241,7 +262,15 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 ],
               ),
             ),
-            if (_data != null)
+            if (_data != null && d.devInventory)
+              RequestCallBar(
+                propertyId: d.id,
+                title: d.title.pick(_ar),
+                referenceCode: d.referenceCode,
+                price: d.price,
+                fromPer: fromPerPeriod(defaultPlan(d.plans, downPercent: d.downPaymentPercent, years: d.installmentYears)),
+              )
+            else if (_data != null)
               ContactBar(
                 onMessage: (d.agentWhatsapp ?? '').isEmpty
                     ? null
@@ -267,6 +296,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     final about = d.content.pick(_ar);
     final features = d.amenities;
     final facts = _facts(d);
+    final inv = d.priceMin != null && d.priceMax != null;
 
     return Padding(
       padding: const EdgeInsets.only(top: 20, bottom: 30),
@@ -279,6 +309,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (inv) ..._invHeader(d) else ...[
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
                   textBaseline: TextBaseline.alphabetic,
@@ -338,6 +369,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                     ],
                   ),
                 ],
+                ],
               ],
             ),
           ),
@@ -379,11 +411,18 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
             ]),
           ),
           if (!loaded)
-            const Padding(
-              padding: EdgeInsets.only(top: 40),
-              child: Center(child: CircularProgressIndicator(color: JV2.navy)),
-            )
+            const PropertyBodyShimmer()
           else ...[
+            if (d.plans.isNotEmpty) ...[
+              const SizedBox(height: 26),
+              PlansBlock(
+                plans: d.plans,
+                headline: d.price,
+                deliveryYear: d.deliveryDate?.year,
+                downPercent: d.downPaymentPercent,
+                years: d.installmentYears,
+              ),
+            ],
             if (about.isNotEmpty) ...[
               const SizedBox(height: 20),
               Padding(
@@ -445,6 +484,54 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 ),
               ),
             ],
+            if (d.sourceAmenities.isNotEmpty) ...[
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: kPropPad),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    UnitSecHead('unit.amenities'.tr(), meta: 'unit.amenities_meta'.tr()),
+                    const SizedBox(height: 12),
+                    Wrap(spacing: 8, runSpacing: 8, children: [
+                      for (final a in d.sourceAmenities)
+                        Container(
+                          height: 32,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(color: JV2.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: JV2.line)),
+                          child: Text(a, style: const TextStyle(fontSize: 12.5, color: JV2.ink)),
+                        ),
+                    ]),
+                  ],
+                ),
+              ),
+            ],
+            if (d.floorPlans.isNotEmpty && (d.devInventory || d.floorPlans.length > 1)) ...[
+              const SizedBox(height: 24),
+              Padding(padding: const EdgeInsets.symmetric(horizontal: kPropPad), child: FloorPlansBlock(urls: d.floorPlans)),
+            ],
+            if (d.devInventory && d.developer != null) ...[
+              const SizedBox(height: 24),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: kPropPad),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    UnitSecHead('unit.whos_selling'.tr()),
+                    const SizedBox(height: 12),
+                    DevInventoryCard(
+                      developerName: d.developer!.name.pick(_ar),
+                      asOf: d.scrapedAt == null ? null : DateFormat('d MMM y', context.locale.toString()).format(d.scrapedAt!),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => DeveloperPage(developerId: d.developer!.id, name: d.developer!.name.pick(_ar))),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             if (d.agentName != null) ...[
               const SizedBox(height: 20),
               Padding(
@@ -473,6 +560,79 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
         ],
       ),
     );
+  }
+
+  /// Developer inventory header (design D2): where it is, the title, price and size with the model's range.
+  List<Widget> _invHeader(PropertyPageData d) {
+    final compound = d.compound?.name.pick(_ar) ?? '';
+    final building = d.building.pick(_ar);
+    final sMin = d.sizeMin ?? d.size, sMax = d.sizeMax ?? d.size;
+    final published = d.scrapedAt == null ? null : DateFormat('d MMM y', context.locale.toString()).format(d.scrapedAt!);
+    TextStyle small = const TextStyle(fontSize: 11.5, color: JV2.inkSub);
+    return [
+      if (compound.isNotEmpty)
+        Text.rich(
+          TextSpan(children: [
+            if (building.isNotEmpty) TextSpan(text: '$building · '),
+            TextSpan(text: compound, style: const TextStyle(color: JV2.navy, fontWeight: FontWeight.w600)),
+          ]),
+          style: const TextStyle(fontSize: 12.5, color: JV2.inkSub),
+        ),
+      const SizedBox(height: 8),
+      Text(d.title.pick(_ar), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, height: 1.3, letterSpacing: -0.2, color: JV2.ink)),
+      const SizedBox(height: 16),
+      Container(
+        key: const Key('unit-price-card'),
+        decoration: BoxDecoration(color: JV2.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: JV2.line), boxShadow: JV2.shadowMd),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 125,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('unit.price'.tr(), style: const TextStyle(fontSize: 11, color: JV2.inkSub)),
+                      const SizedBox(height: 2),
+                      Text(d.price == null ? '—' : '${'unit.egp'.tr()} ${fmtFull(d.price!)}', maxLines: 1, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700, color: JV2.ink, letterSpacing: -0.3)),
+                      const SizedBox(height: 3),
+                      Text('unit.this_model'.tr(namedArgs: {'range': rangeShort(d.priceMin!, d.priceMax!)}), style: small),
+                    ],
+                  ),
+                ),
+              ),
+              Container(width: 1, color: JV2.line),
+              Expanded(
+                flex: 100,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(14, 13, 14, 13),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('unit.size'.tr(), style: const TextStyle(fontSize: 11, color: JV2.inkSub)),
+                      const SizedBox(height: 2),
+                      Text(sMin == null || sMax == null ? '—' : '${rangeNum(sMin, sMax)} ${'unit.m2'.tr()}', maxLines: 1, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700, color: JV2.ink)),
+                      const SizedBox(height: 3),
+                      Text([
+                        if ((d.beds ?? 0) > 0) 'unit.bd'.tr(namedArgs: {'n': '${d.beds}'}),
+                        if ((d.baths ?? 0) > 0) 'unit.ba'.tr(namedArgs: {'n': '${d.baths}'}),
+                      ].join(' · '), style: small),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      if (published != null) ...[
+        const SizedBox(height: 8),
+        Text('unit.published'.tr(namedArgs: {'date': published}), style: const TextStyle(fontSize: 11.5, color: JV2.inkMute)),
+      ],
+    ];
   }
 
   String _footer(PropertyPageData d) {
@@ -511,6 +671,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     return [
       if (d.propertyType.isNotEmpty)
         ('prop.f_type'.tr(), 'type.${d.propertyType}'.tr()),
+      if (d.building.pick(_ar).isNotEmpty) ('unit.d_building'.tr(), d.building.pick(_ar)),
       ('prop.f_purpose'.tr(), 'find.st_${d.status}'.tr()),
       ('prop.f_sale_type'.tr(), 'prop.sale_${d.listingType}'.tr()),
       if (d.size != null) ('prop.f_built'.tr(), m2(d.size!)),
@@ -526,7 +687,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
         ('prop.f_phase'.tr(), d.phase.pick(_ar)),
       if (payment.isNotEmpty) ('prop.f_payment'.tr(), payment.join('\n')),
       if (d.maintenance.pick(_ar).isNotEmpty)
-        ('prop.f_maintenance'.tr(), d.maintenance.pick(_ar)),
+        (d.devInventory ? 'unit.d_maintenance'.tr() : 'prop.f_maintenance'.tr(), d.maintenance.pick(_ar)),
       if (d.referenceCode != null) ('prop.f_reference'.tr(), d.referenceCode!),
     ];
   }

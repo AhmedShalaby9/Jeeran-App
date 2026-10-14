@@ -402,11 +402,16 @@ class _QueryField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      textAlignVertical: TextAlignVertical.center,
       decoration: InputDecoration(
         hintText: 'search.filters.query_hint'.tr(),
         hintStyle: TextStyle(color: AppColors.grey, fontSize: 14),
         prefixIcon: Icon(Icons.search_rounded, color: AppColors.grey, size: 22),
         border: InputBorder.none,
+        filled: false,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        disabledBorder: InputBorder.none,
         contentPadding: const EdgeInsets.symmetric(vertical: 14),
       ),
     );

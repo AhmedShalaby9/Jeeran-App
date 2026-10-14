@@ -82,8 +82,7 @@ class _AdminPropertyDetailPageState extends State<AdminPropertyDetailPage> {
               controller: reasonCtrl,
               decoration: InputDecoration(
                 labelText: 'admin.rejection_reason'.tr(),
-                border: const OutlineInputBorder(),
-              ),
+                              ),
               maxLines: 3,
             ),
           ],

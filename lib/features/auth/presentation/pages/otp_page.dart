@@ -271,9 +271,16 @@ class _OtpViewState extends State<_OtpView> {
                                               .digitsOnly,
                                         ],
                                         showCursor: false,
+                                        textAlignVertical:
+                                            TextAlignVertical.center,
                                         decoration: const InputDecoration(
                                           counterText: '',
                                           border: InputBorder.none,
+                                          filled: false,
+                                          enabledBorder: InputBorder.none,
+                                          focusedBorder: InputBorder.none,
+                                          disabledBorder: InputBorder.none,
+                                          contentPadding: EdgeInsets.zero,
                                         ),
                                         onChanged: (_) => setState(() {}),
                                         onSubmitted: (_) => _verify(context),

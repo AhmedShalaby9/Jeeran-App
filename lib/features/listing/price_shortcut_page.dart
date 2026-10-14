@@ -290,20 +290,23 @@ class _PriceShortcutPageState extends State<PriceShortcutPage> {
                   Text('listing.price_intro_sub'.tr(), style: JV2.sub),
                   const SizedBox(height: 18),
                   for (final k in const ['price_ex1', 'price_ex2'])
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 11,
-                      ),
-                      decoration: BoxDecoration(
-                        color: JV2.surface,
-                        borderRadius: BorderRadius.circular(13),
-                        border: Border.all(color: JV2.line),
-                      ),
-                      child: Text(
-                        '“${'listing.$k'.tr()}”',
-                        style: const TextStyle(fontSize: 13, color: JV2.ink),
+                    GestureDetector(
+                      onTap: () => _send('listing.$k'.tr()),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 11,
+                        ),
+                        decoration: BoxDecoration(
+                          color: JV2.surface,
+                          borderRadius: BorderRadius.circular(13),
+                          border: Border.all(color: JV2.line),
+                        ),
+                        child: Text(
+                          '“${'listing.$k'.tr()}”',
+                          style: const TextStyle(fontSize: 13, color: JV2.ink),
+                        ),
                       ),
                     ),
                 ],

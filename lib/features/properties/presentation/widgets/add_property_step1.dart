@@ -31,6 +31,10 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
     PropertyType.duplex: Icons.layers_rounded,
     PropertyType.studio: Icons.single_bed_rounded,
     PropertyType.land: Icons.landscape_rounded,
+    PropertyType.penthouse: Icons.roofing_rounded,
+    PropertyType.loft: Icons.deck_rounded,
+    PropertyType.cabin: Icons.cottage_rounded,
+    PropertyType.familyHouse: Icons.family_restroom_rounded,
   };
 
   static const _typeSubtitles = <PropertyType, String>{
@@ -46,6 +50,10 @@ class _AddPropertyStep1State extends State<AddPropertyStep1> {
     PropertyType.duplex: 'Two-floor apartments',
     PropertyType.studio: 'Open-plan units',
     PropertyType.land: 'Plots',
+    PropertyType.penthouse: 'Top-floor homes',
+    PropertyType.loft: 'Open double-height units',
+    PropertyType.cabin: 'Small coastal cabins',
+    PropertyType.familyHouse: 'Whole-family houses',
   };
 
   void _update(VoidCallback fn) {

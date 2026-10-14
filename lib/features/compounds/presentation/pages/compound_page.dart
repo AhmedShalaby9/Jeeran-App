@@ -13,7 +13,10 @@ import '../../../developers/presentation/pages/developer_page.dart';
 import '../../../explore/presentation/widgets/explore_widgets.dart';
 import '../../../follow/data/follow_service.dart';
 import '../../../follow/presentation/follow_alerts.dart';
+import '../../../units/presentation/unit_widgets.dart';
+import '../../../../core/widgets/shared_photo.dart';
 import '../../data/compound_page_data.dart';
+import '../widgets/compound_units.dart';
 import '../widgets/facility_icon.dart';
 import '../widgets/page_widgets.dart';
 
@@ -23,8 +26,9 @@ import '../widgets/page_widgets.dart';
 class CompoundPage extends StatefulWidget {
   final int compoundId;
   final String? name; // shown while loading
+  final Object? heroTag; // the card's photo flies into the gallery when this is set (see SharedPhoto)
 
-  const CompoundPage({super.key, required this.compoundId, this.name});
+  const CompoundPage({super.key, required this.compoundId, this.name, this.heroTag});
 
   @override
   State<CompoundPage> createState() => _CompoundPageState();
@@ -114,46 +118,78 @@ class _CompoundPageState extends State<CompoundPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(d.name.pick(_ar), style: JV2.display(context, 31)),
-              if (d.area.pick(_ar).isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.place_outlined,
-                      size: 15,
-                      color: JV2.inkMute,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      d.area.pick(_ar),
-                      style: const TextStyle(fontSize: 13.5, color: JV2.inkSub),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(d.name.pick(_ar), style: JV2.display(context, 31)),
+                  ),
+                  if (d.status == 'selling' && d.unitsCount > 0) ...[
+                    const SizedBox(width: 12),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Container(
+                        key: const Key('selling-tag'),
+                        height: 24,
+                        padding: const EdgeInsets.symmetric(horizontal: 9),
+                        decoration: BoxDecoration(
+                          color: const Color(0x14137A55),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: JV2.success,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'unit.selling'.tr(),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: JV2.success,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
-                ),
-              ],
-              if (d.developer != null) ...[
-                const SizedBox(height: 14),
-                _developerRow(d.developer!),
+                ],
+              ),
+              if (d.area.pick(_ar).isNotEmpty || d.developer != null) ...[
+                const SizedBox(height: 6),
+                _byLine(d),
               ],
               if (d.latestUpdate != null) ...[
                 const SizedBox(height: 14),
                 _updateBanner(d.latestUpdate!),
               ],
               const SizedBox(height: 16),
-              StatStrip([
-                (
-                  d.minPrice == null ? '—' : compactPrice(d.minPrice!),
-                  'compound.stat_from'.tr(),
-                ),
-                ('${d.unitsCount}', 'compound.stat_listings'.tr()),
-                if (d.deliveredSince != null)
-                  ('${d.deliveredSince}', 'compound.stat_delivered'.tr()),
-              ]),
+              if (d.minPrice != null && d.sizeMin != null && d.sizeMax != null) ...[
+                CompoundPriceLine(minPrice: d.minPrice!, sizeMin: d.sizeMin, sizeMax: d.sizeMax),
+                if (d.unitTypes.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  TypeChips(d.unitTypes),
+                ],
+              ] else
+                StatStrip([
+                  (
+                    d.minPrice == null ? '—' : compactPrice(d.minPrice!),
+                    'compound.stat_from'.tr(),
+                  ),
+                  ('${d.unitsCount}', 'compound.stat_listings'.tr()),
+                  if (d.deliveredSince != null)
+                    ('${d.deliveredSince}', 'compound.stat_delivered'.tr()),
+                ]),
               const SizedBox(height: 16),
               if (_follow != null) ...[
-                FollowBar(c: _follow!),
-                const SizedBox(height: 12),
                 AlertsStrip(c: _follow!),
                 const SizedBox(height: 16),
               ],
@@ -168,6 +204,7 @@ class _CompoundPageState extends State<CompoundPage> {
                   'compound.tab_about'.tr(),
                 ],
                 index: _tab,
+                counts: [d.primaryCount, d.resaleCount, null],
                 onChanged: (i) => setState(() => _tab = i),
               ),
               const SizedBox(height: 18),
@@ -192,7 +229,7 @@ class _CompoundPageState extends State<CompoundPage> {
       d.status == 'new_launch' ? 'new_launch' : null,
     );
     return SizedBox(
-      height: 320,
+      height: 270,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -202,7 +239,9 @@ class _CompoundPageState extends State<CompoundPage> {
             PageView.builder(
               itemCount: d.images.length,
               onPageChanged: (i) => setState(() => _photo = i),
-              itemBuilder: (_, i) => Photo(url: d.images[i], radius: 0),
+              itemBuilder: (_, i) => i == 0 && widget.heroTag != null
+                  ? SharedPhoto(tag: widget.heroTag!, child: Photo(url: d.images[i], radius: 0))
+                  : Photo(url: d.images[i], radius: 0),
             ),
           // keep the top controls legible on any photo
           const IgnorePointer(
@@ -220,7 +259,17 @@ class _CompoundPageState extends State<CompoundPage> {
             top: top + 8,
             left: 16,
             right: 16,
-            child: Row(children: [const PhotoBackButton(), const Spacer()]),
+            child: Row(
+              children: [
+                const PhotoBackButton(),
+                const Spacer(),
+                if (_follow != null) ...[
+                  HeroFollow(c: _follow!),
+                  const SizedBox(width: 8),
+                  HeroBell(c: _follow!),
+                ],
+              ],
+            ),
           ),
           if (tagText != null)
             PositionedDirectional(
@@ -247,11 +296,37 @@ class _CompoundPageState extends State<CompoundPage> {
               ),
             )
           else if (d.status != null &&
+              d.status != 'selling' &&
               CompoundStatusChip.label(d.status) != null)
             PositionedDirectional(
               start: 16,
               bottom: 16,
               child: CompoundStatusChip(d.status),
+            ),
+          if (d.images.length > 1)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 22,
+              child: IgnorePointer(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    for (var i = 0; i < d.images.length.clamp(0, 7); i++)
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                        width: i == _photo.clamp(0, 6) ? 16 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: i == _photo.clamp(0, 6)
+                              ? Colors.white
+                              : const Color(0x8CFFFFFF),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ),
           if (d.images.length > 1)
             PositionedDirectional(
@@ -283,79 +358,39 @@ class _CompoundPageState extends State<CompoundPage> {
     );
   }
 
-  Widget _developerRow(CompoundDeveloperBrief dev) {
-    final name = dev.name.pick(_ar);
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => DeveloperPage(developerId: dev.id, name: name),
-        ),
-      ),
-      behavior: HitTestBehavior.opaque,
-      child: Row(
-        children: [
-          Container(
-            width: 34,
-            height: 34,
-            clipBehavior: Clip.antiAlias,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: JV2.surface,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: JV2.line),
-            ),
-            child: (dev.logo ?? '').isNotEmpty
-                ? Photo(url: dev.logo, width: 34, height: 34, radius: 10)
-                : Text(
-                    name.isEmpty ? '?' : name.characters.first.toUpperCase(),
-                    style: JV2.display(context, 16),
-                  ),
+  /// "New Cairo · by Redwood Developments" — the developer's name opens its page.
+  Widget _byLine(CompoundPageData d) {
+    final area = d.area.pick(_ar);
+    final dev = d.developer;
+    final name = dev?.name.pick(_ar) ?? '';
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        if (area.isNotEmpty)
+          Text(
+            dev == null ? area : '$area · ${'compound.by'.tr()} ',
+            style: const TextStyle(fontSize: 13, color: JV2.inkSub),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'compound.developed_by'.tr().toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.3,
-                    color: JV2.inkMute,
-                  ),
-                ),
-                const SizedBox(height: 1),
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        name,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w800,
-                          color: JV2.ink,
-                        ),
-                      ),
-                    ),
-                    if (dev.isVerified) ...[
-                      const SizedBox(width: 5),
-                      const Icon(
-                        Icons.verified_rounded,
-                        size: 15,
-                        color: JV2.success,
-                      ),
-                    ],
-                  ],
-                ),
-              ],
+        if (dev != null)
+          GestureDetector(
+            key: const Key('developer-link'),
+            behavior: HitTestBehavior.opaque,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DeveloperPage(developerId: dev.id, name: name),
+              ),
+            ),
+            child: Text(
+              name,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: JV2.navy,
+              ),
             ),
           ),
-          Icon(chevronIcon(context), size: 18, color: JV2.inkMute),
-        ],
-      ),
+      ],
     );
   }
 
@@ -393,6 +428,16 @@ class _CompoundPageState extends State<CompoundPage> {
 
   /// Primary = sold by the developer; Resale = sold by owners and brokers.
   Widget _listings(CompoundPageData d, String type) {
+    // a compound with no units of this kind stays visible: following it says when units appear
+    if (type == 'primary' && d.primaryCount == 0) {
+      return NoUnitsBlock(name: d.name.pick(_ar), follow: _follow);
+    }
+    if (type == 'resale' && d.resaleCount == 0) {
+      return NoUnitsBlock(name: d.name.pick(_ar), resale: true, follow: _follow);
+    }
+    if (type == 'primary') {
+      return CompoundUnits(key: ValueKey('units-${d.id}'), compoundId: d.id);
+    }
     return LiveListings(
       key: ValueKey('$type-${d.id}'),
       query: {'compound_id': d.id, 'listing_type': type},
@@ -408,8 +453,12 @@ class _CompoundPageState extends State<CompoundPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (desc.isNotEmpty) ...[
-          Text(desc, style: JV2.sub),
+          ReadMoreText(desc),
           const SizedBox(height: 22),
+        ],
+        if (d.faqs.isNotEmpty) ...[
+          FaqList(faqs: d.faqs, arabic: _ar),
+          const SizedBox(height: 24),
         ],
         if (rows.isNotEmpty) ...[
           Text(
@@ -436,6 +485,24 @@ class _CompoundPageState extends State<CompoundPage> {
             runSpacing: 10,
             children: [for (final f in facilities) _FacilityTile(f)],
           ),
+        if (d.developer != null) ...[
+          const SizedBox(height: 24),
+          UnitSecHead('unit.developer'.tr()),
+          const SizedBox(height: 12),
+          DevMiniCard(
+            dev: d.developer!,
+            arabic: _ar,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => DeveloperPage(
+                  developerId: d.developer!.id,
+                  name: d.developer!.name.pick(_ar),
+                ),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }

@@ -516,9 +516,14 @@ class _JV2FieldState extends State<JV2Field> {
                       fontSize: 16,
                       color: widget.readOnly ? JV2.inkSub : JV2.ink,
                     ),
+                    textAlignVertical: TextAlignVertical.center,
                     decoration: InputDecoration(
                       isCollapsed: true,
                       border: InputBorder.none,
+                      filled: false,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
                       hintText: widget.placeholder,
                       hintStyle: const TextStyle(
                         color: JV2.inkMute,

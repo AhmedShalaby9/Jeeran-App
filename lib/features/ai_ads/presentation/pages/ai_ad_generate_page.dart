@@ -10,6 +10,7 @@ import '../../../../core/utils/app_colors.dart';
 import '../../../properties/domain/repositories/property_repository.dart';
 import '../../domain/repositories/ai_ads_repository.dart';
 import 'ai_ad_detail_page.dart';
+import '../../../../core/widgets/jv2.dart';
 
 class AiAdGeneratePage extends StatefulWidget {
   const AiAdGeneratePage({super.key});
@@ -205,13 +206,13 @@ class _AiAdGeneratePageState extends State<AiAdGeneratePage> {
                 hintText:
                     'Describe the ad you want — location, highlights, target audience...',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide:
-                      BorderSide(color: AppColors.grey.withValues(alpha: 0.3)),
+                      BorderSide(color: JV2.line),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.primary),
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(color: JV2.navy, width: 1.5),
                 ),
                 contentPadding: const EdgeInsets.all(14),
               ),

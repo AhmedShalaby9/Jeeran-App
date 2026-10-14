@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../projects/domain/entities/project.dart';
+import '../../../units/data/payment_plan.dart';
 
 class Property extends Equatable {
   final int id;
@@ -39,6 +40,25 @@ class Property extends Equatable {
   final String? updatedAt;
   final Project? project;
 
+  // developer inventory (the imported unit models): ranges, plans, marks
+  final String? listingType;
+  final double? priceMin;
+  final double? priceMax;
+  final double? sizeMin;
+  final double? sizeMax;
+  final String? deliveryDate;
+  final String? finishing;
+  final bool isLaunch;
+  final bool hasOffer;
+  final double? offerDiscountPercent;
+  final double? downPaymentPercent;
+  final int? installmentYears;
+  final List<PaymentPlan> paymentPlans;
+  final List<String> floorPlans;
+  final String? buildingEn;
+  final String? buildingAr;
+  final String? sourceDate; // when the developer's figures were published (yyyy-mm-dd)
+
   const Property({
     required this.id,
     this.legacyId,
@@ -76,9 +96,39 @@ class Property extends Equatable {
     this.createdAt,
     this.updatedAt,
     this.project,
+    this.listingType,
+    this.priceMin,
+    this.priceMax,
+    this.sizeMin,
+    this.sizeMax,
+    this.deliveryDate,
+    this.finishing,
+    this.isLaunch = false,
+    this.hasOffer = false,
+    this.offerDiscountPercent,
+    this.downPaymentPercent,
+    this.installmentYears,
+    this.paymentPlans = const [],
+    this.floorPlans = const [],
+    this.buildingEn,
+    this.buildingAr,
+    this.sourceDate,
   });
 
   String? get coverImage => images.isNotEmpty ? images.first : null;
+
+  /// The year it is delivered, when known.
+  int? get deliveryYear => deliveryDate == null ? null : DateTime.tryParse(deliveryDate!)?.year;
+
+  /// The plan the card quotes ("From 347K / quarter"): the one that matches the unit's own down payment and years.
+  PaymentPlan? get cardPlan => defaultPlan(paymentPlans, downPercent: downPaymentPercent, years: installmentYears);
+
+  /// The building inside the compound, in [lang].
+  String? localBuilding(String lang) {
+    final ar = buildingAr ?? '', en = buildingEn ?? '';
+    final v = lang == 'ar' ? (ar.isNotEmpty ? ar : en) : (en.isNotEmpty ? en : ar);
+    return v.isEmpty ? null : v;
+  }
 
   /// Returns the title in [lang] (e.g. 'ar' or 'en').
   /// Falls back to the other language if the requested one is empty.
@@ -137,5 +187,22 @@ class Property extends Equatable {
         createdAt,
         updatedAt,
         project,
+        listingType,
+        priceMin,
+        priceMax,
+        sizeMin,
+        sizeMax,
+        deliveryDate,
+        finishing,
+        isLaunch,
+        hasOffer,
+        offerDiscountPercent,
+        downPaymentPercent,
+        installmentYears,
+        paymentPlans,
+        floorPlans,
+        buildingEn,
+        buildingAr,
+        sourceDate,
       ];
 }

@@ -14,7 +14,11 @@ enum PropertyType {
   townhouse,
   duplex,
   studio,
-  land;
+  land,
+  penthouse,
+  loft,
+  cabin,
+  familyHouse;
 
   /// The raw string sent to / received from the backend.
   String get apiKey => switch (this) {
@@ -30,6 +34,10 @@ enum PropertyType {
         duplex => 'duplex',
         studio => 'studio',
         land => 'land',
+        penthouse => 'penthouse',
+        loft => 'loft',
+        cabin => 'cabin',
+        familyHouse => 'family_house',
       };
 
   String get _translationKey => 'type.$apiKey';
@@ -51,6 +59,10 @@ enum PropertyType {
         'duplex' => duplex,
         'studio' => studio,
         'land' => land,
+        'penthouse' => penthouse,
+        'loft' => loft,
+        'cabin' => cabin,
+        'family_house' => familyHouse,
         _ => null,
       };
 

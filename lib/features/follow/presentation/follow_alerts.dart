@@ -185,6 +185,49 @@ class FollowBar extends StatelessWidget {
   }
 }
 
+/// Follow / Following on a cover photo: the white container, like the bell beside it (design D3 and the developer cover).
+class HeroFollow extends StatelessWidget {
+  final FollowController c;
+  const HeroFollow({super.key, required this.c});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: c,
+      builder: (context, _) => GestureDetector(
+        key: const Key('follow-button'),
+        onTap: () async {
+          if (!await c.toggleFollow() && context.mounted) _failed(context);
+        },
+        child: Container(
+          height: 38,
+          padding: const EdgeInsets.symmetric(horizontal: 13),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(13),
+            color: const Color(0xEBFFFFFF),
+            boxShadow: _softShadow,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                c.following ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                size: 17,
+                color: c.following ? JV2.danger : JV2.ink,
+              ),
+              const SizedBox(width: 7),
+              Text(
+                (c.following ? 'follow.following' : 'follow.follow_short').tr(),
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: JV2.ink),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// The small glass bell that sits on a cover photo; gold when alerts are on. Opens the alerts sheet.
 class HeroBell extends StatelessWidget {
   final FollowController c;

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/di/injection_container.dart';
 import '../../core/error/exceptions.dart';
@@ -12,6 +13,7 @@ import '../voice/voice_services.dart';
 import 'listing_api.dart';
 import 'listing_draft.dart';
 import 'listing_widgets.dart';
+import 'shortcut_fields.dart';
 
 class _Msg {
   final bool user;
@@ -35,6 +37,7 @@ class ShortcutPage extends StatefulWidget {
   final VoiceApi? voiceApi;
   final VoidCallback onClose;
   final VoidCallback onReview;
+
   final VoidCallback onOpenForm;
   const ShortcutPage({
     super.key,
@@ -58,6 +61,22 @@ class _ShortcutPageState extends State<ShortcutPage> {
   final _scroll = ScrollController();
   final _msgs = <_Msg>[];
   DraftReply? _last;
+  bool _paymentManual =
+      false; // the person chose cash / instalments on the card
+
+  /// Cash or instalments is known: the assistant heard it, or it was chosen on the card.
+  bool get _paymentSet =>
+      _paymentManual || (_last != null && !_last!.missing.contains('payment'));
+
+  /// Everything the text form needs, judged here so the card works even when the assistant is down.
+  bool get _textReady =>
+      _d.type != null &&
+      _d.compound != null &&
+      (_d.noRooms || _d.bedroomsSet) &&
+      _d.priceValid &&
+      _d.detailsValid &&
+      _paymentSet &&
+      (_d.payment == 'cash' || _d.plan != null);
   bool _busy = false;
   bool _recording = false;
   int _seconds = 0;
@@ -91,6 +110,7 @@ class _ShortcutPageState extends State<ShortcutPage> {
   Future<void> _send(String raw, {bool voice = false}) async {
     final text = raw.trim();
     if (text.isEmpty || _busy) return;
+    _d.said.add(text);
     setState(() {
       _msgs.add(_Msg(true, text, voice: voice));
       _busy = true;
@@ -192,12 +212,40 @@ class _ShortcutPageState extends State<ShortcutPage> {
     }
   }
 
+  // ── media the assistant cannot get from a sentence ──────────
+
+  Future<void> _addPhotos() async {
+    try {
+      final room = 20 - _d.photos.length;
+      if (room <= 0) return;
+      final files = await ImagePicker().pickMultiImage(limit: room);
+      if (files.isNotEmpty && mounted) {
+        setState(() => _d.photos.addAll(files.take(room)));
+        _toBottom();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _pickPlan() async {
+    try {
+      final f = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (f != null && mounted) setState(() => _d.floorPlan = f);
+    } catch (_) {}
+  }
+
+  Future<void> _pickVideo() async {
+    try {
+      final f = await ImagePicker().pickVideo(source: ImageSource.gallery);
+      if (f != null && mounted) setState(() => _d.video = f);
+    } catch (_) {}
+  }
+
   // ── what the card shows ────────────────────────────────────
 
   int _filledCount() => _rows().where((r) => r.$2 != null).length;
 
   /// Label / value rows of the draft; value null = still needed.
-  List<(String, String?)> _rows() {
+  List<(String, String?, CardField)> _rows() {
     final ar = _lang == 'ar';
     final c = _d.compound;
     return [
@@ -206,34 +254,49 @@ class _ShortcutPageState extends State<ShortcutPage> {
         _d.type == null
             ? null
             : '${'listing.t_${_d.type}'.tr()} · ${_d.status == 'for_rent' ? 'listing.rent'.tr() : 'listing.sale'.tr()}',
+        CardField.type,
       ),
       (
         'listing.f_compound'.tr(),
         c == null
             ? null
             : [c.name(ar), c.sub(ar)].where((s) => s.isNotEmpty).join(' · '),
+        CardField.compound,
       ),
       if (!_d.noRooms)
-        ('listing.f_beds'.tr(), _d.bedroomsSet ? '${_d.bedrooms}' : null),
-      ('listing.f_size'.tr(), _d.sizeValue == null ? null : '${_d.size} m²'),
-      if (_d.level.trim().isNotEmpty) ('listing.f_floor'.tr(), _d.level),
-      if (_d.view != null) ('listing.f_view'.tr(), 'listing.v_${_d.view}'.tr()),
+        (
+          'listing.f_beds'.tr(),
+          _d.bedroomsSet ? '${_d.bedrooms}' : null,
+          CardField.beds,
+        ),
+      (
+        'listing.f_size'.tr(),
+        _d.sizeValue == null ? null : '${_d.size} m²',
+        CardField.size,
+      ),
+      if (_d.level.trim().isNotEmpty)
+        ('listing.f_floor'.tr(), _d.level, CardField.floor),
+      if (_d.view != null)
+        ('listing.f_view'.tr(), 'listing.v_${_d.view}'.tr(), CardField.view),
       if (_d.delivery != null)
         (
           'listing.f_delivery'.tr(),
           _d.delivery == 'ready' ? 'listing.d_ready'.tr() : _d.delivery,
+          CardField.delivery,
         ),
       (
         'listing.f_price'.tr(),
         _d.priceValue == null ? null : 'EGP ${grouped(_d.priceValue!)}',
+        CardField.price,
       ),
       (
         'listing.f_payment'.tr(),
-        _last != null && _last!.missing.contains('payment')
+        !_paymentSet
             ? null
             : (_d.payment == 'cash'
                   ? 'listing.cash'.tr()
                   : 'listing.plan_text'.tr(args: [_d.down, _d.years])),
+        CardField.payment,
       ),
     ];
   }
@@ -325,7 +388,7 @@ class _ShortcutPageState extends State<ShortcutPage> {
                   const SizedBox(height: 18),
                   for (final k in const ['ai_ex1', 'ai_ex2'])
                     GestureDetector(
-                      onTap: () => _input.text = 'listing.$k'.tr(),
+                      onTap: () => _send('listing.$k'.tr()),
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.symmetric(
@@ -465,7 +528,12 @@ class _ShortcutPageState extends State<ShortcutPage> {
 
   Widget _card() {
     final rows = _rows();
-    final ready = _last?.complete == true;
+    // the form is complete AND there is at least one photo to publish with
+    final textReady = _textReady;
+    final ready = textReady && _d.photoCount > 0;
+    final filled =
+        rows.where((r) => r.$2 != null).length + (_d.photoCount > 0 ? 1 : 0);
+    final total = rows.length + 1;
     return Container(
       key: const Key('action-card'),
       margin: const EdgeInsets.only(top: 14),
@@ -523,7 +591,7 @@ class _ShortcutPageState extends State<ShortcutPage> {
                   ),
                 ),
                 Text(
-                  '${rows.where((r) => r.$2 != null).length}/${rows.length}',
+                  '$filled/$total',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -534,49 +602,139 @@ class _ShortcutPageState extends State<ShortcutPage> {
             ),
           ),
           for (final r in rows)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-              decoration: BoxDecoration(
-                color: r.$2 == null ? const Color(0x0FB8893D) : null,
-                border: const Border(top: BorderSide(color: JV2.line)),
+            // tap any row to fill it in (or fix it) in the form, so the card works even when the assistant is down
+            GestureDetector(
+              key: Key('row-${r.$1}'),
+              behavior: HitTestBehavior.opaque,
+              onTap: () => editCardField(
+                context,
+                field: r.$3,
+                draft: _d,
+                api: widget.api,
+                ar: _lang == 'ar',
+                onChanged: () {
+                  if (mounted) setState(() {});
+                },
+                onPayment: () => _paymentManual = true,
               ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 84,
-                    child: Text(
-                      r.$1,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: JV2.inkSub),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 9,
+                ),
+                decoration: BoxDecoration(
+                  color: r.$2 == null ? const Color(0x0FB8893D) : null,
+                  border: const Border(top: BorderSide(color: JV2.line)),
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 84,
+                      child: Text(
+                        r.$1,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12, color: JV2.inkSub),
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: r.$2 == null
-                        ? Text(
-                            'listing.needed'.tr(),
-                            style: const TextStyle(
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w600,
-                              color: JV2.gold,
+                    Expanded(
+                      child: r.$2 == null
+                          ? Text(
+                              'listing.needed'.tr(),
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                                color: JV2.gold,
+                              ),
+                            )
+                          : Text(
+                              r.$2!,
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w500,
+                                color: JV2.ink,
+                              ),
                             ),
-                          )
-                        : Text(
-                            r.$2!,
-                            style: const TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w500,
-                              color: JV2.ink,
-                            ),
+                    ),
+                    if (r.$2 != null)
+                      const Icon(
+                        Icons.check_rounded,
+                        size: 14,
+                        color: JV2.success,
+                      )
+                    else
+                      Container(
+                        height: 30,
+                        padding: const EdgeInsets.symmetric(horizontal: 11),
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: JV2.surface,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: JV2.goldEdge),
+                        ),
+                        child: Text(
+                          'listing.add'.tr(),
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: JV2.navy,
                           ),
-                  ),
-                  if (r.$2 != null)
-                    const Icon(
-                      Icons.check_rounded,
-                      size: 14,
-                      color: JV2.success,
-                    ),
-                ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          // what a sentence can't carry: photos (needed), floor plan and video (optional)
+          _mediaRow(
+            key: const Key('media-photos'),
+            label: 'listing.f_photos'.tr(),
+            have: _d.photoCount > 0,
+            valueText: 'listing.n_photos'.tr(args: ['${_d.photoCount}']),
+            required: true,
+            actionLabel: _d.photoCount > 0
+                ? 'listing.add_more'.tr()
+                : 'listing.upload'.tr(),
+            onTap: _addPhotos,
+          ),
+          _mediaRow(
+            key: const Key('media-plan'),
+            label: 'listing.floor_plan'.tr(),
+            have: _d.floorPlan != null,
+            valueText: 'listing.added'.tr(),
+            required: false,
+            actionLabel: _d.floorPlan != null
+                ? 'listing.change'.tr()
+                : 'listing.upload'.tr(),
+            onTap: _pickPlan,
+          ),
+          _mediaRow(
+            key: const Key('media-video'),
+            label: 'listing.video'.tr(),
+            have: _d.video != null,
+            valueText: 'listing.added'.tr(),
+            required: false,
+            actionLabel: _d.video != null
+                ? 'listing.change'.tr()
+                : 'listing.upload'.tr(),
+            onTap: _pickVideo,
+          ),
+          if (textReady && _d.photoCount == 0)
+            Container(
+              key: const Key('photos-hint'),
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+              decoration: const BoxDecoration(
+                color: Color(0x0FB8893D),
+                border: Border(top: BorderSide(color: JV2.line)),
+              ),
+              child: Text(
+                'listing.add_photos_hint'.tr(),
+                style: const TextStyle(
+                  fontSize: 12,
+                  height: 1.4,
+                  color: JV2.gold,
+                ),
               ),
             ),
           Container(
@@ -639,6 +797,100 @@ class _ShortcutPageState extends State<ShortcutPage> {
                   ),
                 ],
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// A card row for something the person uploads: "Needed" / "Optional" with an Upload button, or what was added.
+  Widget _mediaRow({
+    required Key key,
+    required String label,
+    required bool have,
+    required String valueText,
+    required bool required,
+    required String actionLabel,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      key: key,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: !have && required ? const Color(0x0FB8893D) : null,
+        border: const Border(top: BorderSide(color: JV2.line)),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 84,
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 12, color: JV2.inkSub),
+            ),
+          ),
+          Expanded(
+            child: have
+                ? Text(
+                    valueText,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w500,
+                      color: JV2.ink,
+                    ),
+                  )
+                : Text(
+                    (required ? 'listing.needed' : 'listing.optional').tr(),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: required ? JV2.gold : JV2.inkMute,
+                    ),
+                  ),
+          ),
+          if (have)
+            const Padding(
+              padding: EdgeInsetsDirectional.only(end: 8),
+              child: Icon(Icons.check_rounded, size: 14, color: JV2.success),
+            ),
+          GestureDetector(
+            onTap: onTap,
+            child: Container(
+              height: 30,
+              padding: const EdgeInsets.symmetric(horizontal: 11),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: JV2.surface,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: !have && required ? JV2.goldEdge : JV2.line,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!have)
+                    const Padding(
+                      padding: EdgeInsetsDirectional.only(end: 5),
+                      child: Icon(
+                        Icons.file_upload_outlined,
+                        size: 13,
+                        color: JV2.navy,
+                      ),
+                    ),
+                  Text(
+                    actionLabel,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w700,
+                      color: JV2.navy,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -720,6 +972,7 @@ class _ShortcutPageState extends State<ShortcutPage> {
                   Expanded(
                     child: Container(
                       height: 48,
+                      alignment: AlignmentDirectional.centerStart,
                       padding: const EdgeInsets.symmetric(horizontal: 15),
                       decoration: BoxDecoration(
                         color: JV2.surface,
@@ -733,8 +986,14 @@ class _ShortcutPageState extends State<ShortcutPage> {
                         onSubmitted: _send,
                         textInputAction: TextInputAction.send,
                         style: const TextStyle(fontSize: 14, color: JV2.ink),
+                        textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
                           border: InputBorder.none,
+                          filled: false,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
                           hintText: 'listing.ai_hint'.tr(),
                           hintStyle: const TextStyle(color: JV2.inkMute),
                         ),

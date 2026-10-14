@@ -219,6 +219,19 @@ class Suggestions {
 
 /// All Search calls. Properties stay in the legacy vocabulary (the property model still reads
 /// `project`); everything else is new and sent as API v2.
+class PropertyFacets {
+  final Map<String, int> types;
+  final Map<String, int> finishings;
+  final int launch;
+  final int offer;
+  const PropertyFacets({this.types = const {}, this.finishings = const {}, this.launch = 0, this.offer = 0});
+
+  factory PropertyFacets.fromJson(Map<String, dynamic> j) {
+    Map<String, int> counts(dynamic v) => v is Map ? {for (final e in v.entries) '${e.key}': _i(e.value)} : const {};
+    return PropertyFacets(types: counts(j['types']), finishings: counts(j['finishings']), launch: _i(j['launch']), offer: _i(j['offer']));
+  }
+}
+
 class SearchApi {
   final ApiClient client;
   SearchApi(this.client);
@@ -247,6 +260,12 @@ class SearchApi {
       pg is Map ? _i(pg['total']) : 0,
       pg is Map ? _i(pg['pages']) : 0,
     );
+  }
+
+  /// Listing counts for the filter sheet: by type and finishing, and how many are launches / offers.
+  Future<PropertyFacets> facets() async {
+    final res = await client.get('/properties/facets');
+    return PropertyFacets.fromJson(res.data['data'] is Map<String, dynamic> ? res.data['data'] as Map<String, dynamic> : const {});
   }
 
   Future<int> count(SearchFilters f) async {

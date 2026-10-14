@@ -10,6 +10,7 @@ import '../../../properties/presentation/bloc/add_property_bloc.dart';
 import '../../../properties/presentation/bloc/add_property_event.dart';
 import '../../../properties/presentation/bloc/add_property_state.dart';
 import '../../../properties/presentation/widgets/add_property_form.dart';
+import '../../../../core/widgets/jv2.dart';
 
 class AdminPropertyEditPage extends StatefulWidget {
   final Property property;
@@ -550,19 +551,19 @@ class _AdminPropertyEditPageState extends State<AdminPropertyEditPage> {
 
   InputDecoration _dropdownDecoration() => InputDecoration(
     filled: true,
-    fillColor: const Color(0xFFF5F6F8),
+    fillColor: JV2.surface,
     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.hairline),
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: JV2.line),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.hairline),
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: JV2.line),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+      borderRadius: BorderRadius.circular(14),
+      borderSide: const BorderSide(color: JV2.navy, width: 1.5),
     ),
   );
 

@@ -68,6 +68,17 @@ class _FakeApi extends ApiClient {
             'pages': 1,
           },
         });
+      case '/properties/facets':
+        return ok({
+          'success': true,
+          'data': {
+            'total': 6530,
+            'types': {'apartment': 2787, 'penthouse': 141, 'loft': 68},
+            'finishings': {'fully_finished': 3049, 'core_shell': 2358},
+            'launch': 91,
+            'offer': 881,
+          },
+        });
       case '/properties/count':
         return ok({
           'success': true,
@@ -150,6 +161,32 @@ class _FakeApi extends ApiClient {
 }
 
 void main() {
+  test('the new filters reach the server as the API expects', () {
+    const f = SearchFilters(
+      offer: true,
+      launch: true,
+      maxDown: '5',
+      minYears: '8',
+      delivery: '2028',
+      finishing: 'fully_finished,core_shell',
+      sort: 'discount',
+    );
+    final q = f.toQuery();
+    expect(q['offer'], '1');
+    expect(q['launch'], '1');
+    expect(q['down_max'], '5');
+    expect(q['years_min'], '8');
+    expect(q['finishing'], 'fully_finished,core_shell');
+    // "By 2028" = ready and every year up to it
+    expect(q['delivery'], 'ready,2026,2027,2028');
+    expect(const SearchFilters(delivery: '2031+').toQuery()['delivery'], '2031+');
+    expect(const SearchFilters(delivery: 'ready').toQuery()['delivery'], 'ready');
+    expect(f.sortQuery(), {'sort': 'offer_discount_percent', 'order': 'DESC'});
+    expect(f.activeCount, 6);
+    expect(f.without('offer').offer, isFalse);
+    expect(SearchFilters.fromJson(f.toJson()), f);
+  });
+
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('filters', () {
@@ -404,6 +441,18 @@ void main() {
             api.calls.any((c) => c.startsWith('/properties/count')),
             isTrue,
           );
+
+          // Launch / Offer toggles with their counts, and the type grid with its own
+          expect(find.text('find.offer_sub'.tr(namedArgs: {'n': '881'})), findsOneWidget);
+          expect(find.text('find.launch_sub'.tr(namedArgs: {'n': '91'})), findsOneWidget);
+          expect(find.byKey(const Key('type-penthouse')), findsOneWidget);
+          await tester.tap(find.byKey(const Key('toggle-offer')));
+          await tester.pump(const Duration(milliseconds: 500));
+          await tester.tap(find.byKey(const Key('type-penthouse')));
+          await tester.pump(const Duration(milliseconds: 500));
+          final countCall = api.calls.lastWhere((c) => c.startsWith('/properties/count'));
+          expect(countCall, contains('offer: 1'));
+          expect(countCall, contains('type: penthouse'));
 
           // another screen (Explore → Launches & offers) hands this tab a launch's units to show
           await tester.tapAt(const Offset(10, 10)); // close the sheet

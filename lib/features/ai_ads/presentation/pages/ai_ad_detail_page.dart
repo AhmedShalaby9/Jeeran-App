@@ -9,6 +9,7 @@ import '../../domain/entities/ai_ad.dart';
 import '../bloc/ai_ad_detail_bloc.dart';
 import '../bloc/ai_ad_detail_event.dart';
 import '../bloc/ai_ad_detail_state.dart';
+import '../../../../core/widgets/jv2.dart';
 
 class AiAdDetailPage extends StatelessWidget {
   final int adId;
@@ -112,12 +113,12 @@ class _AiAdDetailViewState extends State<_AiAdDetailView> {
                 decoration: InputDecoration(
                   hintText: 'e.g. Make it more professional, highlight the price...',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: AppColors.grey.withValues(alpha: 0.3)),
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: JV2.line),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.primary),
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: JV2.navy, width: 1.5),
                   ),
                   contentPadding: const EdgeInsets.all(12),
                 ),

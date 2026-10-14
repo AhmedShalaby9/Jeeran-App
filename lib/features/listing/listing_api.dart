@@ -162,7 +162,11 @@ class ListingApi {
   ) async {
     final res = await client.post(
       '/listing-draft/describe',
-      data: {'draft': draft.toParserJson(), 'lang': lang},
+      data: {
+        'draft': draft.toParserJson(),
+        'lang': lang,
+        if (draft.said.isNotEmpty) 'notes': draft.said,
+      },
       headers: _lang(lang),
     );
     final d = res.data['data'] as Map<String, dynamic>;

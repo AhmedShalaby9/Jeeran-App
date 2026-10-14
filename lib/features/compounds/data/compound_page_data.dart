@@ -80,7 +80,28 @@ class CompoundDeveloperBrief {
   final Bi name;
   final String? logo;
   final bool isVerified;
-  const CompoundDeveloperBrief(this.id, this.name, this.logo, this.isVerified);
+  final bool isTop; // the source's "top developer" mark; not the same as Jeeran's verified tick
+  final int compoundsCount;
+  final int unitsCount;
+  const CompoundDeveloperBrief(
+    this.id,
+    this.name,
+    this.logo,
+    this.isVerified, {
+    this.isTop = false,
+    this.compoundsCount = 0,
+    this.unitsCount = 0,
+  });
+}
+
+/// A question and its answer, from the compound's FAQ list.
+class CompoundFaq {
+  final Bi question;
+  final Bi answer;
+  const CompoundFaq(this.question, this.answer);
+
+  factory CompoundFaq.fromJson(Map<String, dynamic> j) =>
+      CompoundFaq(Bi.of(j, 'question'), Bi.of(j, 'answer'));
 }
 
 class CompoundPageData {
@@ -112,6 +133,9 @@ class CompoundPageData {
   final List<String> facilitiesAr;
   final List<String> facilitiesEn;
   final List<CompoundFact> facts;
+  final int primaryCount;
+  final int resaleCount;
+  final List<CompoundFaq> faqs;
 
   const CompoundPageData({
     required this.id,
@@ -141,6 +165,9 @@ class CompoundPageData {
     required this.facilitiesAr,
     required this.facilitiesEn,
     required this.facts,
+    this.primaryCount = 0,
+    this.resaleCount = 0,
+    this.faqs = const [],
   });
 
   factory CompoundPageData.fromJson(Map<String, dynamic> j) {
@@ -166,6 +193,9 @@ class CompoundPageData {
               Bi.of(dev, 'name'),
               dev['logo'] as String?,
               dev['is_verified'] == true,
+              isTop: dev['is_top'] == true,
+              compoundsCount: _i(dev['compounds_count']) ?? 0,
+              unitsCount: _i(dev['units_count']) ?? 0,
             )
           : null,
       area: area is Map<String, dynamic>
@@ -202,6 +232,13 @@ class CompoundPageData {
       facts: (j['facts'] is List ? j['facts'] as List : const [])
           .whereType<Map<String, dynamic>>()
           .map(CompoundFact.fromJson)
+          .toList(),
+      primaryCount: _i(j['primary_count']) ?? 0,
+      resaleCount: _i(j['resale_count']) ?? 0,
+      faqs: (j['faqs'] is List ? j['faqs'] as List : const [])
+          .whereType<Map<String, dynamic>>()
+          .map(CompoundFaq.fromJson)
+          .where((f) => !f.question.isEmpty && !f.answer.isEmpty)
           .toList(),
     );
   }

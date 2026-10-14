@@ -431,6 +431,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         const SizedBox(height: 8),
         Container(
           constraints: const BoxConstraints(minHeight: 50),
+          alignment: AlignmentDirectional.centerStart,
           padding: EdgeInsets.symmetric(
             horizontal: 14,
             vertical: lines > 1 ? 4 : 0,
@@ -453,8 +454,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
               height: lines > 1 ? 1.5 : null,
               color: readOnly ? JV2.inkSub : JV2.ink,
             ),
+            textAlignVertical: TextAlignVertical.center,
             decoration: const InputDecoration(
               border: InputBorder.none,
+              filled: false,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
               counterText: '',
               isDense: false,
             ),

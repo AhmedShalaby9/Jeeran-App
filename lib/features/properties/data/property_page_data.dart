@@ -1,4 +1,5 @@
 import '../../compounds/data/compound_page_data.dart';
+import '../../units/data/payment_plan.dart';
 
 // What the property page paints, parsed from `GET /properties/:id` (API v2).
 
@@ -87,6 +88,23 @@ class PropertyPageData {
   final bool sellerVerified;
   final bool isFavorited;
 
+  // developer inventory (imported unit models)
+  final double? priceMin;
+  final double? priceMax;
+  final double? sizeMin;
+  final double? sizeMax;
+  final List<PaymentPlan> plans;
+  final List<String> floorPlans;
+  final bool isLaunch;
+  final bool hasOffer;
+  final double? offerPct;
+  final Bi building;
+  final List<String> sourceAmenities;
+  final DateTime? scrapedAt;
+
+  /// Sold by the developer: no individual seller, so no call or WhatsApp, only "Request a call".
+  final bool devInventory;
+
   const PropertyPageData({
     required this.id,
     required this.title,
@@ -125,6 +143,19 @@ class PropertyPageData {
     required this.agentPicture,
     required this.sellerVerified,
     required this.isFavorited,
+    this.priceMin,
+    this.priceMax,
+    this.sizeMin,
+    this.sizeMax,
+    this.plans = const [],
+    this.floorPlans = const [],
+    this.isLaunch = false,
+    this.hasOffer = false,
+    this.offerPct,
+    this.building = const Bi('', ''),
+    this.sourceAmenities = const [],
+    this.scrapedAt,
+    this.devInventory = false,
   });
 
   factory PropertyPageData.fromJson(Map<String, dynamic> j) {
@@ -152,6 +183,10 @@ class PropertyPageData {
     final phase = j['phase'] is Map<String, dynamic>
         ? Bi.of(j['phase'] as Map<String, dynamic>, 'name')
         : const Bi('', '');
+
+    final src = j['source'] is Map<String, dynamic> ? j['source'] as Map<String, dynamic> : const <String, dynamic>{};
+    final bld = src['building'] is Map<String, dynamic> ? src['building'] as Map<String, dynamic> : const <String, dynamic>{};
+    final discount = _d(j['offer_discount_percent']);
 
     return PropertyPageData(
       id: _i(j['id']) ?? 0,
@@ -213,6 +248,19 @@ class PropertyPageData {
       agentPicture: _s(j['agent_picture']),
       sellerVerified: j['seller_verified'] == true,
       isFavorited: j['is_favorited'] == true,
+      priceMin: _d(j['price_min']),
+      priceMax: _d(j['price_max']),
+      sizeMin: _d(j['size_min']),
+      sizeMax: _d(j['size_max']),
+      plans: PaymentPlan.listFrom(j['payment_plans']),
+      floorPlans: _strings(j['floor_plans']).isNotEmpty ? _strings(j['floor_plans']) : [if (_s(j['floor_plan']) != null) _s(j['floor_plan'])!],
+      isLaunch: j['is_launch'] == true,
+      hasOffer: j['has_offer'] == true,
+      offerPct: discount != null && discount > 0 ? discount : null,
+      building: Bi(_s(bld['name_ar']) ?? '', _s(bld['name']) ?? ''),
+      sourceAmenities: _strings(src['amenities']),
+      scrapedAt: src['scraped_at'] is String ? DateTime.tryParse(src['scraped_at'] as String) : null,
+      devInventory: j['publisher_id'] == null && _s(j['agent_name']) == null && _s(j['agent_mobile']) == null,
     );
   }
 

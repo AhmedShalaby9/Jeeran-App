@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/enums/property_enums.dart';
+import '../../../../core/widgets/jv2.dart';
 
 // ─────────────────────────────────────────────────────────────
 //  Mutable form data — passed by reference to every step widget
@@ -170,19 +171,19 @@ class WizardInput extends StatelessWidget {
         suffixText: suffix,
         suffixStyle: const TextStyle(fontSize: 14, color: AppColors.inkSub),
         filled: true,
-        fillColor: const Color(0xFFF5F6F8),
+        fillColor: JV2.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.hairline),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: JV2.line),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.hairline),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: JV2.line),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: JV2.navy, width: 1.5),
         ),
       ),
     );
@@ -221,19 +222,19 @@ class WizardTextArea extends StatelessWidget {
         hintText: placeholder,
         hintStyle: const TextStyle(fontSize: 15, color: AppColors.inkMute),
         filled: true,
-        fillColor: const Color(0xFFF5F6F8),
+        fillColor: JV2.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.hairline),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: JV2.line),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.hairline),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: JV2.line),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: JV2.navy, width: 1.5),
         ),
       ),
     );

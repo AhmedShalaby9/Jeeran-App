@@ -228,30 +228,21 @@ class _CompleteProfilePageState extends State<CompleteProfilePage> {
                             size: 20,
                           ),
                           filled: true,
-                          fillColor: const Color(0xFFF5F6F8),
+                          fillColor: JV2.surface,
                           contentPadding: const EdgeInsets.symmetric(
                             vertical: 10,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: AppColors.hairline,
-                              width: 1.5,
-                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: JV2.line),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: AppColors.hairline,
-                              width: 1.5,
-                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: JV2.line),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: AppColors.primary,
-                              width: 1.5,
-                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide(color: JV2.navy, width: 1.5),
                           ),
                         ),
                         onChanged: (v) => setInner(() {

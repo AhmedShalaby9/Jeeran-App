@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/jv2.dart';
 import '../../explore/presentation/widgets/explore_widgets.dart';
+import '../../units/presentation/unit_widgets.dart';
 import '../data/search_api.dart';
 import '../data/search_filters.dart';
 import 'widgets/search_widgets.dart';
@@ -41,6 +42,7 @@ class _FilterSheetState extends State<_FilterSheet> {
   int _seq = 0;
   List<AreaItem> _areas = const [];
   int _developerTotal = 0;
+  PropertyFacets _facets = const PropertyFacets();
   late final TextEditingController _minSize = TextEditingController(
     text: _f.minSize?.toString() ?? '',
   );
@@ -52,6 +54,12 @@ class _FilterSheetState extends State<_FilterSheet> {
   void initState() {
     super.initState();
     _recount();
+    widget.api
+        .facets()
+        .then((x) {
+          if (mounted) setState(() => _facets = x);
+        })
+        .catchError((_) {});
     widget.api
         .areas()
         .then((a) {
@@ -278,8 +286,14 @@ class _FilterSheetState extends State<_FilterSheet> {
                 fontWeight: FontWeight.w600,
                 color: JV2.ink,
               ),
+              textAlignVertical: TextAlignVertical.center,
               decoration: const InputDecoration(
                 border: InputBorder.none,
+                filled: false,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
                 isDense: true,
                 hintText: '—',
               ),
@@ -406,6 +420,135 @@ class _FilterSheetState extends State<_FilterSheet> {
       ),
     ),
   );
+
+  /// "Launches only" / "Offers only": the two marks of the developer inventory, with how many units carry them.
+  Widget _markToggle({required Widget tag, required String title, required String sub, required bool value, required ValueChanged<bool> set, required Key key}) => GestureDetector(
+    key: key,
+    behavior: HitTestBehavior.opaque,
+    onTap: () => set(!value),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          tag,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: JV2.ink)),
+                const SizedBox(height: 2),
+                Text(sub, style: const TextStyle(fontSize: 11.5, color: JV2.inkSub)),
+              ],
+            ),
+          ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 46,
+            height: 28,
+            padding: const EdgeInsets.all(3),
+            alignment: value ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(14), color: value ? JV2.navy : JV2.fillHi),
+            child: Container(width: 22, height: 22, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white)),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _marks() {
+    final nf = NumberFormat.decimalPattern(context.locale.toString());
+    return Container(
+      decoration: BoxDecoration(color: JV2.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: JV2.line)),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          _markToggle(
+            key: const Key('toggle-launch'),
+            tag: const UnitTag.launch(),
+            title: 'find.launch_only'.tr(),
+            sub: 'find.launch_sub'.tr(namedArgs: {'n': nf.format(_facets.launch)}),
+            value: _f.launch,
+            set: (v) => _set(_f.copyWith(launch: v)),
+          ),
+          const Divider(height: 1, color: JV2.line),
+          _markToggle(
+            key: const Key('toggle-offer'),
+            tag: const UnitTag.offer(),
+            title: 'find.offer_only'.tr(),
+            sub: 'find.offer_sub'.tr(namedArgs: {'n': nf.format(_facets.offer)}),
+            value: _f.offer,
+            set: (v) => _set(_f.copyWith(offer: v)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The property types as a grid of tiles with how many units each has.
+  Widget _typeGrid() {
+    final nf = NumberFormat.decimalPattern(context.locale.toString());
+    return LayoutBuilder(builder: (context, c) {
+      final w = (c.maxWidth - 16) / 3;
+      return Wrap(spacing: 8, runSpacing: 8, children: [
+        for (final t in SearchOptions.types)
+          GestureDetector(
+            key: Key('type-$t'),
+            onTap: () => _set(_f.copyWith(types: _f.types.contains(t) ? ({..._f.types}..remove(t)) : {..._f.types, t})),
+            child: Container(
+              width: w,
+              height: 74,
+              decoration: BoxDecoration(
+                color: _f.types.contains(t) ? const Color(0x0F0B2A4A) : JV2.surface,
+                borderRadius: BorderRadius.circular(13),
+                border: Border.all(color: _f.types.contains(t) ? JV2.navy : JV2.line, width: _f.types.contains(t) ? 1.5 : 1),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(typeIcon(t), size: 20, color: _f.types.contains(t) ? JV2.navy : JV2.inkSub),
+                  const SizedBox(height: 5),
+                  Text('type.$t'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11.5, fontWeight: _f.types.contains(t) ? FontWeight.w700 : FontWeight.w600, color: JV2.ink)),
+                  if ((_facets.types[t] ?? 0) > 0) Text(nf.format(_facets.types[t]), style: const TextStyle(fontSize: 10, color: JV2.inkMute)),
+                ],
+              ),
+            ),
+          ),
+      ]);
+    });
+  }
+
+  /// Finishing: several can be on at once; each chip says how many units have it.
+  Widget _finishings() {
+    final nf = NumberFormat.decimalPattern(context.locale.toString());
+    final on = (_f.finishing ?? '').split(',').where((x) => x.isNotEmpty).toSet();
+    return _wrap([
+      for (final k in SearchOptions.finishings)
+        GestureDetector(
+          key: Key('fin-$k'),
+          onTap: () {
+            final next = on.contains(k) ? ({...on}..remove(k)) : {...on, k};
+            _set(_f.copyWith(finishing: next.isEmpty ? null : next.join(',')));
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: on.contains(k) ? JV2.goldFilm : JV2.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: on.contains(k) ? JV2.goldEdge : JV2.line),
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Text('compound.fin_$k'.tr(), style: TextStyle(fontSize: 13, fontWeight: on.contains(k) ? FontWeight.w700 : FontWeight.w600, color: on.contains(k) ? JV2.gold : JV2.inkSub)),
+              if ((_facets.finishings[k] ?? 0) > 0) ...[
+                const SizedBox(width: 6),
+                Text(nf.format(_facets.finishings[k]), style: const TextStyle(fontSize: 11, color: JV2.inkMute)),
+              ],
+            ]),
+          ),
+        ),
+    ]);
+  }
 
   Future<void> _pickCompound() async {
     final ar = isArabic(context);
@@ -564,6 +707,8 @@ class _FilterSheetState extends State<_FilterSheet> {
                   20,
                 ),
                 children: [
+                  _marks(),
+                  const SizedBox(height: 24),
                   _segment(
                     'find.s_status'.tr(),
                     _singleChips<String>(
@@ -574,23 +719,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _segment(
-                    'find.s_type'.tr(),
-                    _wrap([
-                      for (final t in SearchOptions.types)
-                        _chip(
-                          'type.$t'.tr(),
-                          f.types.contains(t),
-                          () => _set(
-                            f.copyWith(
-                              types: f.types.contains(t)
-                                  ? ({...f.types}..remove(t))
-                                  : {...f.types, t},
-                            ),
-                          ),
-                        ),
-                    ]),
-                  ),
+                  _segment('find.s_type'.tr(), _typeGrid()),
                   const SizedBox(height: 24),
                   _segment('find.s_price'.tr(), _price()),
                   const SizedBox(height: 24),
@@ -608,9 +737,29 @@ class _FilterSheetState extends State<_FilterSheet> {
                     'find.s_delivery'.tr(),
                     _singleChips<String>(
                       SearchOptions.deliveries,
-                      (k) => k == 'ready' ? 'find.ready'.tr() : k,
+                      deliveryLabel,
                       f.delivery,
                       (v) => _set(f.copyWith(delivery: v)),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _segment(
+                    'find.s_down'.tr(),
+                    _singleChips<String>(
+                      SearchOptions.downPayments,
+                      (k) => k == '0' ? '0%' : '≤ $k%',
+                      f.maxDown,
+                      (v) => _set(f.copyWith(maxDown: v)),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _segment(
+                    'find.s_years'.tr(),
+                    _singleChips<String>(
+                      SearchOptions.instalmentYears,
+                      (k) => 'find.years_plus'.tr(namedArgs: {'n': k}),
+                      f.minYears,
+                      (v) => _set(f.copyWith(minYears: v)),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -633,15 +782,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  _segment(
-                    'find.s_finishing'.tr(),
-                    _singleChips<String>(
-                      SearchOptions.finishings,
-                      (k) => 'compound.fin_$k'.tr(),
-                      f.finishing,
-                      (v) => _set(f.copyWith(finishing: v)),
-                    ),
-                  ),
+                  _segment('find.s_finishing'.tr(), _finishings()),
                   const SizedBox(height: 24),
                   _segment(
                     'find.s_payment'.tr(),
@@ -917,8 +1058,14 @@ class _PickerSheetState extends State<_PickerSheet> {
                         Expanded(
                           child: TextField(
                             onChanged: (v) => setState(() => _q = v),
+                            textAlignVertical: TextAlignVertical.center,
                             decoration: InputDecoration(
                               border: InputBorder.none,
+                              filled: false,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
                               isDense: true,
                               hintText: 'find.search_hint'.tr(),
                             ),

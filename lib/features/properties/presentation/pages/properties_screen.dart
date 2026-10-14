@@ -1,3 +1,4 @@
+import '../../../units/presentation/unit_card.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,8 +10,6 @@ import '../bloc/properties_bloc.dart';
 import '../bloc/properties_event.dart';
 import '../bloc/properties_state.dart';
 import '../widgets/properties_shimmer.dart';
-import '../widgets/property_card.dart';
-import 'property_details_page.dart';
 import '../../../search/presentation/pages/search_page.dart';
 
 class PropertiesScreen extends StatefulWidget {
@@ -55,15 +54,15 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: Text('properties.title'.tr() ),
+          title: Text('properties.title'.tr()),
           actions: [
             BlocBuilder<PropertiesBloc, PropertiesState>(
-            builder: (context, state) {
+              builder: (context, state) {
                 final params = state is PropertiesLoaded
                     ? state.params
                     : state is PropertiesLoadingMore
-                        ? state.params
-                        : null;
+                    ? state.params
+                    : null;
                 return IconButton(
                   icon: const Icon(Icons.filter_alt_rounded),
                   tooltip: 'properties.reset_filters'.tr(),
@@ -157,16 +156,7 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
         }
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: PropertyCard.horizontalCard(
-            property: properties[index],
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) =>
-                    PropertyDetailsPage(property: properties[index]),
-              ),
-            ),
-          ),
+          child: UnitCard(property: properties[index]),
         );
       },
     );
@@ -218,9 +208,8 @@ class _PropertiesScreenState extends State<PropertiesScreen> {
       chips.add(
         _FilterChip(
           label: params.projectName ?? 'search.filters.project'.tr(),
-          onRemove: () => _applyParams(
-            params.copyWith(projectId: null, projectName: null),
-          ),
+          onRemove: () =>
+              _applyParams(params.copyWith(projectId: null, projectName: null)),
         ),
       );
     }

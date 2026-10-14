@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:jeeran_flutter/core/network/api_client.dart';
 import 'package:jeeran_flutter/features/listing/listing_api.dart';
 import 'package:jeeran_flutter/features/listing/listing_draft.dart';
@@ -14,6 +15,7 @@ import 'package:jeeran_flutter/features/listing/listing_flow.dart';
 import 'package:jeeran_flutter/features/listing/price_alert_api.dart';
 import 'package:jeeran_flutter/features/listing/price_shortcut_page.dart';
 import 'package:jeeran_flutter/features/listing/shortcut_hub.dart';
+import 'package:jeeran_flutter/features/listing/shortcut_page.dart';
 import 'package:jeeran_flutter/features/voice/voice_api.dart';
 import 'package:jeeran_flutter/features/voice/voice_services.dart';
 import 'package:jeeran_flutter/features/you/you_api.dart';
@@ -150,14 +152,21 @@ class _Api extends ListingApi {
     );
   }
 
+  List<String> describedWith = [];
+  bool describeFails = false;
+
   @override
   Future<({String title, String description})> describe(
     ListingDraft d,
     String lang,
-  ) async => (
-    title: 'Lagoon-front chalet',
-    description: 'Three bedrooms, ready to move.',
-  );
+  ) async {
+    describedWith = List.of(d.said);
+    if (describeFails) throw Exception('assistant down');
+    return (
+      title: 'Lagoon-front chalet',
+      description: 'Three bedrooms, ready to move.',
+    );
+  }
 
   @override
   Future<PriceBand> priceBand(ListingDraft d) async =>
@@ -326,8 +335,17 @@ class _Voice extends ApiClient {
   );
 }
 
+/// Stands in for the gallery: picking photos returns two files.
+class _Gallery extends ImagePickerPlatform {
+  @override
+  Future<List<XFile>> getMultiImageWithOptions({
+    MultiImagePickerOptions options = const MultiImagePickerOptions(),
+  }) async => [XFile('/tmp/a.jpg'), XFile('/tmp/b.jpg')];
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  ImagePickerPlatform.instance = _Gallery();
 
   test('body: delivery, view, instalments, language and who is listing', () {
     final d = ListingDraft()
@@ -490,6 +508,22 @@ void main() {
         await tester.tap(find.byKey(const Key('ai-mic')));
         await settle(500);
         expect(api.parsed.last, contains('11.5'));
+        // the text is complete but the card still needs photos: it says so, and offers Upload
+        expect(find.byKey(const Key('photos-hint')), findsOneWidget);
+        expect(find.byKey(const Key('review-publish')), findsNothing);
+        expect(find.byKey(const Key('media-photos')), findsOneWidget);
+        expect(find.byKey(const Key('media-plan')), findsOneWidget);
+        expect(find.byKey(const Key('media-video')), findsOneWidget);
+        await tester.ensureVisible(find.byKey(const Key('media-photos')));
+        await tester.pump(const Duration(milliseconds: 600));
+        await tester.tap(
+          find.descendant(
+            of: find.byKey(const Key('media-photos')),
+            matching: find.text('listing.upload'.tr()),
+          ),
+        );
+        await settle();
+        expect(find.byKey(const Key('photos-hint')), findsNothing);
         expect(find.byKey(const Key('review-publish')), findsOneWidget);
 
         // ── open the form: the assistant's fields carry its mark
@@ -655,6 +689,133 @@ void main() {
         expect(find.byKey(const Key('tile-list')), findsOneWidget);
         expect(find.byKey(const Key('tile-price')), findsOneWidget);
         expect(find.byKey(const Key('tile-alert')), findsOneWidget);
+
+        // ── the missing rows can be filled right in the chat, no assistant needed
+        var formOpened = 0;
+        final apiS = _Api();
+        host.value = ShortcutPage(
+          draft: ListingDraft(),
+          api: apiS,
+          recorder: _Rec(),
+          voiceApi: VoiceApi(_Voice()),
+          onClose: () {},
+          onReview: () {},
+          onOpenForm: () => formOpened++,
+        );
+        await settle(300);
+        // tapping an example sends it straight away; it is not just copied into the box
+        await tester.tap(find.text('“${'listing.ai_ex1'.tr()}”'));
+        await settle();
+        expect(apiS.parsed, ['listing.ai_ex1'.tr()]);
+        await tester.enterText(
+          find.byKey(const Key('ai-input')),
+          'chalet in marassi 3 bed 165 m',
+        );
+        await tester.tap(find.byKey(const Key('ai-send')));
+        await settle();
+        Future<void> openRow(String label) async {
+          final row = find.byKey(Key('row-${label.tr()}'));
+          await tester.ensureVisible(row);
+          await tester.pump(const Duration(milliseconds: 400));
+          await tester.tap(row);
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 400));
+        }
+
+        Future<void> done() async {
+          await tester.tap(find.byKey(const Key('field-done')));
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 400));
+        }
+
+        // price: a sheet with a number box; the card updates behind it
+        await openRow('listing.f_price');
+        await tester.enterText(find.byKey(const Key('field-price')), '9000000');
+        await tester.pump();
+        await done();
+        expect(find.text('EGP 9,000,000'), findsOneWidget);
+        // payment is never assumed: it stays needed until chosen
+        expect(find.byKey(const Key('review-publish')), findsNothing);
+        await openRow('listing.f_payment');
+        await tester.tap(find.text('listing.cash'.tr()).last);
+        await tester.pump();
+        await done();
+        // type can be changed too
+        await openRow('listing.f_type');
+        await tester.tap(find.text('listing.t_villa'.tr()));
+        await tester.pump();
+        await done();
+        expect(find.textContaining('listing.t_villa'.tr()), findsWidgets);
+        // text is complete, so the card now asks only for photos
+        expect(find.byKey(const Key('photos-hint')), findsOneWidget);
+        expect(formOpened, 0); // none of it left the chat
+
+        for (final writerDown in [false, true]) {
+          // ── Review & publish from the card: the title and description are written first, then the review opens
+          final apiR = _Api()..describeFails = writerDown;
+          host.value = ListingFlow(
+            api: apiR,
+            youApi: YouApi(_You()),
+            recorder: _Rec(),
+            voiceApi: VoiceApi(_Voice()),
+          );
+          await settle();
+          await tester.tap(find.byKey(const Key('path-ai')));
+          await settle();
+          await tester.enterText(
+            find.byKey(const Key('ai-input')),
+            'chalet in marassi 3 bed 165 m',
+          );
+          await tester.tap(find.byKey(const Key('ai-send')));
+          await settle();
+          for (final label in ['listing.f_price', 'listing.f_payment']) {
+            final row = find.byKey(Key('row-${label.tr()}'));
+            await tester.ensureVisible(row);
+            await tester.pump(const Duration(milliseconds: 400));
+            await tester.tap(row);
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 400));
+            if (label == 'listing.f_price') {
+              await tester.enterText(
+                find.byKey(const Key('field-price')),
+                '9000000',
+              );
+            } else {
+              await tester.tap(find.text('listing.cash'.tr()).last);
+            }
+            await tester.pump();
+            await tester.tap(find.byKey(const Key('field-done')));
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 400));
+          }
+          await tester.ensureVisible(find.byKey(const Key('media-photos')));
+          await tester.pump(const Duration(milliseconds: 400));
+          await tester.tap(
+            find.descendant(
+              of: find.byKey(const Key('media-photos')),
+              matching: find.text('listing.upload'.tr()),
+            ),
+          );
+          await settle();
+          await tester.ensureVisible(find.byKey(const Key('review-publish')));
+          await tester.pump(const Duration(milliseconds: 400));
+          await tester.tap(find.byKey(const Key('review-publish')));
+          await settle(600);
+          await settle(600);
+          expect(find.text('listing.how_buyers'.tr()), findsOneWidget);
+          if (writerDown) {
+            // the assistant could not write it: a plain title from the card is used instead
+            expect(find.textContaining('listing.t_chalet'.tr()), findsWidgets);
+          } else {
+            expect(find.text('Lagoon-front chalet'), findsOneWidget);
+            // the seller's own words went along, so details without a field reach the copy
+            expect(
+              apiR.describedWith,
+              contains('chalet in marassi 3 bed 165 m'),
+            );
+          }
+          expect(tester.takeException(), isNull);
+        }
 
         // ── change a price: pick the listing, see the change, apply, undo; a second request is cancelled
         final apiP = _Api();

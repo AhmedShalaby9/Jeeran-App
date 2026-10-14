@@ -28,12 +28,21 @@ Map<String, dynamic> _compound({List<Map<String, dynamic>> phases = const [], bo
       // widget tests pass images: false — network images need platform plugins
       'main_image': images ? 'https://x/a.jpg' : null,
       'gallery': images ? ['https://x/a.jpg', 'https://x/b.jpg'] : [],
-      'developer': {'id': 1, 'name_ar': 'إعمار', 'name_en': 'Emaar Misr', 'logo': null, 'is_verified': true},
+      'developer': {
+        'id': 1, 'name_ar': 'إعمار', 'name_en': 'Emaar Misr', 'logo': null, 'is_verified': true,
+        'is_top': true, 'compounds_count': 6, 'units_count': 148,
+      },
       'area': {'id': 2, 'name_ar': 'الساحل الشمالي', 'name_en': 'North Coast'},
       'promotion': {'id': 8, 'type': 'launch', 'title_ar': 'إطلاق', 'title_en': 'Launch'},
       'status': 'new_launch',
       'min_price': 8950000,
       'units_count': 142,
+      'primary_count': 142,
+      'resale_count': 0,
+      'faqs': [
+        {'question_en': 'How many floors?', 'answer_en': '12 floors', 'question_ar': 'كم عدد الأدوار؟', 'answer_ar': '12 دوراً'},
+        {'question_en': 'When is delivery?', 'answer_en': 'Phase one in 2027', 'question_ar': 'متى التسليم؟', 'answer_ar': 'المرحلة الأولى 2027'},
+      ],
       'followers_count': 12,
       'is_following': false,
       'latest_update': {'id': 4, 'title': 'Phase 4 released', 'is_fresh': true},
@@ -86,8 +95,9 @@ Map<String, dynamic> _developer({bool verified = true}) => {
 class _FakeApi extends ApiClient {
   final Map<String, dynamic> compound;
   final Map<String, dynamic> developer;
+  final List<Map<String, dynamic>> units;
   final List<String> calls = [];
-  _FakeApi({required this.compound, required this.developer});
+  _FakeApi({required this.compound, required this.developer, this.units = const []});
 
   @override
   Future<Response> get(String path, {Map<String, dynamic>? queryParams, Map<String, dynamic>? headers}) async {
@@ -95,7 +105,7 @@ class _FakeApi extends ApiClient {
     Response ok(dynamic data) => Response(requestOptions: RequestOptions(path: path), statusCode: 200, data: data);
     if (path.startsWith('/compounds/')) return ok({'success': true, 'data': compound});
     if (path.startsWith('/developers/')) return ok({'success': true, 'data': developer});
-    if (path == '/properties') return ok({'success': true, 'data': []});
+    if (path == '/properties') return ok({'success': true, 'data': units});
     return ok({'success': true, 'data': {'is_following': false}});
   }
 }
@@ -190,9 +200,9 @@ void main() {
     });
 
     late _FakeApi api;
-    Future<void> setUpApi({Map<String, dynamic>? compound, Map<String, dynamic>? developer, String? phone}) async {
+    Future<void> setUpApi({Map<String, dynamic>? compound, Map<String, dynamic>? developer, String? phone, List<Map<String, dynamic>> units = const []}) async {
       await sl.reset();
-      api = _FakeApi(compound: compound ?? _compound(images: false), developer: developer ?? _developer());
+      api = _FakeApi(compound: compound ?? _compound(images: false), developer: developer ?? _developer(), units: units);
       sl.registerSingleton<ApiClient>(api);
       sl.registerSingleton<FollowService>(FollowService(apiClient: api));
       AppSettingsService.instance.settings = AppSettings(contactPhone: phone);
@@ -221,14 +231,26 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pump(const Duration(milliseconds: 300));
-        expect(api.calls.any((c) => c.contains('listing_type: resale')), isTrue);
-        expect(find.text('compound.resale_empty'.tr()), findsOneWidget);
+        // no resale units: nothing to ask the server for
+        expect(api.calls.any((c) => c.contains('listing_type: resale')), isFalse);
+        expect(find.byKey(const Key('no-units-title')), findsOneWidget);
+        expect(find.text('unit.no_resale_title'.tr()), findsOneWidget);
 
         // ── About tab: computed rows, custom facts, facilities
         await tester.tap(find.text('compound.tab_about'.tr()));
         await tester.pump(const Duration(milliseconds: 300));
         expect(tester.takeException(), isNull);
         expect(find.text('compound.row_payment'.tr()), findsOneWidget);
+        // questions (the first is open), the developer card with the Top mark
+        expect(find.text('unit.questions'.tr()), findsOneWidget);
+        expect(find.byKey(const Key('faq-answer-0')), findsOneWidget);
+        expect(find.byKey(const Key('faq-answer-1')), findsNothing);
+        await tester.tap(find.byKey(const Key('faq-1')));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.byKey(const Key('faq-answer-1')), findsOneWidget);
+        await tester.ensureVisible(find.byKey(const Key('dev-card')));
+        expect(find.byKey(const Key('dev-card')), findsOneWidget);
+        expect(find.byKey(const Key('top-badge')), findsOneWidget);
         expect(find.text(lang == 'ar' ? 'مساحة الأرض' : 'Land area'), findsOneWidget);
         expect(find.byIcon(lang == 'ar' ? Icons.groups_rounded : Icons.pool_rounded), findsOneWidget);
 

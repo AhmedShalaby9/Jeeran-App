@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
@@ -76,6 +77,7 @@ class _FakeApi extends ApiClient {
   Map<String, dynamic> property;
   final calls = <String>[];
   bool limited = false;
+  Completer<void>? gate; // holds the record back so the loading state can be seen
   _FakeApi(this.property);
 
   Response _ok(String path, dynamic body) => Response(requestOptions: RequestOptions(path: path), statusCode: 200, data: body);
@@ -83,7 +85,10 @@ class _FakeApi extends ApiClient {
   @override
   Future<Response> get(String path, {Map<String, dynamic>? queryParams, Map<String, dynamic>? headers}) async {
     calls.add('GET $path');
-    if (path == '/properties/10') return _ok(path, {'success': true, 'data': property});
+    if (path == '/properties/10') {
+      if (gate != null) await gate!.future;
+      return _ok(path, {'success': true, 'data': property});
+    }
     if (path == '/properties/10/similar') return _ok(path, {'success': true, 'data': <dynamic>[]});
     if (path == '/chat/scope') {
       return _ok(path, {
@@ -242,7 +247,17 @@ void main() {
 
         // ── the page: no instalment figure, no map, no share, real contact buttons
         var api = await setUpApi(_payload());
+        api.gate = Completer<void>();
         await _show(tester, host, PropertyDetailsPage(property: _listItem));
+        // while the record loads: the price and title the list already knew, and a shimmer where the rest will be
+        expect(tester.takeException(), isNull);
+        expect(find.byKey(const Key('property-shimmer')), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+        expect(find.text(lang == 'ar' ? 'شالية بحر' : 'Sea view chalet'), findsWidgets);
+        api.gate!.complete();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(find.byKey(const Key('property-shimmer')), findsNothing);
         expect(tester.takeException(), isNull);
         expect(api.calls.first, 'GET /properties/10');
         expect(find.text(lang == 'ar' ? 'شالية بحر' : 'Sea view chalet'), findsWidgets);

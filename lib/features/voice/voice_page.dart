@@ -57,7 +57,7 @@ class _VoicePageState extends State<VoicePage>
     with SingleTickerProviderStateMixin {
   late final VoiceApi _api = widget.api ?? VoiceApi(sl<ApiClient>());
   late final VoiceRecorder _rec = widget.recorder ?? DeviceRecorder();
-  late final VoiceSpeaker _speaker = widget.speaker ?? DeviceSpeaker();
+  late final VoiceSpeaker _speaker = widget.speaker ?? ServerSpeaker(fetch: _api.speak);
   late final AskApi _ask = widget.askApi ?? AskApi(sl<ApiClient>());
   final _text = TextEditingController();
   final _scroll = ScrollController();
@@ -1096,9 +1096,15 @@ class _TranscriptCard extends StatelessWidget {
                 height: 1.45,
                 color: JV2.ink,
               ),
+              textAlignVertical: TextAlignVertical.center,
               decoration: const InputDecoration(
                 isDense: true,
                 border: InputBorder.none,
+                filled: false,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                disabledBorder: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
               ),
             )
           else
