@@ -17,6 +17,7 @@ import '../data/search_filters.dart';
 import '../../developers/presentation/pages/developer_page.dart';
 import 'all_developers_page.dart';
 import 'filter_sheet.dart';
+import 'widgets/list_shimmers.dart';
 import 'launches_page.dart';
 import 'widgets/search_widgets.dart';
 
@@ -323,12 +324,7 @@ class _SearchHomeState extends State<SearchHome> {
                 SizedBox(
                   height: 186,
                   child: _devs == null
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            color: JV2.navy,
-                            strokeWidth: 2,
-                          ),
-                        )
+                      ? const DevRailShimmer()
                       : ListView.separated(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(
@@ -353,12 +349,7 @@ class _SearchHomeState extends State<SearchHome> {
                 SizedBox(
                   height: 190,
                   child: _promos == null
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            color: JV2.navy,
-                            strokeWidth: 2,
-                          ),
-                        )
+                      ? const PromoRailShimmer()
                       : ListView.separated(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(
@@ -524,20 +515,7 @@ class _SearchHomeState extends State<SearchHome> {
             padding: const EdgeInsets.only(bottom: 10),
             child: UnitRow(unit: UnitView(raw), onTap: () => _openUnit(raw)),
           ),
-        if (_loadingMore || _page < _pages)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 14),
-            child: Center(
-              child: SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: JV2.goldHi,
-                ),
-              ),
-            ),
-          ),
+        if (_loadingMore || _page < _pages) const ResultsSkeleton(rows: 2),
       ],
     );
   }

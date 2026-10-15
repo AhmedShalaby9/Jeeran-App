@@ -5,6 +5,7 @@ import '../../../../core/widgets/jv2.dart';
 import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../projects/data/models/project_model.dart';
 import '../../../search/data/search_api.dart';
+import '../../../search/presentation/widgets/list_shimmers.dart';
 import '../../../search/presentation/widgets/search_widgets.dart';
 import '../widgets/explore_widgets.dart' show Photo, isArabic;
 
@@ -177,16 +178,7 @@ class _AllCompoundsPageState extends State<AllCompoundsPage> {
                 ),
                 const SizedBox(height: 14),
                 for (final p in _items) _row(p, ar),
-                if (_loading)
-                  const Padding(
-                    padding: EdgeInsets.all(18),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: JV2.goldHi,
-                      ),
-                    ),
-                  ),
+                if (_loading) CompoundRowShimmer(rows: _items.isEmpty ? 8 : 2),
                 if (_failed)
                   Center(
                     child: TextButton(

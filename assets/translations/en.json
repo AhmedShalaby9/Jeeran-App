@@ -222,6 +222,7 @@
     "greeting_evening": "Good evening",
     "title": "Where are we\nlooking today?",
     "search_hint": "Compound, area or developer",
+    "ask_jeeran": "Ask Jeeran",
     "ask_tooltip": "Ask Jeeran AI",
     "listings_count": "{} listings",
     "chalets": "Chalets",

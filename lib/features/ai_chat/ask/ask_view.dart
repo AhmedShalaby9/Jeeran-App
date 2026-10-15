@@ -13,6 +13,7 @@ import '../../explore/presentation/widgets/explore_widgets.dart' show isRtl;
 import '../../news/v2/news_list_page.dart';
 import '../../properties/data/models/property_model.dart';
 import '../../properties/presentation/pages/property_details_page.dart';
+import '../../voice/voice_api.dart';
 import '../../voice/voice_services.dart';
 import 'ask_api.dart';
 import 'ask_history_page.dart';
@@ -26,20 +27,26 @@ class AskView extends StatefulWidget {
   final int? sessionId;
   final String? sessionTitle;
   final AskApi? api; // tests inject a fake
+  final VoiceApi? voiceApi;
+  final VoiceRecorder? recorder;
 
-  /// Asked as soon as the screen opens (a voice question). With a [speaker] the answer is read aloud.
+  /// Show the microphone in the composer (off while the store review build hides voice).
+  final bool voiceNotes;
+
+  /// Asked as soon as the screen opens (a voice question).
   final String? initialQuestion;
   final int? voiceId;
-  final VoiceSpeaker? speaker;
   const AskView({
     super.key,
     this.embedded = true,
     this.sessionId,
     this.sessionTitle,
     this.api,
+    this.voiceApi,
+    this.recorder,
+    this.voiceNotes = true,
     this.initialQuestion,
     this.voiceId,
-    this.speaker,
   });
 
   @override
@@ -48,6 +55,13 @@ class AskView extends StatefulWidget {
 
 class _AskViewState extends State<AskView> {
   late final AskApi _api = widget.api ?? AskApi(sl<ApiClient>());
+  late final VoiceApi _voiceApi = widget.voiceApi ?? VoiceApi(sl<ApiClient>());
+  VoiceRecorder? _recorder; // made when the first voice note starts
+  VoiceRecorder get _rec => _recorder ??= widget.recorder ?? DeviceRecorder();
+  AskVoice _voice = AskVoice.idle;
+  int _voiceSeconds = 0;
+  Timer? _voiceTick;
+  static const _maxVoiceSeconds = 120; // what the server accepts
   final _input = TextEditingController();
   final _scroll = ScrollController();
 
@@ -79,13 +93,80 @@ class _AskViewState extends State<AskView> {
   @override
   void dispose() {
     _typer?.cancel();
-    widget.speaker?.stop();
+    _voiceTick?.cancel();
+    if (_voice == AskVoice.recording) _recorder?.cancel();
+    if (widget.recorder == null) _recorder?.dispose();
     _input.dispose();
     _scroll.dispose();
     super.dispose();
   }
 
   String get _lang => context.locale.languageCode;
+
+  // ── voice notes ──────────────────────────────────────────
+
+  void _voiceNotice(String key) {
+    if (!mounted) return;
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(key.tr())));
+  }
+
+  Future<void> _startVoice() async {
+    if (_thinking || _voice != AskVoice.idle) return;
+    _typer?.cancel();
+    if (!await _rec.requestPermission()) {
+      _voiceNotice('voice.denied_sub');
+      return;
+    }
+    try {
+      await _rec.start();
+    } catch (_) {
+      _voiceNotice('voice.failed_sub');
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      _voice = AskVoice.recording;
+      _voiceSeconds = 0;
+    });
+    _voiceTick = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() => _voiceSeconds++);
+      if (_voiceSeconds >= _maxVoiceSeconds) _sendVoice();
+    });
+  }
+
+  Future<void> _cancelVoice() async {
+    _voiceTick?.cancel();
+    await _rec.cancel();
+    if (mounted) setState(() => _voice = AskVoice.idle);
+  }
+
+  /// Stops, turns the recording into text, and asks the assistant that text as the next message.
+  Future<void> _sendVoice() async {
+    if (_voice != AskVoice.recording) return;
+    _voiceTick?.cancel();
+    final seconds = _voiceSeconds;
+    setState(() => _voice = AskVoice.transcribing);
+    try {
+      final path = await _rec.stop();
+      if (path == null || seconds < 1) {
+        _voiceNotice('voice.nospeech_title');
+        return;
+      }
+      final heard = await _voiceApi.transcribe(path, seconds: seconds, language: _lang);
+      if (!mounted) return;
+      if (heard.transcript.isEmpty) {
+        _voiceNotice('voice.nospeech_title');
+        return;
+      }
+      setState(() => _voice = AskVoice.idle);
+      await _send(heard.transcript, voiceId: heard.id);
+    } catch (_) {
+      _voiceNotice('voice.failed_title');
+    } finally {
+      if (mounted && _voice != AskVoice.idle) setState(() => _voice = AskVoice.idle);
+    }
+  }
 
   List<String> get _prompts => [
     'concierge.p1'.tr(),
@@ -134,7 +215,6 @@ class _AskViewState extends State<AskView> {
   Future<void> _send(String raw, {int? voiceId}) async {
     final q = raw.trim();
     if (q.isEmpty || _thinking) return;
-    widget.speaker?.stop();
     _typer?.cancel();
     setState(() {
       _typingTurn = null;
@@ -159,7 +239,6 @@ class _AskViewState extends State<AskView> {
         _revealed = 0;
       });
       _startTyping(_split(reply.text).$1.length);
-      widget.speaker?.speak(_spoken(reply.text), _lang);
     } on ServerException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -193,12 +272,6 @@ class _AskViewState extends State<AskView> {
       }
     });
   }
-
-  /// What is read aloud: the answer without markdown marks.
-  static String _spoken(String text) => text
-      .replaceAll(RegExp(r'[*_#`>]'), '')
-      .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
 
   /// The first paragraph goes above the cards, anything after it below them.
   static (String, String) _split(String text) {
@@ -257,7 +330,16 @@ class _AskViewState extends State<AskView> {
                 ? _empty()
                 : _thread(),
           ),
-          AskComposer(controller: _input, disabled: _thinking, onSend: _send),
+          AskComposer(
+            controller: _input,
+            disabled: _thinking,
+            onSend: _send,
+            voice: _voice,
+            seconds: _voiceSeconds,
+            onMic: widget.voiceNotes ? _startVoice : null,
+            onCancelVoice: _cancelVoice,
+            onSendVoice: _sendVoice,
+          ),
         ],
       ),
     );

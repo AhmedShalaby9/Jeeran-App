@@ -33,8 +33,4 @@ class VoiceApi {
       (d['transcript'] as String? ?? '').trim(),
     );
   }
-
-  /// The answer as natural speech (a WAV file's bytes). Throws when the server has no voice configured.
-  Future<List<int>> speak(String text, String lang) =>
-      client.postForBytes('/voice/speak', data: {'text': text, 'language': lang});
 }

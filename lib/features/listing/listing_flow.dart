@@ -29,7 +29,6 @@ class ListingFlow extends StatefulWidget {
   final YouApi? youApi;
   final VoiceRecorder? recorder;
   final VoiceApi? voiceApi;
-  final VoiceSpeaker? speaker;
 
   /// Tests and deep links can start mid-way.
   final ListingDraft? initialDraft;
@@ -45,7 +44,6 @@ class ListingFlow extends StatefulWidget {
     this.youApi,
     this.recorder,
     this.voiceApi,
-    this.speaker,
     this.initialDraft,
     this.initialView = ListingView.start,
     this.initialStep = 1,

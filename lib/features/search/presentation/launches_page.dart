@@ -6,6 +6,7 @@ import '../../explore/presentation/widgets/explore_widgets.dart' show chevronIco
 import '../../compounds/presentation/widgets/page_widgets.dart';
 import '../data/search_api.dart';
 import 'offers_page.dart';
+import 'widgets/list_shimmers.dart';
 import 'widgets/search_widgets.dart';
 
 /// Every live launch and offer, with All / Launches / Offers tabs.
@@ -90,8 +91,10 @@ class _LaunchesPageState extends State<LaunchesPage> {
                     ),
                   )
                 : _all == null
-                ? const Center(
-                    child: CircularProgressIndicator(color: JV2.navy),
+                ? ListView(
+                    padding: const EdgeInsets.fromLTRB(kSearchPad, 16, kSearchPad, 30),
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: const [LaunchCardShimmer(count: 4)],
                   )
                 : ListView(
                     padding: const EdgeInsets.fromLTRB(

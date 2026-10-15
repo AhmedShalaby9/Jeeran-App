@@ -1,3 +1,4 @@
+import 'dart:ui' show FontFeature;
 import 'dart:math' as math;
 
 import 'package:easy_localization/easy_localization.dart';
@@ -110,22 +111,71 @@ class AskHeader extends StatelessWidget {
 
 // ── composer ─────────────────────────────────────────────
 
+/// What the composer is doing with the microphone.
+enum AskVoice { idle, recording, transcribing }
+
 class AskComposer extends StatelessWidget {
   final TextEditingController controller;
   final bool disabled;
   final ValueChanged<String> onSend;
-  const AskComposer({super.key, required this.controller, required this.disabled, required this.onSend});
+
+  /// Voice notes: null hides the microphone. While [voice] is recording the field becomes a recorder.
+  final AskVoice voice;
+  final int seconds;
+  final VoidCallback? onMic, onCancelVoice, onSendVoice;
+  const AskComposer({
+    super.key,
+    required this.controller,
+    required this.disabled,
+    required this.onSend,
+    this.voice = AskVoice.idle,
+    this.seconds = 0,
+    this.onMic,
+    this.onCancelVoice,
+    this.onSendVoice,
+  });
+
+  static String _clock(int s) => '${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}';
+
+  Widget _roundBtn({Key? key, required IconData icon, required VoidCallback? onTap, bool primary = false, Color? color}) {
+    return GestureDetector(
+      key: key,
+      onTap: onTap,
+      child: Container(
+        width: 46,
+        height: 46,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          gradient: primary && onTap != null
+              ? const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [JV2.navyLift, JV2.navy])
+              : null,
+          color: primary ? (onTap == null ? JV2.fillHi : null) : JV2.surface,
+          border: primary ? null : Border.all(color: JV2.line),
+          boxShadow: primary && onTap != null
+              ? const [BoxShadow(color: Color(0x3D0B2A4A), blurRadius: 20, offset: Offset(0, 8))]
+              : null,
+        ),
+        child: Icon(icon, size: 20, color: primary ? (onTap == null ? JV2.inkMute : Colors.white) : (color ?? JV2.ink)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final recording = voice == AskVoice.recording;
+    final transcribing = voice == AskVoice.transcribing;
     return Container(
-      padding: EdgeInsets.fromLTRB(kAskPad, 12, kAskPad, 12 + (MediaQuery.of(context).viewInsets.bottom > 0 ? 0 : 0)),
+      padding: const EdgeInsets.fromLTRB(kAskPad, 12, kAskPad, 12),
       decoration: const BoxDecoration(
         color: Color(0xEBFAFBFD),
         border: Border(top: BorderSide(color: JV2.line)),
       ),
       child: Row(
         children: [
+          if (recording) ...[
+            _roundBtn(key: const Key('voice-cancel'), icon: Icons.close_rounded, onTap: onCancelVoice, color: JV2.danger),
+            const SizedBox(width: 10),
+          ],
           Expanded(
             child: Container(
               constraints: const BoxConstraints(minHeight: 46),
@@ -134,62 +184,94 @@ class AskComposer extends StatelessWidget {
               decoration: BoxDecoration(
                 color: JV2.surface,
                 borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: JV2.line),
+                border: Border.all(color: recording ? JV2.danger.withValues(alpha: 0.5) : JV2.line),
               ),
-              child: TextField(
-                controller: controller,
-                enabled: !disabled,
-                minLines: 1,
-                maxLines: 4,
-                textInputAction: TextInputAction.send,
-                onSubmitted: onSend,
-                style: const TextStyle(fontSize: 14.5, color: JV2.ink),
-                textAlignVertical: TextAlignVertical.center,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  filled: false,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                  disabledBorder: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
-                  hintText: 'concierge.input_hint'.tr(),
-                  hintStyle: const TextStyle(color: JV2.inkSub),
-                ),
-              ),
+              child: recording
+                  ? Row(
+                      key: const Key('ask-recording'),
+                      children: [
+                        const _RecDot(),
+                        const SizedBox(width: 10),
+                        Text(_clock(seconds), style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: JV2.ink, fontFeatures: [FontFeature.tabularFigures()])),
+                        const SizedBox(width: 10),
+                        Expanded(child: Text('voice.listening'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, color: JV2.inkSub))),
+                      ],
+                    )
+                  : transcribing
+                  ? Row(
+                      key: const Key('ask-transcribing'),
+                      children: [
+                        const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: JV2.navy)),
+                        const SizedBox(width: 10),
+                        Expanded(child: Text('voice.transcribing'.tr(), maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13.5, color: JV2.inkSub))),
+                      ],
+                    )
+                  : TextField(
+                      controller: controller,
+                      enabled: !disabled,
+                      minLines: 1,
+                      maxLines: 4,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: onSend,
+                      style: const TextStyle(fontSize: 14.5, color: JV2.ink),
+                      textAlignVertical: TextAlignVertical.center,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        filled: false,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                        isDense: true,
+                        hintText: 'concierge.input_hint'.tr(),
+                        hintStyle: const TextStyle(color: JV2.inkSub),
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 10),
-          GestureDetector(
-            onTap: disabled ? null : () => onSend(controller.text),
-            child: Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                gradient: disabled
-                    ? null
-                    : const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [JV2.navyLift, JV2.navy],
-                      ),
-                color: disabled ? JV2.fillHi : null,
-                boxShadow: disabled
-                    ? null
-                    : const [BoxShadow(color: Color(0x3D0B2A4A), blurRadius: 20, offset: Offset(0, 8))],
-              ),
-              child: Icon(
-                isRtl(context) ? Icons.arrow_back_rounded : Icons.arrow_forward_rounded,
-                size: 19,
-                color: disabled ? JV2.inkMute : Colors.white,
-              ),
+          if (recording)
+            _roundBtn(key: const Key('voice-send'), icon: Icons.check_rounded, onTap: onSendVoice, primary: true)
+          else ...[
+            if (onMic != null) ...[
+              _roundBtn(key: const Key('ask-mic'), icon: Icons.mic_none_rounded, onTap: disabled || transcribing ? null : onMic),
+              const SizedBox(width: 8),
+            ],
+            _roundBtn(
+              key: const Key('ask-send'),
+              icon: isRtl(context) ? Icons.arrow_back_rounded : Icons.arrow_forward_rounded,
+              onTap: disabled || transcribing ? null : () => onSend(controller.text),
+              primary: true,
             ),
-          ),
+          ],
         ],
       ),
     );
   }
+}
+
+/// A red dot that breathes while the microphone is open.
+class _RecDot extends StatefulWidget {
+  const _RecDot();
+
+  @override
+  State<_RecDot> createState() => _RecDotState();
+}
+
+class _RecDotState extends State<_RecDot> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => FadeTransition(
+    opacity: Tween(begin: 0.35, end: 1.0).animate(_c),
+    child: Container(width: 10, height: 10, decoration: const BoxDecoration(color: JV2.danger, shape: BoxShape.circle)),
+  );
 }
 
 // ── messages ─────────────────────────────────────────────

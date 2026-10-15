@@ -6,6 +6,7 @@ import '../../../../core/widgets/jv2.dart';
 import '../../../explore/presentation/widgets/explore_widgets.dart';
 import '../../data/search_api.dart';
 import '../../data/search_filters.dart';
+import 'list_shimmers.dart';
 
 const double kSearchPad = 20;
 
@@ -515,86 +516,13 @@ class _DeliveryTag extends StatelessWidget {
   );
 }
 
-class ResultsSkeleton extends StatefulWidget {
-  const ResultsSkeleton({super.key});
+/// The result rows while a search runs (shimmer, the same placeholder as the other lists).
+class ResultsSkeleton extends StatelessWidget {
+  final int rows;
+  const ResultsSkeleton({super.key, this.rows = 4});
 
   @override
-  State<ResultsSkeleton> createState() => _ResultsSkeletonState();
-}
-
-class _ResultsSkeletonState extends State<ResultsSkeleton>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1100),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    Widget bar(double w, double h) => FractionallySizedBox(
-      widthFactor: w,
-      child: Container(
-        height: h,
-        decoration: BoxDecoration(
-          color: JV2.fillHi,
-          borderRadius: BorderRadius.circular(5),
-        ),
-      ),
-    );
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (_, _) => Opacity(
-        opacity: 0.55 + 0.45 * _c.value,
-        child: Column(
-          children: [
-            for (var i = 0; i < 4; i++)
-              Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: JV2.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: JV2.line),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 104,
-                      height: 104,
-                      decoration: BoxDecoration(
-                        color: JV2.fillHi,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          bar(.58, 17),
-                          const SizedBox(height: 9),
-                          bar(.8, 11),
-                          const SizedBox(height: 9),
-                          bar(.46, 11),
-                          const SizedBox(height: 13),
-                          bar(.66, 11),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => UnitRowShimmer(rows: rows);
 }
 
 // ── headings and chips ────────────────────────────────────

@@ -39,13 +39,11 @@ enum _Phase {
 class VoicePage extends StatefulWidget {
   final VoiceApi? api; // tests inject fakes
   final VoiceRecorder? recorder;
-  final VoiceSpeaker? speaker;
   final AskApi? askApi;
   const VoicePage({
     super.key,
     this.api,
     this.recorder,
-    this.speaker,
     this.askApi,
   });
 
@@ -57,7 +55,6 @@ class _VoicePageState extends State<VoicePage>
     with SingleTickerProviderStateMixin {
   late final VoiceApi _api = widget.api ?? VoiceApi(sl<ApiClient>());
   late final VoiceRecorder _rec = widget.recorder ?? DeviceRecorder();
-  late final VoiceSpeaker _speaker = widget.speaker ?? ServerSpeaker(fetch: _api.speak);
   late final AskApi _ask = widget.askApi ?? AskApi(sl<ApiClient>());
   final _text = TextEditingController();
   final _scroll = ScrollController();
@@ -79,14 +76,12 @@ class _VoicePageState extends State<VoicePage>
   // the answer
   AskReply? _reply;
   int _revealed = 0;
-  bool _speaking = false;
   Timer? _typer;
 
   @override
   void dispose() {
     _tick?.cancel();
     _typer?.cancel();
-    _speaker.stop();
     if (widget.recorder == null) _rec.dispose();
     _text.dispose();
     _scroll.dispose();
@@ -111,7 +106,6 @@ class _VoicePageState extends State<VoicePage>
 
   Future<void> _start() async {
     _typer?.cancel();
-    await _speaker.stop();
     if (!await _rec.requestPermission()) {
       _setPhase(_Phase.denied);
       return;
@@ -126,7 +120,6 @@ class _VoicePageState extends State<VoicePage>
     setState(() {
       _seconds = 0;
       _editing = false;
-      _speaking = false;
     });
     _setPhase(_Phase.recording);
     _tick = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -185,14 +178,6 @@ class _VoicePageState extends State<VoicePage>
       setState(() => _reply = reply);
       _setPhase(_Phase.answer);
       _startTyping(_plain(reply.text).length);
-      setState(() => _speaking = true);
-      _speaker.speak(
-        _plain(reply.text),
-        _lang,
-        onDone: () {
-          if (mounted) setState(() => _speaking = false);
-        },
-      );
     } catch (_) {
       _setPhase(_Phase.failed);
     }
@@ -220,24 +205,6 @@ class _VoicePageState extends State<VoicePage>
     return i > 0
         ? (text.substring(0, i).trim(), text.substring(i + 2).trim())
         : (text.trim(), '');
-  }
-
-  Future<void> _toggleSpeech() async {
-    final reply = _reply;
-    if (reply == null) return;
-    if (_speaking) {
-      await _speaker.stop();
-      if (mounted) setState(() => _speaking = false);
-    } else {
-      setState(() => _speaking = true);
-      _speaker.speak(
-        _plain(reply.text),
-        _lang,
-        onDone: () {
-          if (mounted) setState(() => _speaking = false);
-        },
-      );
-    }
   }
 
   // ── exits ────────────────────────────────────────────────
@@ -536,10 +503,8 @@ class _VoicePageState extends State<VoicePage>
               _SpokenReply(
                 lead: leadShown,
                 tail: typed ? tail : tailShown,
-                speaking: _speaking,
                 typing: !typed,
                 progress: full.isEmpty ? 1 : _revealed / full.length,
-                onToggle: _toggleSpeech,
               ),
               if (typed && refs.properties.isNotEmpty) ...[
                 const SizedBox(height: 16),
@@ -1179,19 +1144,16 @@ class _MiniButton extends StatelessWidget {
   );
 }
 
-/// The answer on a navy card: a waveform that moves while it is being read, a play / stop button, the text.
+/// The answer on a navy card: a progress bar while it types out, then the text.
 class _SpokenReply extends StatelessWidget {
   final String lead, tail;
-  final bool speaking, typing;
+  final bool typing;
   final double progress;
-  final VoidCallback onToggle;
   const _SpokenReply({
     required this.lead,
     required this.tail,
-    required this.speaking,
     required this.typing,
     required this.progress,
-    required this.onToggle,
   });
 
   @override
@@ -1236,7 +1198,7 @@ class _SpokenReply extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  (speaking ? 'voice.speaking' : 'voice.voice_reply').tr(),
+                  'voice.voice_reply'.tr(),
                   style: const TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
@@ -1244,36 +1206,9 @@ class _SpokenReply extends StatelessWidget {
                   ),
                 ),
               ),
-              GestureDetector(
-                key: const Key('voice-toggle-speech'),
-                onTap: onToggle,
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: const Color(0x29FFFFFF),
-                    borderRadius: BorderRadius.circular(11),
-                  ),
-                  child: Icon(
-                    speaking ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    size: 18,
-                    color: Colors.white,
-                    semanticLabel:
-                        (speaking ? 'voice.stop_reading' : 'voice.read_aloud')
-                            .tr(),
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 13),
-          _Waveform(
-            live: speaking,
-            color: const Color(0xD9FFFFFF),
-            height: 34,
-            bars: 26,
-          ),
-          const SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(2),
             child: LinearProgressIndicator(

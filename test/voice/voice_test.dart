@@ -30,22 +30,6 @@ class _Recorder implements VoiceRecorder {
   void dispose() {}
 }
 
-class _Speaker implements VoiceSpeaker {
-  final said = <String>[];
-  @override
-  Future<void> speak(
-    String text,
-    String lang, {
-    void Function()? onDone,
-  }) async {
-    said.add(text);
-    onDone?.call();
-  }
-
-  @override
-  Future<void> stop() async {}
-}
-
 /// Stands in for the server: upload gives a transcript, chat gives an answer.
 class _FakeClient extends ApiClient {
   String transcript = 'Chalets in Sahel under twelve million';
@@ -103,7 +87,7 @@ void main() {
   });
 
   for (final locale in const [Locale('en'), Locale('ar')]) {
-    testWidgets('record, fix the text, ask, hear it — ${locale.languageCode}', (
+    testWidgets('record, fix the text, ask, read it — ${locale.languageCode}', (
       tester,
     ) async {
       tester.view.physicalSize = const Size(390 * 3, 844 * 3);
@@ -111,13 +95,11 @@ void main() {
       addTearDown(tester.view.reset);
 
       final rec = _Recorder();
-      final speaker = _Speaker();
       final client = _FakeClient();
       final host = ValueNotifier<Widget>(
         VoicePage(
           api: VoiceApi(client),
           recorder: rec,
-          speaker: speaker,
           askApi: AskApi(client),
         ),
       );
@@ -152,7 +134,6 @@ void main() {
       host.value = VoicePage(
         api: VoiceApi(client),
         recorder: rec,
-        speaker: speaker,
       );
       await tester.pump();
       Future<void> record() async {
@@ -177,7 +158,6 @@ void main() {
       host.value = VoicePage(
         api: VoiceApi(client),
         recorder: rec,
-        speaker: speaker,
         askApi: AskApi(client),
       );
       await tester.pump();
@@ -227,7 +207,6 @@ void main() {
         'Chalets in Sahel under twelve million',
       );
       expect(client.sentMessage!['voice_id'], 41);
-      expect(speaker.said, ['Six chalets match.']);
       await tester.pump(const Duration(seconds: 1));
       expect(find.byKey(const Key('voice-reply')), findsOneWidget);
       expect(find.text('Six chalets match.'), findsOneWidget);

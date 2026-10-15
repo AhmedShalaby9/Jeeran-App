@@ -8,6 +8,7 @@ import '../../properties/domain/entities/property.dart';
 import '../../units/presentation/unit_card.dart';
 import '../data/search_api.dart';
 import '../data/search_filters.dart';
+import 'widgets/list_shimmers.dart';
 import 'widgets/search_widgets.dart';
 
 /// The units that have an offer or are part of a launch (design D5b): chips to narrow, then the unit cards.
@@ -287,8 +288,10 @@ class _OffersPageState extends State<OffersPage> {
                     ),
                   )
                 : _items.isEmpty && _loading
-                ? const Center(
-                    child: CircularProgressIndicator(color: JV2.navy),
+                ? ListView(
+                    padding: const EdgeInsets.fromLTRB(kSearchPad, 16, kSearchPad, 30),
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: const [UnitCardShimmer(count: 4)],
                   )
                 : _items.isEmpty
                 ? Padding(
@@ -312,16 +315,7 @@ class _OffersPageState extends State<OffersPage> {
                           padding: const EdgeInsets.only(bottom: 14),
                           child: UnitCard(property: p, compact: true),
                         ),
-                      if (_loading)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: JV2.navy,
-                            ),
-                          ),
-                        ),
+                      if (_loading) const UnitCardShimmer(count: 1),
                     ],
                   ),
           ),
