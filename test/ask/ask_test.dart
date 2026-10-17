@@ -224,8 +224,7 @@ void main() {
 
           // empty state: four starter prompts (a buyer sees the buyer one, not the plan question)
           expect(find.text('concierge.p1'.tr()), findsOneWidget);
-          expect(find.text('concierge.p4_buyer'.tr()), findsOneWidget);
-          expect(find.text('concierge.p4_seller'.tr()), findsNothing);
+          expect(find.text('concierge.p4'.tr()), findsOneWidget);
 
           // asking creates the chat once, shows the working step, then types the answer out
           await tester.tap(find.text('concierge.p1'.tr()));

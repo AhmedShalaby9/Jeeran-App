@@ -667,12 +667,11 @@ void main() {
         final apiH = _Api();
         host.value = ShortcutHub(
           api: apiH,
-          priceAlertApi: _Alerts(),
           recorder: _Rec(),
           voiceApi: VoiceApi(_Voice()),
         );
         await settle(300);
-        expect(find.byKey(const Key('tile-alert')), findsOneWidget);
+        expect(find.byKey(const Key('tile-alert')), findsNothing); // no price-alert tile any more
         expect(
           find.byKey(const Key('tile-list')),
           findsNothing,
@@ -680,7 +679,6 @@ void main() {
         expect(find.byKey(const Key('tile-price')), findsNothing);
         host.value = ShortcutHub(
           api: apiH,
-          priceAlertApi: _Alerts(),
           canList: true,
           recorder: _Rec(),
           voiceApi: VoiceApi(_Voice()),
@@ -688,7 +686,7 @@ void main() {
         await settle(300);
         expect(find.byKey(const Key('tile-list')), findsOneWidget);
         expect(find.byKey(const Key('tile-price')), findsOneWidget);
-        expect(find.byKey(const Key('tile-alert')), findsOneWidget);
+        expect(find.byKey(const Key('tile-alert')), findsNothing);
 
         // ── the missing rows can be filled right in the chat, no assistant needed
         var formOpened = 0;

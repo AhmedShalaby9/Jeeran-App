@@ -152,9 +152,11 @@ class _ExploreViewState extends State<_ExploreView> {
         return Column(
           children: [
             ExploreTopBar(
-              // sellers list and re-price; everyone can set a price alert
+              // "Do it" is for sellers: list a property, change a price
               onShortcut:
-                  AppStorage.isLoggedIn && !AppSettingsService.instance.inReview
+                  AppStorage.isLoggedIn &&
+                      (AppStorage.isSeller || AppStorage.isAdmin) &&
+                      !AppSettingsService.instance.inReview
                   ? () => ShortcutHub.open(context)
                   : null,
             ),

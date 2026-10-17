@@ -179,9 +179,7 @@ class _AskViewState extends State<AskView> {
     'concierge.p1'.tr(),
     'concierge.p2'.tr(),
     'concierge.p3'.tr(),
-    AppStorage.isSeller
-        ? 'concierge.p4_seller'.tr()
-        : 'concierge.p4_buyer'.tr(),
+    'concierge.p4'.tr(),
   ];
 
   void _toBottom() => WidgetsBinding.instance.addPostFrameCallback((_) {

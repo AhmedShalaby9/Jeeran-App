@@ -7,9 +7,7 @@ import '../../core/widgets/jv2.dart';
 import '../voice/voice_api.dart';
 import '../voice/voice_services.dart';
 import '../../core/storage/app_storage.dart';
-import 'alert_shortcut_page.dart';
 import 'listing_api.dart';
-import 'price_alert_api.dart';
 import 'listing_flow.dart';
 import 'listing_widgets.dart';
 import 'price_shortcut_page.dart';
@@ -17,7 +15,6 @@ import 'price_shortcut_page.dart';
 /// "Do it": pick what to hand to Jeeran. Each shortcut shows exactly what it is about to do before it does it.
 class ShortcutHub extends StatelessWidget {
   final ListingApi? api;
-  final PriceAlertApi? priceAlertApi;
 
   /// Who may list and re-price; defaults to the signed-in user's role (tests set it).
   final bool? canList;
@@ -26,7 +23,6 @@ class ShortcutHub extends StatelessWidget {
   const ShortcutHub({
     super.key,
     this.api,
-    this.priceAlertApi,
     this.canList,
     this.recorder,
     this.voiceApi,
@@ -82,7 +78,6 @@ class ShortcutHub extends StatelessWidget {
         );
 
     final canList = this.canList ?? (AppStorage.isSeller || AppStorage.isAdmin);
-    final alertApi = priceAlertApi ?? PriceAlertApi(sl<ApiClient>());
     final tiles = <Widget>[
       if (canList)
         tile(
@@ -119,22 +114,6 @@ class ShortcutHub extends StatelessWidget {
             ),
           ),
         ),
-      tile(
-        'tile-alert',
-        'listing.hub_alert'.tr(),
-        'listing.hub_alert_sub'.tr(),
-        () => Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            fullscreenDialog: true,
-            builder: (_) => AlertShortcutPage(
-              api: alertApi,
-              recorder: recorder,
-              voiceApi: voiceApi,
-            ),
-          ),
-        ),
-      ),
     ];
 
     return Scaffold(
