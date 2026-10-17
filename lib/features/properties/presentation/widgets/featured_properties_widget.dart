@@ -46,7 +46,12 @@ class _FeaturedPropertiesView extends StatelessWidget {
         itemCount: properties.length,
         itemBuilder: (context, i) => PropertyCard.featured(
           property: properties[i],
-          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PropertyDetailsPage(property: properties[i]))),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PropertyDetailsPage(property: properties[i]),
+            ),
+          ),
         ),
       ),
     );

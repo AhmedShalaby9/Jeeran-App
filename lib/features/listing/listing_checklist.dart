@@ -71,7 +71,12 @@ List<ChecklistRow> checklistRows(
       ),
     ChecklistRow(
       'price',
-      (d.isRent ? 'listing.f_rent_price' : 'listing.f_price').tr(),
+      (d.isRent
+              ? 'listing.f_rent_price'
+              : d.isResale
+              ? 'listing.f_contract_total'
+              : 'listing.f_price')
+          .tr(),
       d.priceValue == null ? null : 'EGP ${grouped(d.priceValue!)}',
     ),
     if (!d.isRent)
@@ -82,7 +87,11 @@ List<ChecklistRow> checklistRows(
             ? null
             : (d.payment == 'cash'
                   ? 'listing.cash'.tr()
-                  : 'listing.plan_text'.tr(args: [d.down, d.years])),
+                  : (d.isResale
+                        ? 'listing.plan_text_amount'.tr(
+                            args: [d.downAmount, d.years],
+                          )
+                        : 'listing.plan_text'.tr(args: [d.down, d.years]))),
       ),
     ChecklistRow(
       'photos',

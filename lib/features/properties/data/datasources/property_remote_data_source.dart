@@ -7,7 +7,11 @@ import '../models/property_model.dart';
 abstract class PropertyRemoteDataSource {
   Future<List<PropertyModel>> getProperties(PropertyFilterParams params);
   Future<List<PropertyModel>> getMyProperties(PropertyFilterParams params);
-  Future<List<PropertyModel>> getSimilarProperties(int propertyId, {int page = 1, int limit = 20});
+  Future<List<PropertyModel>> getSimilarProperties(
+    int propertyId, {
+    int page = 1,
+    int limit = 20,
+  });
   Future<String> uploadImage(String filePath);
   Future<void> createProperty(Map<String, dynamic> data);
   Future<void> updateProperty(int id, Map<String, dynamic> data);
@@ -44,7 +48,9 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
   }
 
   @override
-  Future<List<PropertyModel>> getMyProperties(PropertyFilterParams params) async {
+  Future<List<PropertyModel>> getMyProperties(
+    PropertyFilterParams params,
+  ) async {
     try {
       final response = await apiClient.get(
         ApiEndpoints.myProperties,
@@ -67,7 +73,11 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
   }
 
   @override
-  Future<List<PropertyModel>> getSimilarProperties(int propertyId, {int page = 1, int limit = 20}) async {
+  Future<List<PropertyModel>> getSimilarProperties(
+    int propertyId, {
+    int page = 1,
+    int limit = 20,
+  }) async {
     try {
       final response = await apiClient.get(
         ApiEndpoints.similarProperties(propertyId),

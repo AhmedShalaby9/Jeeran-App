@@ -7,7 +7,8 @@ import 'add_property_state.dart';
 class AddPropertyBloc extends Bloc<AddPropertyEvent, AddPropertyState> {
   final PropertyRepository repository;
 
-  AddPropertyBloc({required this.repository}) : super(const AddPropertyInitial()) {
+  AddPropertyBloc({required this.repository})
+    : super(const AddPropertyInitial()) {
     on<SubmitAddProperty>(_onSubmit);
     on<SubmitUpdateProperty>(_onUpdate);
   }
@@ -27,7 +28,11 @@ class AddPropertyBloc extends Bloc<AddPropertyEvent, AddPropertyState> {
       String? url;
       result.fold((f) => url = null, (u) => url = u);
       if (url == null) {
-        emit(AddPropertyFailure('Failed to upload image ${i + 1}. Please try again.'));
+        emit(
+          AddPropertyFailure(
+            'Failed to upload image ${i + 1}. Please try again.',
+          ),
+        );
         return;
       }
       uploadedUrls.add(url!);
@@ -70,7 +75,11 @@ class AddPropertyBloc extends Bloc<AddPropertyEvent, AddPropertyState> {
       String? url;
       result.fold((f) => url = null, (u) => url = u);
       if (url == null) {
-        emit(AddPropertyFailure('Failed to upload image ${i + 1}. Please try again.'));
+        emit(
+          AddPropertyFailure(
+            'Failed to upload image ${i + 1}. Please try again.',
+          ),
+        );
         return;
       }
       uploadedUrls.add(url!);
@@ -87,8 +96,8 @@ class AddPropertyBloc extends Bloc<AddPropertyEvent, AddPropertyState> {
   }
 
   String _mapFailure(Failure failure) => switch (failure) {
-        NetworkFailure _ => 'No internet connection. Please check your network.',
-        ServerFailure f => f.message ?? 'Server error. Please try again.',
-        _ => 'Something went wrong. Please try again.',
-      };
+    NetworkFailure _ => 'No internet connection. Please check your network.',
+    ServerFailure f => f.message ?? 'Server error. Please try again.',
+    _ => 'Something went wrong. Please try again.',
+  };
 }

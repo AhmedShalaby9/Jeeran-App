@@ -149,14 +149,22 @@ class _PropertyAgentTabState extends State<PropertyAgentTab> {
                     if (widget.property.agentMobile?.isNotEmpty == true)
                       ContactCircle(
                         color: AppColors.primary,
-                        icon: const Icon(Icons.phone_rounded, size: 16, color: Colors.white),
+                        icon: const Icon(
+                          Icons.phone_rounded,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                         onTap: _call,
                       ),
                     if (widget.property.agentWhatsapp?.isNotEmpty == true) ...[
                       const SizedBox(width: 8),
                       ContactCircle(
                         color: AppColors.whatsapp,
-                        icon: const FaIcon(FontAwesomeIcons.whatsapp, size: 16, color: Colors.white),
+                        icon: const FaIcon(
+                          FontAwesomeIcons.whatsapp,
+                          size: 16,
+                          color: Colors.white,
+                        ),
                         onTap: _whatsapp,
                       ),
                     ],
@@ -181,9 +189,7 @@ class _PropertyAgentTabState extends State<PropertyAgentTab> {
                   height: 1.5,
                 ),
                 children: [
-                  TextSpan(
-                    text: 'property_details.managed_by'.tr(),
-                  ),
+                  TextSpan(text: 'property_details.managed_by'.tr()),
                   TextSpan(
                     text: name,
                     style: const TextStyle(
@@ -191,9 +197,7 @@ class _PropertyAgentTabState extends State<PropertyAgentTab> {
                       color: AppColors.ink,
                     ),
                   ),
-                  TextSpan(
-                    text: 'property_details.contact_note'.tr(),
-                  ),
+                  TextSpan(text: 'property_details.contact_note'.tr()),
                 ],
               ),
             ),
@@ -252,24 +256,26 @@ class _PropertyAgentTabState extends State<PropertyAgentTab> {
                 }
                 return Column(
                   children: [
-                    ...others.take(5).map(
-                      (p) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: PropertyCard.horizontalCard(
-                          property: p,
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PropertyDetailsPage(property: p),
+                    ...others
+                        .take(5)
+                        .map(
+                          (p) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: PropertyCard.horizontalCard(
+                              property: p,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      PropertyDetailsPage(property: p),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
                     if (others.length > 5 || !state.hasReachedMax)
                       _ViewAllButton(agentName: name),
                     const SizedBox(height: 10),
-
                   ],
                 );
               }

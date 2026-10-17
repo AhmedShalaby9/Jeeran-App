@@ -70,9 +70,14 @@ class PropertyModel extends Property {
         ? ProjectModel.fromJson(rawProject)
         : null;
 
-    double? dbl(dynamic v) => v is num ? v.toDouble() : (v is String ? double.tryParse(v) : null);
-    final source = json['source'] is Map<String, dynamic> ? json['source'] as Map<String, dynamic> : const <String, dynamic>{};
-    final building = source['building'] is Map<String, dynamic> ? source['building'] as Map<String, dynamic> : const <String, dynamic>{};
+    double? dbl(dynamic v) =>
+        v is num ? v.toDouble() : (v is String ? double.tryParse(v) : null);
+    final source = json['source'] is Map<String, dynamic>
+        ? json['source'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final building = source['building'] is Map<String, dynamic>
+        ? source['building'] as Map<String, dynamic>
+        : const <String, dynamic>{};
 
     return PropertyModel(
       id: json['id'] as int,
@@ -122,9 +127,13 @@ class PropertyModel extends Property {
       hasOffer: json['has_offer'] == true,
       offerDiscountPercent: dbl(json['offer_discount_percent']),
       downPaymentPercent: dbl(json['down_payment_percent']),
-      installmentYears: json['installment_years'] is num ? (json['installment_years'] as num).toInt() : null,
+      installmentYears: json['installment_years'] is num
+          ? (json['installment_years'] as num).toInt()
+          : null,
       paymentPlans: PaymentPlan.listFrom(json['payment_plans']),
-      floorPlans: json['floor_plans'] is List ? (json['floor_plans'] as List).whereType<String>().toList() : const [],
+      floorPlans: json['floor_plans'] is List
+          ? (json['floor_plans'] as List).whereType<String>().toList()
+          : const [],
       buildingEn: building['name'] as String?,
       buildingAr: building['name_ar'] as String?,
       sourceDate: source['scraped_at'] as String?,

@@ -52,19 +52,16 @@ class PropertyCard extends StatelessWidget {
   factory PropertyCard.similar({
     required Property property,
     VoidCallback? onTap,
-  }) => PropertyCard._(
-    property: property,
-    type: _CardType.similar,
-    onTap: onTap,
-  );
+  }) =>
+      PropertyCard._(property: property, type: _CardType.similar, onTap: onTap);
 
   @override
   Widget build(BuildContext context) {
     return switch (_type) {
-      _CardType.featured  => _FeaturedCard(property: property, onTap: onTap),
+      _CardType.featured => _FeaturedCard(property: property, onTap: onTap),
       _CardType.horizontal => _HorizontalCard(property: property, onTap: onTap),
-      _CardType.vertical  => _VerticalCard(property: property, onTap: onTap),
-      _CardType.similar   => _SimilarCard(property: property, onTap: onTap),
+      _CardType.vertical => _VerticalCard(property: property, onTap: onTap),
+      _CardType.similar => _SimilarCard(property: property, onTap: onTap),
     };
   }
 }
@@ -680,11 +677,7 @@ class _SimilarCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 118,
-              width: double.infinity,
-              child: _buildImage(),
-            ),
+            SizedBox(height: 118, width: double.infinity, child: _buildImage()),
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
               child: Column(

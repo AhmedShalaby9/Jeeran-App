@@ -9,7 +9,7 @@ class AddPropertyStep4 extends StatefulWidget {
   final AddPropertyForm form;
   final VoidCallback onChanged;
 
-  const  AddPropertyStep4({
+  const AddPropertyStep4({
     super.key,
     required this.form,
     required this.onChanged,
@@ -58,8 +58,10 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
   Future<void> _addPhotos() async {
     final remaining = _maxPhotos - widget.form.selectedImages.length;
     if (remaining <= 0) return;
-    final picked =
-        await _picker.pickMultiImage(imageQuality: 80, limit: remaining);
+    final picked = await _picker.pickMultiImage(
+      imageQuality: 80,
+      limit: remaining,
+    );
     if (picked.isEmpty) return;
     setState(() {
       widget.form.selectedImages.addAll(picked);
@@ -79,8 +81,11 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
   Future<void> _translateTitleTo(String targetLang) async {
     final src = targetLang == 'en' ? widget.form.titleAr : widget.form.titleEn;
     if (src.trim().isEmpty) return;
-    setState(() =>
-        targetLang == 'en' ? _translatingTitleEn = true : _translatingTitleAr = true);
+    setState(
+      () => targetLang == 'en'
+          ? _translatingTitleEn = true
+          : _translatingTitleAr = true,
+    );
     try {
       final result = await _translator.translate(src, to: targetLang);
       if (!mounted) return;
@@ -98,19 +103,23 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
       // silent fail — user can retry by tapping the button again
     } finally {
       if (mounted) {
-        setState(() => targetLang == 'en'
-            ? _translatingTitleEn = false
-            : _translatingTitleAr = false);
+        setState(
+          () => targetLang == 'en'
+              ? _translatingTitleEn = false
+              : _translatingTitleAr = false,
+        );
       }
     }
   }
 
   Future<void> _translateTo(String targetLang) async {
-    final src =
-        targetLang == 'en' ? widget.form.contentAr : widget.form.contentEn;
+    final src = targetLang == 'en'
+        ? widget.form.contentAr
+        : widget.form.contentEn;
     if (src.trim().isEmpty) return;
-    setState(() =>
-        targetLang == 'en' ? _translatingEn = true : _translatingAr = true);
+    setState(
+      () => targetLang == 'en' ? _translatingEn = true : _translatingAr = true,
+    );
     try {
       final result = await _translator.translate(src, to: targetLang);
       if (!mounted) return;
@@ -128,9 +137,11 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
       // silent fail — user can retry by tapping the button again
     } finally {
       if (mounted) {
-        setState(() => targetLang == 'en'
-            ? _translatingEn = false
-            : _translatingAr = false);
+        setState(
+          () => targetLang == 'en'
+              ? _translatingEn = false
+              : _translatingAr = false,
+        );
       }
     }
   }
@@ -147,7 +158,8 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-              'Video is too large (${mb.toStringAsFixed(1)} MB). Max $_maxVideoMb MB.'),
+            'Video is too large (${mb.toStringAsFixed(1)} MB). Max $_maxVideoMb MB.',
+          ),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -282,7 +294,8 @@ class _AddPropertyStep4State extends State<AddPropertyStep4> {
           onTranslate: () => _translateTo('en'),
         ),
         WizardTextArea(
-          placeholder: 'Describe the property — views, finishes, nearby landmarks…',
+          placeholder:
+              'Describe the property — views, finishes, nearby landmarks…',
           value: widget.form.contentEn,
           controller: _enDescCtrl,
           onChanged: (v) {
@@ -367,8 +380,11 @@ class _DescLabelRow extends StatelessWidget {
                       ),
                     )
                   else
-                    const Icon(Icons.translate_rounded,
-                        size: 13, color: AppColors.primary),
+                    const Icon(
+                      Icons.translate_rounded,
+                      size: 13,
+                      color: AppColors.primary,
+                    ),
                   const SizedBox(width: 4),
                   Text(
                     buttonLabel,
@@ -423,24 +439,35 @@ class _VideoPickerTile extends StatelessWidget {
             child: file == null
                 ? Row(
                     children: [
-                      const Icon(Icons.video_file_outlined,
-                          size: 20, color: AppColors.inkMute),
+                      const Icon(
+                        Icons.video_file_outlined,
+                        size: 20,
+                        color: AppColors.inkMute,
+                      ),
                       const SizedBox(width: 10),
                       const Expanded(
                         child: Text(
                           'Select a video from your gallery',
                           style: TextStyle(
-                              fontSize: 15, color: AppColors.inkMute),
+                            fontSize: 15,
+                            color: AppColors.inkMute,
+                          ),
                         ),
                       ),
-                      const Icon(Icons.arrow_forward_ios_rounded,
-                          size: 13, color: AppColors.inkMute),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 13,
+                        color: AppColors.inkMute,
+                      ),
                     ],
                   )
                 : Row(
                     children: [
-                      const Icon(Icons.check_circle_rounded,
-                          size: 20, color: AppColors.primary),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        size: 20,
+                        color: AppColors.primary,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
@@ -459,7 +486,9 @@ class _VideoPickerTile extends StatelessWidget {
                             Text(
                               _formatSize(File(file!.path).lengthSync()),
                               style: const TextStyle(
-                                  fontSize: 12, color: AppColors.inkSub),
+                                fontSize: 12,
+                                color: AppColors.inkSub,
+                              ),
                             ),
                           ],
                         ),
@@ -468,8 +497,11 @@ class _VideoPickerTile extends StatelessWidget {
                         onTap: onClear,
                         child: const Padding(
                           padding: EdgeInsets.all(4),
-                          child: Icon(Icons.close_rounded,
-                              size: 18, color: AppColors.inkMute),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 18,
+                            color: AppColors.inkMute,
+                          ),
                         ),
                       ),
                     ],
@@ -494,37 +526,37 @@ class _AddPhotoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.06),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.4),
-              width: 1.5,
+    onTap: onTap,
+    child: Container(
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.add_a_photo_rounded,
+            size: 24,
+            color: AppColors.primary.withValues(alpha: 0.7),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Add',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary.withValues(alpha: 0.8),
             ),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.add_a_photo_rounded,
-                size: 24,
-                color: AppColors.primary.withValues(alpha: 0.7),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Add',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary.withValues(alpha: 0.8),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
+        ],
+      ),
+    ),
+  );
 }
 
 class _PhotoTile extends StatelessWidget {
@@ -540,54 +572,53 @@ class _PhotoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Stack(
-        fit: StackFit.expand,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.file(
-              File(filePath),
-              fit: BoxFit.cover,
+    fit: StackFit.expand,
+    children: [
+      ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image.file(File(filePath), fit: BoxFit.cover),
+      ),
+      if (isCover)
+        Positioned(
+          top: 6,
+          left: 6,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(4),
             ),
-          ),
-          if (isCover)
-            Positioned(
-              top: 6,
-              left: 6,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text(
-                  'COVER',
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.5,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          Positioned(
-            top: 4,
-            right: 4,
-            child: GestureDetector(
-              onTap: onRemove,
-              child: Container(
-                width: 22,
-                height: 22,
-                decoration: const BoxDecoration(
-                  color: Color(0xCC000000),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.close_rounded,
-                    size: 13, color: Colors.white),
+            child: const Text(
+              'COVER',
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: Colors.white,
               ),
             ),
           ),
-        ],
-      );
+        ),
+      Positioned(
+        top: 4,
+        right: 4,
+        child: GestureDetector(
+          onTap: onRemove,
+          child: Container(
+            width: 22,
+            height: 22,
+            decoration: const BoxDecoration(
+              color: Color(0xCC000000),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.close_rounded,
+              size: 13,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    ],
+  );
 }

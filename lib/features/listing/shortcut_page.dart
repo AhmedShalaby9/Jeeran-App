@@ -320,7 +320,7 @@ class _ShortcutPageState extends State<ShortcutPage> {
           CardField.delivery,
         ),
       (
-        'listing.f_price'.tr(),
+        (_d.isResale ? 'listing.f_contract_total' : 'listing.f_price').tr(),
         _d.priceValue == null ? null : 'EGP ${grouped(_d.priceValue!)}',
         CardField.price,
       ),
@@ -330,7 +330,11 @@ class _ShortcutPageState extends State<ShortcutPage> {
             ? null
             : (_d.payment == 'cash'
                   ? 'listing.cash'.tr()
-                  : 'listing.plan_text'.tr(args: [_d.down, _d.years])),
+                  : (_d.isResale
+                        ? 'listing.plan_text_amount'.tr(
+                            args: [_d.downAmount, _d.years],
+                          )
+                        : 'listing.plan_text'.tr(args: [_d.down, _d.years]))),
         CardField.payment,
       ),
     ];

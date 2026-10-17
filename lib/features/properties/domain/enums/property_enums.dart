@@ -22,23 +22,23 @@ enum PropertyType {
 
   /// The raw string sent to / received from the backend.
   String get apiKey => switch (this) {
-        villa => 'villa',
-        apartment => 'apartment',
-        chalet => 'chalet',
-        marinaApartment => 'marina_apartment',
-        clinic => 'clinic',
-        office => 'office',
-        shop => 'shop',
-        twinhouse => 'twinhouse',
-        townhouse => 'townhouse',
-        duplex => 'duplex',
-        studio => 'studio',
-        land => 'land',
-        penthouse => 'penthouse',
-        loft => 'loft',
-        cabin => 'cabin',
-        familyHouse => 'family_house',
-      };
+    villa => 'villa',
+    apartment => 'apartment',
+    chalet => 'chalet',
+    marinaApartment => 'marina_apartment',
+    clinic => 'clinic',
+    office => 'office',
+    shop => 'shop',
+    twinhouse => 'twinhouse',
+    townhouse => 'townhouse',
+    duplex => 'duplex',
+    studio => 'studio',
+    land => 'land',
+    penthouse => 'penthouse',
+    loft => 'loft',
+    cabin => 'cabin',
+    familyHouse => 'family_house',
+  };
 
   String get _translationKey => 'type.$apiKey';
 
@@ -47,24 +47,24 @@ enum PropertyType {
 
   /// Parse from backend string; returns null for unknown values.
   static PropertyType? fromKey(String? key) => switch (key) {
-        'villa' => villa,
-        'apartment' => apartment,
-        'chalet' => chalet,
-        'marina_apartment' => marinaApartment,
-        'clinic' => clinic,
-        'office' => office,
-        'shop' => shop,
-        'twinhouse' => twinhouse,
-        'townhouse' => townhouse,
-        'duplex' => duplex,
-        'studio' => studio,
-        'land' => land,
-        'penthouse' => penthouse,
-        'loft' => loft,
-        'cabin' => cabin,
-        'family_house' => familyHouse,
-        _ => null,
-      };
+    'villa' => villa,
+    'apartment' => apartment,
+    'chalet' => chalet,
+    'marina_apartment' => marinaApartment,
+    'clinic' => clinic,
+    'office' => office,
+    'shop' => shop,
+    'twinhouse' => twinhouse,
+    'townhouse' => townhouse,
+    'duplex' => duplex,
+    'studio' => studio,
+    'land' => land,
+    'penthouse' => penthouse,
+    'loft' => loft,
+    'cabin' => cabin,
+    'family_house' => familyHouse,
+    _ => null,
+  };
 
   /// All values as selectable options for UI pickers.
   static List<PropertyType> get options => values;
@@ -79,10 +79,10 @@ enum PropertyStatus {
 
   /// The raw string sent to / received from the backend.
   String get apiKey => switch (this) {
-        forSale => 'for_sale',
-        forRent => 'for_rent',
-        forRentFurnished => 'for_rent_furnished',
-      };
+    forSale => 'for_sale',
+    forRent => 'for_rent',
+    forRentFurnished => 'for_rent_furnished',
+  };
 
   String get _translationKey => 'status.$apiKey';
 
@@ -91,11 +91,11 @@ enum PropertyStatus {
 
   /// Parse from backend string; returns null for unknown values.
   static PropertyStatus? fromKey(String? key) => switch (key) {
-        'for_sale' => forSale,
-        'for_rent' => forRent,
-        'for_rent_furnished' => forRentFurnished,
-        _ => null,
-      };
+    'for_sale' => forSale,
+    'for_rent' => forRent,
+    'for_rent_furnished' => forRentFurnished,
+    _ => null,
+  };
 
   static List<PropertyStatus> get options => values;
 }
@@ -107,8 +107,8 @@ enum PropertyCountry {
 
   /// The raw string sent to / received from the backend.
   String get apiKey => switch (this) {
-        egypt => 'egypt',
-      };
+    egypt => 'egypt',
+  };
 
   String get _translationKey => 'location.country.$apiKey';
 
@@ -117,18 +117,18 @@ enum PropertyCountry {
 
   /// Parse from backend string; returns null for unknown values.
   static PropertyCountry? fromKey(String? key) => switch (key) {
-        'egypt' => egypt,
-        _ => null,
-      };
+    'egypt' => egypt,
+    _ => null,
+  };
 
   /// States / cities that belong to this country.
   List<PropertyState> get states => switch (this) {
-        egypt => [
-            PropertyState.cairo,
-            PropertyState.northCoast,
-            PropertyState.sharmElSheikh,
-          ],
-      };
+    egypt => [
+      PropertyState.cairo,
+      PropertyState.northCoast,
+      PropertyState.sharmElSheikh,
+    ],
+  };
 
   static List<PropertyCountry> get options => values;
 }
@@ -142,10 +142,10 @@ enum PropertyState {
 
   /// The raw string sent to / received from the backend.
   String get apiKey => switch (this) {
-        cairo => 'cairo',
-        northCoast => 'north_coast',
-        sharmElSheikh => 'sharm_el_sheikh',
-      };
+    cairo => 'cairo',
+    northCoast => 'north_coast',
+    sharmElSheikh => 'sharm_el_sheikh',
+  };
 
   String get _translationKey => 'location.state.$apiKey';
 
@@ -154,11 +154,11 @@ enum PropertyState {
 
   /// Parse from backend string; returns null for unknown values.
   static PropertyState? fromKey(String? key) => switch (key) {
-        'cairo' => cairo,
-        'north_coast' => northCoast,
-        'sharm_el_sheikh' => sharmElSheikh,
-        _ => null,
-      };
+    'cairo' => cairo,
+    'north_coast' => northCoast,
+    'sharm_el_sheikh' => sharmElSheikh,
+    _ => null,
+  };
 
   static List<PropertyState> get options => values;
 }

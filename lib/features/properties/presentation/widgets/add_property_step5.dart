@@ -206,7 +206,9 @@ class _SummaryCard extends StatelessWidget {
           ),
           _Row(
             label: 'Status',
-            value: form.propertyStatus != null ? form.propertyStatus!.label() : '—',
+            value: form.propertyStatus != null
+                ? form.propertyStatus!.label()
+                : '—',
           ),
           _Row(
             label: 'Location',

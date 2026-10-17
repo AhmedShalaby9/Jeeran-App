@@ -4,7 +4,10 @@ import 'package:shimmer/shimmer.dart';
 Widget _box(double h, {double? w, double r = 14}) => Container(
   height: h,
   width: w,
-  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(r)),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(r),
+  ),
 );
 
 /// What the property page shows under the price and title while the rest of the record loads:

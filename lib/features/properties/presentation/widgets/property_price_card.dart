@@ -16,7 +16,8 @@ class PropertyPriceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasStats = property.bedrooms != null ||
+    final hasStats =
+        property.bedrooms != null ||
         property.bathrooms != null ||
         (property.size != null && property.size!.isNotEmpty);
 
@@ -67,7 +68,8 @@ class PropertyPriceCard extends StatelessWidget {
                         color: AppColors.ink,
                       ),
                     ),
-                    if (property.project?.name != null || property.state?.isNotEmpty == true)
+                    if (property.project?.name != null ||
+                        property.state?.isNotEmpty == true)
                       Padding(
                         padding: const EdgeInsets.only(top: 5),
                         child: Row(
@@ -100,7 +102,10 @@ class PropertyPriceCard extends StatelessWidget {
               if (property.price?.isNotEmpty == true)
                 Container(
                   margin: const EdgeInsets.only(left: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.tagPrimaryBg,
                     borderRadius: BorderRadius.circular(12),
@@ -137,15 +142,24 @@ class PropertyPriceCard extends StatelessWidget {
             Row(
               children: [
                 if (property.bedrooms != null) ...[
-                  StatPill(icon: Icons.bed_rounded, label: '${property.bedrooms} Beds'),
+                  StatPill(
+                    icon: Icons.bed_rounded,
+                    label: '${property.bedrooms} Beds',
+                  ),
                   const SizedBox(width: 6),
                 ],
                 if (property.bathrooms != null) ...[
-                  StatPill(icon: Icons.bathtub_rounded, label: '${property.bathrooms} Baths'),
+                  StatPill(
+                    icon: Icons.bathtub_rounded,
+                    label: '${property.bathrooms} Baths',
+                  ),
                   const SizedBox(width: 6),
                 ],
                 if (property.size?.isNotEmpty == true)
-                  StatPill(icon: Icons.crop_square_rounded, label: '${property.size} m²'),
+                  StatPill(
+                    icon: Icons.crop_square_rounded,
+                    label: '${property.size} m²',
+                  ),
               ],
             ),
           ],

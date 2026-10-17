@@ -242,7 +242,9 @@ class _FieldSheetState extends State<_FieldSheet> {
         return [
           ListingInput(
             fieldKey: const Key('field-price'),
-            label: 'listing.f_price'.tr(),
+            label:
+                (_d.isResale ? 'listing.f_contract_total' : 'listing.f_price')
+                    .tr(),
             value: _d.price,
             prefix: 'EGP',
             numeric: true,
@@ -266,17 +268,30 @@ class _FieldSheetState extends State<_FieldSheet> {
           ),
           if (_d.payment == 'installments') ...[
             const SizedBox(height: 16),
-            ListingInput(
-              fieldKey: const Key('field-down'),
-              label: 'listing.f_down'.tr(),
-              value: _d.down,
-              suffix: '%',
-              numeric: true,
-              onChanged: (v) {
-                _set('down', () => _d.down = v);
-                widget.onPayment();
-              },
-            ),
+            if (_d.isResale)
+              ListingInput(
+                fieldKey: const Key('field-down-amount'),
+                label: 'listing.f_down_amount'.tr(),
+                value: _d.downAmount,
+                prefix: 'EGP',
+                numeric: true,
+                onChanged: (v) {
+                  _set('down', () => _d.downAmount = v);
+                  widget.onPayment();
+                },
+              )
+            else
+              ListingInput(
+                fieldKey: const Key('field-down'),
+                label: 'listing.f_down'.tr(),
+                value: _d.down,
+                suffix: '%',
+                numeric: true,
+                onChanged: (v) {
+                  _set('down', () => _d.down = v);
+                  widget.onPayment();
+                },
+              ),
             const SizedBox(height: 16),
             ListingInput(
               fieldKey: const Key('field-years'),

@@ -156,15 +156,17 @@ class _Api extends ListingApi {
   bool describeFails = false;
 
   @override
-  Future<({String title, String description})> describe(
-    ListingDraft d,
-    String lang,
-  ) async {
+  Future<ListingCopy> describe(ListingDraft d, String lang) async {
     describedWith = List.of(d.said);
     if (describeFails) throw Exception('assistant down');
-    return (
-      title: 'Lagoon-front chalet',
-      description: 'Three bedrooms, ready to move.',
+    final ar = lang == 'ar';
+    return ListingCopy(
+      title: ar ? 'شاليه على اللاجون' : 'Lagoon-front chalet',
+      description: ar ? 'ثلاث غرف نوم، جاهز للسكن.' : 'Three bedrooms, ready to move.',
+      titleAr: 'شاليه على اللاجون',
+      descriptionAr: 'ثلاث غرف نوم، جاهز للسكن.',
+      titleEn: 'Lagoon-front chalet',
+      descriptionEn: 'Three bedrooms, ready to move.',
     );
   }
 
@@ -217,9 +219,12 @@ class _Api extends ListingApi {
     );
   }
 
+  Map<String, dynamic>? coverDetails;
+
   @override
-  Future<String> cover(List<String> sources) async {
+  Future<String> cover(List<String> sources, {Map<String, dynamic>? details}) async {
     coverCalls.add(sources);
+    coverDetails = details;
     return 'https://r2/new-cover.png';
   }
 
@@ -347,6 +352,42 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   ImagePickerPlatform.instance = _Gallery();
 
+  test('a resale gives its down payment as an amount and its price is the total contract value', () {
+    final d = ListingDraft()
+      ..type = 'chalet'
+      ..compound = _marassi
+      ..size = '165'
+      ..price = '8,000,000'
+      ..payment = 'installments'
+      ..downAmount = '2,000,000'
+      ..years = '5'
+      ..title = 'T'
+      ..description = 'D'
+      ..listingType = 'resale';
+    final b = d.toBody(images: ['a'], ar: false, admin: false);
+    expect(b['listing_type'], 'resale');
+    expect(b['price'], 8000000);
+    expect(b['down_payment_amount'], 2000000);
+    expect(b.containsKey('down_payment_percent'), isFalse); // the server derives it
+    expect(b['installment_years'], 5);
+    final plan = d.plan!;
+    expect(plan.down, 2000000);
+    expect(plan.total, 8000000);
+    expect(plan.monthly, closeTo(6000000 / 60, 0.01));
+    // more than the whole price is not a plan
+    d.downAmount = '9,000,000';
+    expect(d.plan, isNull);
+    // the assistant only heard "25% down": that share of the price stands in until an amount is typed
+    d.downAmount = '';
+    d.down = '25';
+    expect(d.plan!.down, 2000000);
+    // a primary unit keeps its percentage
+    d.listingType = 'primary';
+    final p = d.toBody(images: ['a'], ar: false, admin: false);
+    expect(p['down_payment_percent'], 25);
+    expect(p.containsKey('down_payment_amount'), isFalse);
+  });
+
   test('body: delivery, view, instalments, language and who is listing', () {
     final d = ListingDraft()
       ..type = 'chalet'
@@ -361,10 +402,11 @@ void main() {
       ..years = '7'
       ..level = 'Ground'
       ..title = 'T'
-      ..description = 'D';
+      ..description = 'D'
+      ..listingType = 'primary';
     final b = d.toBody(images: ['a'], ar: false, admin: false);
     expect(b['compound_id'], 4);
-    expect(b['listing_type'], 'resale');
+    expect(b['listing_type'], 'primary');
     expect(b['title_en'], 'T');
     expect(
       b.containsKey('title_ar'),
@@ -543,17 +585,19 @@ void main() {
         await tester.tap(find.byKey(const Key('listing-primary')));
         await settle();
 
-        // step 4 needs a photo: add one, "write it for me", continue to review
-        expect(find.byKey(const Key('write-for-me')), findsOneWidget);
+        // step 4: the title and description arrive by themselves (marked as Jeeran's); only the photo is still needed
+        await settle();
+        expect(
+          find.text(locale.languageCode == 'ar' ? 'شاليه على اللاجون' : 'Lagoon-front chalet'),
+          findsOneWidget,
+        );
+        expect(find.byKey(const Key('write-for-me')), findsNothing); // already written
         await tester.tap(find.byKey(const Key('listing-primary')));
         await settle();
         expect(
           find.byKey(const Key('listing-primary')),
           findsOneWidget,
-        ); // blocked: no photo, no text
-        await tester.tap(find.byKey(const Key('write-for-me')));
-        await settle();
-        expect(find.text('Lagoon-front chalet'), findsOneWidget);
+        ); // blocked: no photo
         expect(tester.takeException(), isNull);
 
         // ── review → publish: photos upload first, the body reaches the server, "sent for review"
@@ -621,6 +665,144 @@ void main() {
         expect(api3.created!['images'].first, 'https://r2/new-cover.png');
         expect(api3.created!['cover_is_ai'], true);
         expect(api3.created!['images'].length, 3);
+
+        // ── nobody pressed "Write it for me": reaching the last step writes the title and description
+        final apiW = _Api();
+        final dW = ListingDraft()
+          ..type = 'chalet'
+          ..compound = _marassi
+          ..size = '165'
+          ..price = '11500000';
+        host.value = ListingFlow(
+          api: apiW,
+          youApi: YouApi(_You()),
+          initialDraft: dW,
+          initialView: ListingView.form,
+          initialStep: 3,
+        );
+        await settle(400);
+        await tester.tap(find.byKey(const Key('listing-primary'))); // to step 4
+        await settle(400);
+        await settle(400);
+        expect(dW.title, isNotEmpty);
+        expect(dW.description, isNotEmpty);
+        expect(dW.ai, containsAll(['title', 'desc']));
+        // both languages are written and shown
+        expect(dW.titleAlt, isNotEmpty);
+        expect(dW.descriptionAlt, isNotEmpty);
+        expect(find.byKey(const Key('alt-language')), findsOneWidget);
+        expect(find.byKey(const Key('f-title-alt')), findsOneWidget);
+        final bodyW = dW.toBody(images: ['x'], ar: locale.languageCode == 'ar', admin: false);
+        expect(bodyW['title_ar'], 'شاليه على اللاجون');
+        expect(bodyW['title_en'], 'Lagoon-front chalet');
+        expect(bodyW['content_ar'], isNotEmpty);
+        expect(bodyW['content_en'], isNotEmpty);
+        // the assistant is down: a plain factual text, never an empty box
+        final apiD = _Api()..describeFails = true;
+        final dD = ListingDraft()
+          ..type = 'chalet'
+          ..compound = _marassi
+          ..size = '165'
+          ..price = '11500000';
+        host.value = ListingFlow(
+          api: apiD,
+          youApi: YouApi(_You()),
+          initialDraft: dD,
+          initialView: ListingView.form,
+          initialStep: 3,
+        );
+        await settle(400);
+        await tester.tap(find.byKey(const Key('listing-primary')));
+        await settle(400);
+        await settle(400);
+        expect(dD.title, isNotEmpty);
+        expect(dD.description, isNotEmpty);
+        // what the seller already wrote is never replaced
+        final dK = ListingDraft()
+          ..type = 'chalet'
+          ..compound = _marassi
+          ..size = '165'
+          ..price = '11500000'
+          ..title = 'My own title';
+        host.value = ListingFlow(
+          api: _Api(),
+          youApi: YouApi(_You()),
+          initialDraft: dK,
+          initialView: ListingView.form,
+          initialStep: 3,
+        );
+        await settle(400);
+        await tester.tap(find.byKey(const Key('listing-primary')));
+        await settle(400);
+        await settle(400);
+        expect(dK.title, 'My own title');
+
+        // ── the review is editable: a change there reaches the server, contact details included
+        final api6 = _Api();
+        final d6 = ListingDraft()
+          ..type = 'chalet'
+          ..compound = _marassi
+          ..size = '165'
+          ..price = '11500000'
+          ..title = 'T'
+          ..description = 'D'
+          ..photos.add(XFile('/tmp/a.jpg'));
+        host.value = ListingFlow(
+          api: api6,
+          youApi: YouApi(_You()),
+          initialDraft: d6,
+          initialView: ListingView.review,
+        );
+        await settle(400);
+        expect(find.byKey(const Key('f-contact-phone')), findsOneWidget);
+        expect(d6.contactPhone, '+201000000004'); // from the account
+        await tester.ensureVisible(find.byKey(const Key('f-size')));
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.enterText(find.byKey(const Key('f-size')), '180');
+        await tester.ensureVisible(find.byKey(const Key('f-contact-phone')));
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.enterText(find.byKey(const Key('f-contact-phone')), '+201555555555');
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(d6.size, '180');
+        await tester.ensureVisible(find.byKey(const Key('listing-primary')));
+        await tester.tap(find.byKey(const Key('listing-primary'))); // publish
+        await settle(400);
+        await settle(400);
+        expect(api6.created!['size'], 180);
+        expect(api6.created!['agent_mobile'], '+201555555555');
+        expect(api6.created!['agent_whatsapp'], '+201555555555');
+
+        // ── nobody pressed "make a cover": reaching the review makes one, once, and publishing waits for it
+        final api5 = _Api();
+        final d5 = ListingDraft()
+          ..type = 'chalet'
+          ..compound = _marassi
+          ..size = '165'
+          ..price = '11500000'
+          ..title = 'T'
+          ..description = 'D'
+          ..photos.add(XFile('/tmp/a.jpg'));
+        host.value = ListingFlow(
+          api: api5,
+          youApi: YouApi(_You()),
+          initialDraft: d5,
+          initialView: ListingView.form,
+          initialStep: 4,
+        );
+        await settle(400);
+        await tester.tap(find.byKey(const Key('listing-primary'))); // review
+        await settle(400);
+        await settle(400);
+        expect(api5.coverCalls, hasLength(1));
+        // the server reads compound, developer and area itself; the app sends the id and the facts
+        expect(api5.coverDetails!['compound_id'], 4);
+        expect(api5.coverDetails!['price'], 11500000);
+        expect(api5.coverDetails!['type'], 'chalet');
+        expect(d5.coverUrl, 'https://r2/new-cover.png');
+        await tester.tap(find.byKey(const Key('listing-primary'))); // publish
+        await settle(400);
+        expect(api5.created!['images'].first, 'https://r2/new-cover.png');
+        expect(api5.created!['cover_is_ai'], true);
 
         // "use my photo" drops the flag
         d3.coverUrl = null;
@@ -726,8 +908,8 @@ void main() {
           await tester.pump(const Duration(milliseconds: 400));
         }
 
-        // price: a sheet with a number box; the card updates behind it
-        await openRow('listing.f_price');
+        // price (a resale's "Total contract value"): a sheet with a number box; the card updates behind it
+        await openRow('listing.f_contract_total');
         await tester.enterText(find.byKey(const Key('field-price')), '9000000');
         await tester.pump();
         await done();
@@ -766,14 +948,14 @@ void main() {
           );
           await tester.tap(find.byKey(const Key('ai-send')));
           await settle();
-          for (final label in ['listing.f_price', 'listing.f_payment']) {
+          for (final label in ['listing.f_contract_total', 'listing.f_payment']) {
             final row = find.byKey(Key('row-${label.tr()}'));
             await tester.ensureVisible(row);
             await tester.pump(const Duration(milliseconds: 400));
             await tester.tap(row);
             await tester.pump();
             await tester.pump(const Duration(milliseconds: 400));
-            if (label == 'listing.f_price') {
+            if (label == 'listing.f_contract_total') {
               await tester.enterText(
                 find.byKey(const Key('field-price')),
                 '9000000',
@@ -805,7 +987,17 @@ void main() {
             // the assistant could not write it: a plain title from the card is used instead
             expect(find.textContaining('listing.t_chalet'.tr()), findsWidgets);
           } else {
-            expect(find.text('Lagoon-front chalet'), findsOneWidget);
+            // the preview and the editable title field both show it
+            expect(
+              find.text(locale.languageCode == 'ar' ? 'شاليه على اللاجون' : 'Lagoon-front chalet'),
+              findsWidgets,
+            );
+            // the review shows everything, editable: every section, both languages and the contact details
+            for (final n in [1, 2, 3, 4, 5]) {
+              expect(find.byKey(Key('review-section-$n')), findsOneWidget);
+            }
+            expect(find.byKey(const Key('f-title-alt')), findsOneWidget);
+            expect(find.byKey(const Key('f-contact-phone')), findsOneWidget);
             // the seller's own words went along, so details without a field reach the copy
             expect(
               apiR.describedWith,

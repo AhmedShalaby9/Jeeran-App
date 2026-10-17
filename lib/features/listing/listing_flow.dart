@@ -128,6 +128,10 @@ class _ListingFlowState extends State<ListingFlow> {
   bool _loadingEdit = false;
   bool _editFailed = false;
   bool _coverBusy = false;
+  bool _coverOwn =
+      false; // the seller chose their own first photo: do not make a cover for them
+  bool _autoCoverTried =
+      false; // a new listing gets a cover made once, on the way to the review
   bool _wentToReview = false; // an edit that sent the listing back for a check
   final Map<String, String> _uploaded =
       {}; // local path → URL, so nothing uploads twice
@@ -173,7 +177,12 @@ class _ListingFlowState extends State<ListingFlow> {
   Future<void> _loadMe() async {
     try {
       final s = await _you.summary();
-      if (mounted) setState(() => _me = s);
+      if (mounted) {
+        setState(() {
+          _me = s;
+          if (_view == ListingView.review) _fillContactFromAccount();
+        });
+      }
     } catch (_) {}
   }
 
@@ -257,16 +266,32 @@ class _ListingFlowState extends State<ListingFlow> {
     _ => 'listing.err_media'.tr(),
   };
 
+  // ── actions ────────────────────────────────────────────────
+
+  Future<void> _pickCompound() async {
+    final picked = await showModalBottomSheet<CompoundRef>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: JV2.bgDeep,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (_) => CompoundPicker(api: _api, ar: _ar),
+    );
+    if (picked != null) _touch('compound', () => _d.compound = picked);
+  }
+
   void _next() {
     if (!_stepValid()) {
       _toast(_stepError());
       return;
     }
     if (_step == 4) {
-      setState(() => _view = ListingView.review);
+      _enterReview();
     } else {
       setState(() => _step++);
       if (_step == 3) _loadBand();
+      if (_step == 4) _autoWrite();
     }
   }
 
@@ -281,27 +306,6 @@ class _ListingFlowState extends State<ListingFlow> {
     } finally {
       if (mounted) setState(() => _bandLoading = false);
     }
-  }
-
-  void _goStep(int s) => setState(() {
-    _view = ListingView.form;
-    _step = s;
-    if (s == 3) _loadBand();
-  });
-
-  // ── actions ────────────────────────────────────────────────
-
-  Future<void> _pickCompound() async {
-    final picked = await showModalBottomSheet<CompoundRef>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: JV2.bgDeep,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (_) => CompoundPicker(api: _api, ar: _ar),
-    );
-    if (picked != null) _touch('compound', () => _d.compound = picked);
   }
 
   Future<void> _addPhotos() async {
@@ -327,7 +331,21 @@ class _ListingFlowState extends State<ListingFlow> {
     } catch (_) {}
   }
 
-  Future<void> _writeForMe() async {
+  /// A new listing gets its title and description written on reaching the last step, so the seller only checks them.
+  /// Only when both are still empty (never over what they wrote). If the assistant is down a plain factual text is used.
+  Future<void> _autoWrite() async {
+    if (_editing ||
+        _d.title.trim().isNotEmpty ||
+        _d.description.trim().isNotEmpty)
+      return;
+    if (!_d.basicsValid) return;
+    await _writeForMe(quiet: true);
+    if (mounted && (_d.title.trim().isEmpty || _d.description.trim().isEmpty)) {
+      _fillTextFromFields();
+    }
+  }
+
+  Future<void> _writeForMe({bool quiet = false}) async {
     if (_writing) return;
     setState(() => _writing = true);
     try {
@@ -336,10 +354,20 @@ class _ListingFlowState extends State<ListingFlow> {
       setState(() {
         if (r.title.isNotEmpty) _d.title = r.title;
         if (r.description.isNotEmpty) _d.description = r.description;
-        _d.ai.addAll(['title', 'desc']);
+        // the other language is written in the same pass, so both can be read and edited before publishing
+        final altT = _ar ? r.titleEn : r.titleAr;
+        final altD = _ar ? r.descriptionEn : r.descriptionAr;
+        if (altT.isNotEmpty) _d.titleAlt = altT;
+        if (altD.isNotEmpty) _d.descriptionAlt = altD;
+        _d.ai.addAll([
+          'title',
+          'desc',
+          if (altT.isNotEmpty) 'title_alt',
+          if (altD.isNotEmpty) 'desc_alt',
+        ]);
       });
     } catch (_) {
-      if (mounted) _toast('listing.write_failed'.tr());
+      if (mounted && !quiet) _toast('listing.write_failed'.tr());
     } finally {
       if (mounted) setState(() => _writing = false);
     }
@@ -349,22 +377,67 @@ class _ListingFlowState extends State<ListingFlow> {
   Future<String> _upload(String path) async =>
       _uploaded[path] ??= await _api.upload(path);
 
-  /// Makes a free cover from up to five of the seller's photos (uploading new ones first).
-  Future<void> _makeCover() async {
+  /// The review shows everything, editable: the price comparison and the contact details are ready when it opens.
+  void _enterReview() {
+    _fillContactFromAccount();
+    setState(() => _view = ListingView.review);
+    if (_band == null) _loadBand();
+    _autoCover();
+  }
+
+  /// Contact details start as the account's; whatever the lister already has (or edits) stays.
+  void _fillContactFromAccount() {
+    final me = _me;
+    if (me == null) return;
+    if (_d.contactName.trim().isEmpty) _d.contactName = me.name;
+    if (_d.contactPhone.trim().isEmpty) _d.contactPhone = me.phone ?? '';
+    if (_d.contactEmail.trim().isEmpty) _d.contactEmail = me.email ?? '';
+  }
+
+  /// A new listing gets a Jeeran-made cover without being asked (once; never over a cover the seller already made or when
+  /// they chose their own photo). If it cannot be made the first photo stays the cover and nothing is said.
+  Future<void> _autoCover() async {
+    if (_editing ||
+        _autoCoverTried ||
+        _coverOwn ||
+        _d.coverUrl != null ||
+        _d.photoCount == 0)
+      return;
+    _autoCoverTried = true;
+    await _makeCover(quiet: true);
+  }
+
+  /// What the cover shows besides the photos: the server reads the compound, developer and area itself from the id.
+  Map<String, dynamic> _coverDetails() {
+    final d = _d;
+    return {
+      if (d.compound != null) 'compound_id': d.compound!.id,
+      if (d.priceValue != null) 'price': d.priceValue,
+      if (d.type != null) 'type': d.type,
+      'purpose': d.status,
+      if (!d.noRooms && d.bedroomsSet) 'bedrooms': d.bedrooms,
+      if (!d.noRooms && d.bathroomsSet) 'bathrooms': d.bathrooms,
+      if (d.sizeValue != null) 'size': d.sizeValue,
+    };
+  }
+
+  /// Makes a free cover from ALL the seller's photos (uploading new ones first): their own pictures with the listing's facts on top.
+  Future<void> _makeCover({bool quiet = false}) async {
     if (_coverBusy || _d.photoCount == 0) return;
     setState(() => _coverBusy = true);
     try {
       final sources = <String>[..._d.existingImages];
       for (final p in _d.photos) {
-        if (sources.length >= 5) break;
+        if (sources.length >= 20)
+          break; // (the server shows the first few and "+N" for the rest)
         sources.add(await _upload(p.path));
       }
-      final url = await _api.cover(sources.take(5).toList());
+      final url = await _api.cover(sources, details: _coverDetails());
       if (mounted) setState(() => _d.coverUrl = url);
     } on ServerException catch (e) {
-      if (mounted) _toast(e.message ?? 'listing.cover_failed'.tr());
+      if (mounted && !quiet) _toast(e.message ?? 'listing.cover_failed'.tr());
     } catch (_) {
-      if (mounted) _toast('listing.cover_failed'.tr());
+      if (mounted && !quiet) _toast('listing.cover_failed'.tr());
     } finally {
       if (mounted) setState(() => _coverBusy = false);
     }
@@ -384,7 +457,7 @@ class _ListingFlowState extends State<ListingFlow> {
       _fillTextFromFields();
     }
     if (_d.mediaValid) {
-      setState(() => _view = ListingView.review);
+      _enterReview();
     } else {
       setState(() {
         _view = ListingView.form;
@@ -420,13 +493,18 @@ class _ListingFlowState extends State<ListingFlow> {
 
   Future<void> _publish() async {
     if (_publishing) return;
-    // the server refuses a listing without a title, so never send one
-    if (!_d.mediaValid) {
-      setState(() {
-        _view = ListingView.form;
-        _step = 4;
-      });
-      _toast('listing.err_media'.tr());
+    // the review is editable, so a missing part is said right here (the server refuses a listing without a title)
+    final missing = !_d.basicsValid
+        ? 'listing.err_basics'
+        : !_d.detailsValid
+        ? 'listing.err_details'
+        : !_d.priceValid
+        ? 'listing.err_price'
+        : !_d.mediaValid
+        ? 'listing.err_media'
+        : null;
+    if (missing != null) {
+      _toast(missing.tr());
       return;
     }
     setState(() => _publishing = true);
@@ -459,7 +537,8 @@ class _ListingFlowState extends State<ListingFlow> {
         floorPlanUrl: plan,
         agentName: _me?.name,
         agentPhone: _me?.phone,
-        agentEmail: _me?.email,
+        agentEmail:
+            _me?.email, // (only used when the contact fields were left empty)
       );
       if (_editing) {
         _wentToReview = await _api.update(widget.editId!, body);
@@ -683,7 +762,9 @@ class _ListingFlowState extends State<ListingFlow> {
               ),
             JV2PrimaryButton(
               key: const Key('listing-primary'),
-              onPressed: _publishing ? null : (review ? _publish : _next),
+              onPressed: _publishing || (review && _coverBusy)
+                  ? null
+                  : (review ? _publish : _next),
               child: Text(_progress ?? label),
             ),
           ],
@@ -1199,7 +1280,13 @@ class _ListingFlowState extends State<ListingFlow> {
     return _gap([
       ListingInput(
         fieldKey: const Key('f-price'),
-        label: (_d.isRent ? 'listing.f_rent_price' : 'listing.f_price').tr(),
+        label:
+            (_d.isRent
+                    ? 'listing.f_rent_price'
+                    : _d.isResale
+                    ? 'listing.f_contract_total'
+                    : 'listing.f_price')
+                .tr(),
         value: _d.price,
         prefix: 'EGP',
         numeric: true,
@@ -1227,14 +1314,24 @@ class _ListingFlowState extends State<ListingFlow> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: ListingInput(
-                label: 'listing.f_down'.tr(),
-                value: _d.down,
-                suffix: '%',
-                numeric: true,
-                ai: _d.ai.contains('down'),
-                onChanged: (v) => _touch('down', () => _d.down = v),
-              ),
+              child: _d.isResale
+                  ? ListingInput(
+                      fieldKey: const Key('f-down-amount'),
+                      label: 'listing.f_down_amount'.tr(),
+                      value: _d.downAmount,
+                      prefix: 'EGP',
+                      numeric: true,
+                      ai: _d.ai.contains('down'),
+                      onChanged: (v) => _touch('down', () => _d.downAmount = v),
+                    )
+                  : ListingInput(
+                      label: 'listing.f_down'.tr(),
+                      value: _d.down,
+                      suffix: '%',
+                      numeric: true,
+                      ai: _d.ai.contains('down'),
+                      onChanged: (v) => _touch('down', () => _d.down = v),
+                    ),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -1584,7 +1681,10 @@ class _ListingFlowState extends State<ListingFlow> {
                                 btn(
                                   'cover-own',
                                   'listing.cover_own'.tr(),
-                                  () => setState(() => _d.coverUrl = null),
+                                  () => setState(() {
+                                    _d.coverUrl = null;
+                                    _coverOwn = true;
+                                  }),
                                 ),
                               ]
                             : [
@@ -1743,82 +1843,119 @@ class _ListingFlowState extends State<ListingFlow> {
           ),
         ],
       ),
+      // the same text in the other language: written together with the first, readable and editable
+      Container(
+        key: const Key('alt-language'),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: JV2.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: JV2.line),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              (_ar ? 'listing.in_english' : 'listing.in_arabic').tr(),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: JV2.ink,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              'listing.alt_note'.tr(),
+              style: const TextStyle(
+                fontSize: 11.5,
+                height: 1.4,
+                color: JV2.inkSub,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ListingInput(
+              fieldKey: const Key('f-title-alt'),
+              label: 'listing.f_title'.tr(),
+              value: _d.titleAlt,
+              optional: true,
+              ai: _d.ai.contains('title_alt'),
+              onChanged: (v) => _touch('title_alt', () => _d.titleAlt = v),
+            ),
+            const SizedBox(height: 12),
+            ListingInput(
+              fieldKey: const Key('f-desc-alt'),
+              label: 'listing.f_desc'.tr(),
+              value: _d.descriptionAlt,
+              multiline: true,
+              optional: true,
+              ai: _d.ai.contains('desc_alt'),
+              onChanged: (v) => _touch('desc_alt', () => _d.descriptionAlt = v),
+            ),
+          ],
+        ),
+      ),
     ]);
   }
 
   // ── review & done ──────────────────────────────────────────
 
-  Widget _block(String title, int step, List<(String, String, String)> rows) {
+  /// One part of the review: its title and the same inputs the steps use, live (every change shows in the preview above).
+  Widget _section(String title, int n, Widget child) {
     return Container(
+      key: Key('review-section-$n'),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
       decoration: BoxDecoration(
-        color: JV2.surface,
-        borderRadius: BorderRadius.circular(16),
+        color: JV2.bgDeep,
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: JV2.line),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Row(
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: JV2.ink,
-                  ),
-                ),
-                const Spacer(),
-                GestureDetector(
-                  key: Key('edit-$step'),
-                  onTap: () => _goStep(step),
-                  child: Text(
-                    'listing.edit'.tr(),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: JV2.navy,
-                    ),
-                  ),
-                ),
-              ],
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 14.5,
+              fontWeight: FontWeight.w700,
+              color: JV2.ink,
             ),
           ),
-          for (final r in rows)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: JV2.line)),
-              ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 92,
-                    child: Text(
-                      r.$1,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12.5, color: JV2.inkSub),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      r.$2,
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w500,
-                        color: JV2.ink,
-                      ),
-                    ),
-                  ),
-                  if (_d.ai.contains(r.$3)) const SparkIcon(),
-                ],
-              ),
-            ),
+          const SizedBox(height: 14),
+          child,
         ],
       ),
     );
+  }
+
+  /// How buyers reach the lister: from the account to start with, editable.
+  Widget _stepContact() {
+    return _gap([
+      Text(
+        'listing.contact_note'.tr(),
+        style: const TextStyle(fontSize: 11.5, height: 1.45, color: JV2.inkSub),
+      ),
+      ListingInput(
+        fieldKey: const Key('f-contact-name'),
+        label: 'listing.f_contact_name'.tr(),
+        value: _d.contactName,
+        optional: true,
+        onChanged: (v) => setState(() => _d.contactName = v),
+      ),
+      ListingInput(
+        fieldKey: const Key('f-contact-phone'),
+        label: 'listing.f_contact_phone'.tr(),
+        value: _d.contactPhone,
+        optional: true,
+        onChanged: (v) => setState(() => _d.contactPhone = v),
+      ),
+      ListingInput(
+        fieldKey: const Key('f-contact-email'),
+        label: 'listing.f_contact_email'.tr(),
+        value: _d.contactEmail,
+        optional: true,
+        onChanged: (v) => setState(() => _d.contactEmail = v),
+      ),
+    ]);
   }
 
   Widget _review() {
@@ -1864,6 +2001,34 @@ class _ListingFlowState extends State<ListingFlow> {
                     )
                   else
                     const Photo(radius: 0),
+                  if (_coverBusy)
+                    Container(
+                      key: const Key('cover-auto-busy'),
+                      color: const Color(0x990B2A4A),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            'listing.cover_auto'.tr(),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   if (_d.coverIsAi)
                     PositionedDirectional(
                       end: 10,
@@ -1955,90 +2120,16 @@ class _ListingFlowState extends State<ListingFlow> {
           ],
         ),
       ),
-      _block('listing.s1'.tr(), 1, [
-        (
-          'listing.f_sale_type'.tr(),
-          'prop.sale_${_d.effectiveListingType(admin: AppStorage.isAdmin)}'
-              .tr(),
-          'listing_type',
-        ),
-        (
-          'listing.f_type'.tr(),
-          '${_d.type == null ? '' : 'listing.t_${_d.type}'.tr()} · ${switch (_d.status) {
-            'for_rent' => 'listing.rent'.tr(),
-            'for_rent_furnished' => 'listing.rent_furnished'.tr(),
-            _ => 'listing.sale'.tr(),
-          }}',
-          'type',
-        ),
-        (
-          'listing.f_compound'.tr(),
-          c == null
-              ? '—'
-              : [
-                  c.name(_ar),
-                  c.sub(_ar),
-                ].where((s) => s.isNotEmpty).join(' · '),
-          'compound',
-        ),
-      ]),
-      _block('listing.s2'.tr(), 2, [
-        if (!_d.noRooms)
-          (
-            'listing.rooms'.tr(),
-            'listing.beds_baths'.tr(
-              args: ['${_d.bedrooms}', '${_d.bathrooms}'],
-            ),
-            'bedrooms',
-          ),
-        ('listing.f_size'.tr(), '${_d.size} m²', 'size'),
-        if (_d.level.trim().isNotEmpty)
-          ('listing.f_floor'.tr(), _d.level, 'level'),
-        if (_d.finishing != null)
-          (
-            'listing.f_finishing'.tr(),
-            'listing.fin_${_d.finishing}'.tr(),
-            'finishing',
-          ),
-        if (_d.delivery != null)
-          (
-            'listing.f_delivery'.tr(),
-            _d.delivery == 'ready' ? 'listing.d_ready'.tr() : _d.delivery!,
-            'delivery',
-          ),
-        if (_d.view != null)
-          ('listing.f_view'.tr(), 'listing.v_${_d.view}'.tr(), 'view'),
-        if (_d.extras.isNotEmpty)
-          (
-            'listing.f_extras'.tr(),
-            [
-              for (final x in ListingDraft.extraFeatures.where(
-                _d.extras.contains,
-              ))
-                'listing.v_$x'.tr(),
-            ].join(' · '),
-            'extras',
-          ),
-        if (_d.hasGarden && _d.gardenValue != null)
-          ('listing.f_garden'.tr(), '${_d.garden} m²', 'garden'),
-        if (_d.maintenance.trim().isNotEmpty)
-          ('listing.f_maintenance'.tr(), _d.maintenance.trim(), 'maintenance'),
-      ]),
-      _block('listing.s3'.tr(), 3, [
-        (
-          'listing.asking'.tr(),
-          price == null ? '—' : 'EGP ${grouped(price)}',
-          'price',
-        ),
-        if (!_d.isRent)
-          (
-            'listing.plan'.tr(),
-            _d.payment == 'cash'
-                ? 'listing.cash'.tr()
-                : 'listing.plan_text'.tr(args: [_d.down, _d.years]),
-            'down',
-          ),
-      ]),
+      Text(
+        'listing.review_edit_note'.tr(),
+        key: const Key('review-edit-note'),
+        style: const TextStyle(fontSize: 12.5, height: 1.45, color: JV2.inkSub),
+      ),
+      _section('listing.s1'.tr(), 1, _stepBasics()),
+      _section('listing.s2'.tr(), 2, _stepDetails()),
+      _section('listing.s3'.tr(), 3, _stepPrice()),
+      _section('listing.s4'.tr(), 4, _stepMedia()),
+      _section('listing.s_contact'.tr(), 5, _stepContact()),
     ]);
   }
 

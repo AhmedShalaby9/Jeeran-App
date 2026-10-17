@@ -57,7 +57,8 @@ class Property extends Equatable {
   final List<String> floorPlans;
   final String? buildingEn;
   final String? buildingAr;
-  final String? sourceDate; // when the developer's figures were published (yyyy-mm-dd)
+  final String?
+  sourceDate; // when the developer's figures were published (yyyy-mm-dd)
 
   const Property({
     required this.id,
@@ -118,15 +119,22 @@ class Property extends Equatable {
   String? get coverImage => images.isNotEmpty ? images.first : null;
 
   /// The year it is delivered, when known.
-  int? get deliveryYear => deliveryDate == null ? null : DateTime.tryParse(deliveryDate!)?.year;
+  int? get deliveryYear =>
+      deliveryDate == null ? null : DateTime.tryParse(deliveryDate!)?.year;
 
   /// The plan the card quotes ("From 347K / quarter"): the one that matches the unit's own down payment and years.
-  PaymentPlan? get cardPlan => defaultPlan(paymentPlans, downPercent: downPaymentPercent, years: installmentYears);
+  PaymentPlan? get cardPlan => defaultPlan(
+    paymentPlans,
+    downPercent: downPaymentPercent,
+    years: installmentYears,
+  );
 
   /// The building inside the compound, in [lang].
   String? localBuilding(String lang) {
     final ar = buildingAr ?? '', en = buildingEn ?? '';
-    final v = lang == 'ar' ? (ar.isNotEmpty ? ar : en) : (en.isNotEmpty ? en : ar);
+    final v = lang == 'ar'
+        ? (ar.isNotEmpty ? ar : en)
+        : (en.isNotEmpty ? en : ar);
     return v.isEmpty ? null : v;
   }
 
@@ -151,58 +159,58 @@ class Property extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        legacyId,
-        legacyCode,
-        titleAr,
-        titleEn,
-        slug,
-        contentAr,
-        contentEn,
-        contentHtml,
-        propertyType,
-        propertyStatus,
-        price,
-        size,
-        bedrooms,
-        bathrooms,
-        country,
-        state,
-        projectId,
-        images,
-        videoUrl,
-        isFeatured,
-        isActive,
-        isApproved,
-        rejectionReason,
-        isFavorited,
-        publishedAt,
-        viewsCount,
-        agentName,
-        agentMobile,
-        agentWhatsapp,
-        agentEmail,
-        agentPicture,
-        createdBy,
-        createdAt,
-        updatedAt,
-        project,
-        listingType,
-        priceMin,
-        priceMax,
-        sizeMin,
-        sizeMax,
-        deliveryDate,
-        finishing,
-        isLaunch,
-        hasOffer,
-        offerDiscountPercent,
-        downPaymentPercent,
-        installmentYears,
-        paymentPlans,
-        floorPlans,
-        buildingEn,
-        buildingAr,
-        sourceDate,
-      ];
+    id,
+    legacyId,
+    legacyCode,
+    titleAr,
+    titleEn,
+    slug,
+    contentAr,
+    contentEn,
+    contentHtml,
+    propertyType,
+    propertyStatus,
+    price,
+    size,
+    bedrooms,
+    bathrooms,
+    country,
+    state,
+    projectId,
+    images,
+    videoUrl,
+    isFeatured,
+    isActive,
+    isApproved,
+    rejectionReason,
+    isFavorited,
+    publishedAt,
+    viewsCount,
+    agentName,
+    agentMobile,
+    agentWhatsapp,
+    agentEmail,
+    agentPicture,
+    createdBy,
+    createdAt,
+    updatedAt,
+    project,
+    listingType,
+    priceMin,
+    priceMax,
+    sizeMin,
+    sizeMax,
+    deliveryDate,
+    finishing,
+    isLaunch,
+    hasOffer,
+    offerDiscountPercent,
+    downPaymentPercent,
+    installmentYears,
+    paymentPlans,
+    floorPlans,
+    buildingEn,
+    buildingAr,
+    sourceDate,
+  ];
 }

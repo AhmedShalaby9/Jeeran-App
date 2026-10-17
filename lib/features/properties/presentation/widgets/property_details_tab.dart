@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../domain/entities/property.dart';
@@ -12,7 +12,10 @@ class PropertyDetailsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = <(String, String?)>[
       ('property_details.property_type'.tr(), property.propertyType),
-      ('property_details.area'.tr(), property.size != null ? '${property.size} m²' : null),
+      (
+        'property_details.area'.tr(),
+        property.size != null ? '${property.size} m²' : null,
+      ),
       ('property_details.bedrooms'.tr(), property.bedrooms?.toString()),
       ('property_details.bathrooms'.tr(), property.bathrooms?.toString()),
       ('property_details.purpose'.tr(), property.propertyStatus),
@@ -55,7 +58,10 @@ class PropertyDetailsTab extends StatelessWidget {
                 Expanded(
                   child: Text(
                     rows[i].$1,
-                    style: const TextStyle(fontSize: 14, color: AppColors.inkSub),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.inkSub,
+                    ),
                   ),
                 ),
                 Text(

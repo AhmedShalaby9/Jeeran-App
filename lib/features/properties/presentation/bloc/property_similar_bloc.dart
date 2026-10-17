@@ -5,14 +5,19 @@ import '../../domain/repositories/property_repository.dart';
 import 'property_similar_event.dart';
 import 'property_similar_state.dart';
 
-class PropertySimilarBloc extends Bloc<PropertySimilarEvent, PropertySimilarState> {
+class PropertySimilarBloc
+    extends Bloc<PropertySimilarEvent, PropertySimilarState> {
   final PropertyRepository repository;
 
-  PropertySimilarBloc({required this.repository}) : super(PropertySimilarInitial()) {
+  PropertySimilarBloc({required this.repository})
+    : super(PropertySimilarInitial()) {
     on<FetchPropertySimilarEvent>(_onFetch);
   }
 
-  Future<void> _onFetch(FetchPropertySimilarEvent event, Emitter<PropertySimilarState> emit) async {
+  Future<void> _onFetch(
+    FetchPropertySimilarEvent event,
+    Emitter<PropertySimilarState> emit,
+  ) async {
     emit(PropertySimilarLoading());
     final result = await repository.getSimilarProperties(event.propertyId);
     result.fold(

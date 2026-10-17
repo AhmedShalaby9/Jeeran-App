@@ -15,7 +15,8 @@ class PropertyOverviewTab extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (property.localContent(context.locale.languageCode)?.isNotEmpty == true)
+        if (property.localContent(context.locale.languageCode)?.isNotEmpty ==
+            true)
           Padding(
             padding: const EdgeInsets.only(bottom: 18),
             child: Text(

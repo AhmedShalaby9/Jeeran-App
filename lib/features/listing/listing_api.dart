@@ -38,6 +38,20 @@ class DraftReply {
   );
 }
 
+/// The title and description the assistant wrote, in both languages (`title` / `description` are the one the app asked for).
+class ListingCopy {
+  final String title, description;
+  final String titleAr, descriptionAr, titleEn, descriptionEn;
+  const ListingCopy({
+    required this.title,
+    required this.description,
+    this.titleAr = '',
+    this.descriptionAr = '',
+    this.titleEn = '',
+    this.descriptionEn = '',
+  });
+}
+
 /// What similar live units ask. [count] 0 = nothing to compare with.
 class PriceBand {
   final int count;
@@ -156,10 +170,7 @@ class ListingApi {
     return PriceReply.fromJson(res.data['data'] as Map<String, dynamic>);
   }
 
-  Future<({String title, String description})> describe(
-    ListingDraft draft,
-    String lang,
-  ) async {
+  Future<ListingCopy> describe(ListingDraft draft, String lang) async {
     final res = await client.post(
       '/listing-draft/describe',
       data: {
@@ -170,9 +181,14 @@ class ListingApi {
       headers: _lang(lang),
     );
     final d = res.data['data'] as Map<String, dynamic>;
-    return (
-      title: '${d['title'] ?? ''}',
-      description: '${d['description'] ?? ''}',
+    String t(String k) => '${d[k] ?? ''}'.trim();
+    return ListingCopy(
+      title: t('title'),
+      description: t('description'),
+      titleAr: t('title_ar'),
+      descriptionAr: t('description_ar'),
+      titleEn: t('title_en'),
+      descriptionEn: t('description_en'),
     );
   }
 
@@ -231,10 +247,16 @@ class ListingApi {
   }
 
   /// A free cover made from the seller's own (already uploaded) photos. Returns its URL.
-  Future<String> cover(List<String> sources) async {
+  Future<String> cover(
+    List<String> sources, {
+    Map<String, dynamic>? details,
+  }) async {
     final res = await client.postLong(
       '/listing-covers',
-      data: {'source_images': sources},
+      data: {
+        'source_images': sources,
+        if (details != null && details.isNotEmpty) 'details': details,
+      },
       headers: ApiClient.apiV2,
     );
     return '${(res.data['data'] as Map)['url']}';

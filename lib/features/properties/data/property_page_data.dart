@@ -78,6 +78,8 @@ class PropertyPageData {
   final String? finishing;
   final List<String> paymentOptions;
   final double? downPaymentPercent;
+  final double?
+  downPaymentAmount; // a resale: the sum the owner needs now (EGP)
   final int? installmentYears;
   final List<String> amenities;
 
@@ -135,6 +137,7 @@ class PropertyPageData {
     required this.finishing,
     required this.paymentOptions,
     required this.downPaymentPercent,
+    this.downPaymentAmount,
     required this.installmentYears,
     required this.amenities,
     required this.agentName,
@@ -184,8 +187,12 @@ class PropertyPageData {
         ? Bi.of(j['phase'] as Map<String, dynamic>, 'name')
         : const Bi('', '');
 
-    final src = j['source'] is Map<String, dynamic> ? j['source'] as Map<String, dynamic> : const <String, dynamic>{};
-    final bld = src['building'] is Map<String, dynamic> ? src['building'] as Map<String, dynamic> : const <String, dynamic>{};
+    final src = j['source'] is Map<String, dynamic>
+        ? j['source'] as Map<String, dynamic>
+        : const <String, dynamic>{};
+    final bld = src['building'] is Map<String, dynamic>
+        ? src['building'] as Map<String, dynamic>
+        : const <String, dynamic>{};
     final discount = _d(j['offer_discount_percent']);
 
     return PropertyPageData(
@@ -240,6 +247,7 @@ class PropertyPageData {
       finishing: _s(e['finishing']),
       paymentOptions: _strings(e['payment_options']),
       downPaymentPercent: _d(e['down_payment_percent']),
+      downPaymentAmount: _d(e['down_payment_amount']),
       installmentYears: _i(e['installment_years']),
       amenities: _strings(e['amenities']),
       agentName: _s(j['agent_name']),
@@ -253,14 +261,21 @@ class PropertyPageData {
       sizeMin: _d(j['size_min']),
       sizeMax: _d(j['size_max']),
       plans: PaymentPlan.listFrom(j['payment_plans']),
-      floorPlans: _strings(j['floor_plans']).isNotEmpty ? _strings(j['floor_plans']) : [if (_s(j['floor_plan']) != null) _s(j['floor_plan'])!],
+      floorPlans: _strings(j['floor_plans']).isNotEmpty
+          ? _strings(j['floor_plans'])
+          : [if (_s(j['floor_plan']) != null) _s(j['floor_plan'])!],
       isLaunch: j['is_launch'] == true,
       hasOffer: j['has_offer'] == true,
       offerPct: discount != null && discount > 0 ? discount : null,
       building: Bi(_s(bld['name_ar']) ?? '', _s(bld['name']) ?? ''),
       sourceAmenities: _strings(src['amenities']),
-      scrapedAt: src['scraped_at'] is String ? DateTime.tryParse(src['scraped_at'] as String) : null,
-      devInventory: j['publisher_id'] == null && _s(j['agent_name']) == null && _s(j['agent_mobile']) == null,
+      scrapedAt: src['scraped_at'] is String
+          ? DateTime.tryParse(src['scraped_at'] as String)
+          : null,
+      devInventory:
+          j['publisher_id'] == null &&
+          _s(j['agent_name']) == null &&
+          _s(j['agent_mobile']) == null,
     );
   }
 

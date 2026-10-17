@@ -47,7 +47,8 @@ class _AddPropertyStep2State extends State<AddPropertyStep2> {
         children: [
           const WizardStepTitle(
             'Location & project',
-            subtitle: 'Where is the property and which project does it belong to?',
+            subtitle:
+                'Where is the property and which project does it belong to?',
           ),
 
           // ── State / City ─────────────────────────────────────────
@@ -75,8 +76,9 @@ class _AddPropertyStep2State extends State<AddPropertyStep2> {
               if (state is ProjectsError) {
                 return _ProjectErrorPlaceholder(
                   message: state.message,
-                  onRetry: () =>
-                      context.read<ProjectsBloc>().add(const FetchProjectsEvent()),
+                  onRetry: () => context.read<ProjectsBloc>().add(
+                    const FetchProjectsEvent(),
+                  ),
                 );
               }
               if (state is ProjectsLoaded) {
@@ -148,7 +150,8 @@ class _ProjectList extends StatelessWidget {
                             width: 48,
                             height: 48,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _ProjectImageFallback(active: active),
+                            errorBuilder: (_, __, ___) =>
+                                _ProjectImageFallback(active: active),
                           )
                         : _ProjectImageFallback(active: active),
                   ),
@@ -170,12 +173,18 @@ class _ProjectList extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: active ? AppColors.primary : Colors.white,
                       border: Border.all(
-                        color: active ? AppColors.primary : const Color(0xFFD5DAE2),
+                        color: active
+                            ? AppColors.primary
+                            : const Color(0xFFD5DAE2),
                         width: 2,
                       ),
                     ),
                     child: active
-                        ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
+                        ? const Icon(
+                            Icons.check_rounded,
+                            size: 12,
+                            color: Colors.white,
+                          )
                         : null,
                   ),
                 ],
@@ -251,7 +260,11 @@ class _ProjectErrorPlaceholder extends StatelessWidget {
     ),
     child: Row(
       children: [
-        const Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 20),
+        const Icon(
+          Icons.error_outline_rounded,
+          color: AppColors.danger,
+          size: 20,
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Text(

@@ -1,5 +1,7 @@
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/storage/app_storage.dart';
+
 /// The compound a listing belongs to, as the picker and the review show it.
 class CompoundRef {
   final int id;
@@ -64,9 +66,16 @@ class ListingDraft {
   String price = '';
   String payment = 'cash'; // cash | installments
   String down = '';
+  String downAmount =
+      ''; // a resale gives its down payment as an amount (EGP), not a percentage
   String years = '';
   String title = '';
   String description = '';
+
+  /// The same title and description in the OTHER language than the one above (the app's language is the first). Both are
+  /// shown and editable; when this one is empty the server translates what was written.
+  String titleAlt = '';
+  String descriptionAlt = '';
   final List<XFile> photos = [];
   XFile? video;
   XFile? floorPlan;
@@ -75,6 +84,11 @@ class ListingDraft {
   /// What the seller wrote or said to the assistant, so the written title and description can use details
   /// that have no field of their own ("ground floor with a garden").
   final List<String> said = [];
+
+  /// How buyers reach the lister: filled from the account when the review opens, editable there.
+  String contactName = '';
+  String contactPhone = '';
+  String contactEmail = '';
 
   /// Editing a live listing: its id, the photos already on the server, and what we must not clobber.
   int? editingId;
@@ -149,6 +163,18 @@ class ListingDraft {
   double? get gardenValue => double.tryParse(garden.trim());
   bool get hasGarden => gardenTypes.contains(type);
   bool get isRent => status != 'for_sale';
+
+  /// A resale (what the lister is selling is their own contract): the price is the total contract value and the down
+  /// payment is an amount. Sellers default to resale, admins to primary, unless the lister chose.
+  bool get isResale {
+    var admin = false;
+    try {
+      admin = AppStorage.isAdmin;
+    } catch (_) {} // (storage not open, e.g. in a plain unit test: sellers' default)
+    return effectiveListingType(admin: admin) == 'resale';
+  }
+  double? get downAmountValue =>
+      double.tryParse(downAmount.replaceAll(',', '').trim());
   String effectiveListingType({required bool admin}) =>
       listingType ?? (admin ? 'primary' : 'resale');
   bool get noRooms => const ['land', 'shop', 'office', 'clinic'].contains(type);
@@ -164,15 +190,21 @@ class ListingDraft {
   /// Monthly instalment when the plan is complete; null otherwise.
   ({double down, double monthly, double total})? get plan {
     final p = priceValue;
-    final d = double.tryParse(down);
     final y = double.tryParse(years);
-    if (payment != 'installments' ||
-        p == null ||
-        d == null ||
-        y == null ||
-        y <= 0)
+    if (payment != 'installments' || p == null || y == null || y <= 0)
       return null;
-    final dn = p * d / 100;
+    final double dn;
+    if (isResale) {
+      // the amount the lister gave; or, when only a percentage is known (the assistant heard "10% down"), that share of the price
+      final pct = double.tryParse(down);
+      final a = downAmountValue ?? (pct == null ? null : p * pct / 100);
+      if (a == null || a < 0 || a > p) return null;
+      dn = a;
+    } else {
+      final d = double.tryParse(down);
+      if (d == null) return null;
+      dn = p * d / 100;
+    }
     return (down: dn, monthly: (p - dn) / (y * 12), total: p);
   }
 
@@ -236,6 +268,13 @@ class ListingDraft {
     if (int.tryParse(years) != null) 'installment_years': int.parse(years),
   };
 
+  static String? _c(String mine, String? fallback) {
+    final v = mine.trim();
+    if (v.isNotEmpty) return v;
+    final f = fallback?.trim();
+    return f == null || f.isEmpty ? null : f;
+  }
+
   /// `POST /properties` body (images are uploaded first and passed in).
   Map<String, dynamic> toBody({
     required List<String> images,
@@ -257,6 +296,7 @@ class ListingDraft {
       deliveryDate = '$delivery-12-31';
     }
     final lang = ar ? 'ar' : 'en';
+    final otherLang = ar ? 'en' : 'ar';
     return {
       'compound_id': compound!.id,
       'property_type': type,
@@ -270,6 +310,9 @@ class ListingDraft {
       // written in the seller's language; the server translates the other side
       'title_$lang': title.trim(),
       'content_$lang': description.trim(),
+      if (titleAlt.trim().isNotEmpty) 'title_$otherLang': titleAlt.trim(),
+      if (descriptionAlt.trim().isNotEmpty)
+        'content_$otherLang': descriptionAlt.trim(),
       if (level.trim().isNotEmpty) 'level_ar': level.trim(),
       if (level.trim().isNotEmpty) 'level_en': level.trim(),
       'finishing': ?finishing,
@@ -277,7 +320,15 @@ class ListingDraft {
       // a rental has no payment plan; an edit leaves a plan we cannot show (e.g. mortgage) alone unless the seller changed it
       if (!isRent && (!editing || origPayment != payment))
         'payment_options': [payment],
-      if (!isRent && payment == 'installments' && double.tryParse(down) != null)
+      if (!isRent &&
+          payment == 'installments' &&
+          effectiveListingType(admin: admin) == 'resale' &&
+          downAmountValue != null)
+        'down_payment_amount':
+            downAmountValue // (the server keeps the percentage in step with it)
+      else if (!isRent &&
+          payment == 'installments' &&
+          double.tryParse(down) != null)
         'down_payment_percent': double.parse(down),
       if (!isRent && payment == 'installments' && int.tryParse(years) != null)
         'installment_years': int.parse(years),
@@ -290,10 +341,15 @@ class ListingDraft {
       'cover_is_ai': coverIsAi,
       'video_url': ?videoUrl,
       'floor_plan': ?floorPlanUrl,
-      if (!editing) 'agent_name': ?agentName,
-      if (!editing) 'agent_mobile': ?agentPhone,
-      if (!editing) 'agent_whatsapp': ?agentPhone,
-      if (!editing) 'agent_email': ?agentEmail,
+      // what the lister confirmed on the review; the account's details only when that was left empty
+      if (_c(contactName, agentName) != null)
+        'agent_name': _c(contactName, agentName),
+      if (_c(contactPhone, agentPhone) != null)
+        'agent_mobile': _c(contactPhone, agentPhone),
+      if (_c(contactPhone, agentPhone) != null)
+        'agent_whatsapp': _c(contactPhone, agentPhone),
+      if (_c(contactEmail, agentEmail) != null)
+        'agent_email': _c(contactEmail, agentEmail),
     };
   }
 
@@ -308,6 +364,7 @@ class ListingDraft {
     'price': price,
     'payment': payment,
     'down': down,
+    'downAmount': downAmount,
     'years': years,
     'level': level,
     'listingType': listingType,
@@ -317,6 +374,8 @@ class ListingDraft {
     'delivery': delivery,
     'title': title,
     'description': description,
+    'titleAlt': titleAlt,
+    'descriptionAlt': descriptionAlt,
     if (compound != null)
       'compound': {
         'id': compound!.id,
@@ -355,9 +414,12 @@ class ListingDraft {
     d.price = '${j['price'] ?? ''}';
     d.payment = (j['payment'] as String?) ?? 'cash';
     d.down = '${j['down'] ?? ''}';
+    d.downAmount = '${j['downAmount'] ?? ''}';
     d.years = '${j['years'] ?? ''}';
     d.title = '${j['title'] ?? ''}';
     d.description = '${j['description'] ?? ''}';
+    d.titleAlt = '${j['titleAlt'] ?? ''}';
+    d.descriptionAlt = '${j['descriptionAlt'] ?? ''}';
     return d;
   }
 
@@ -427,6 +489,8 @@ class ListingDraft {
     d.origPayment = d.payment;
     final down = n(j['down_payment_percent']);
     if (down != null) d.down = _trim(down);
+    final downAmt = n(j['down_payment_amount']);
+    if (downAmt != null) d.downAmount = _trim(downAmt);
     final yrs = n(j['installment_years']);
     if (yrs != null) d.years = _trim(yrs);
     d.title =
@@ -439,6 +503,11 @@ class ListingDraft {
         s(j['content_en']) ??
         s(j['content_ar']) ??
         '';
+    d.contactName = s(j['agent_name']) ?? '';
+    d.contactPhone = s(j['agent_mobile']) ?? '';
+    d.contactEmail = s(j['agent_email']) ?? '';
+    d.titleAlt = s(ar ? j['title_en'] : j['title_ar']) ?? '';
+    d.descriptionAlt = s(ar ? j['content_en'] : j['content_ar']) ?? '';
     final imgs = (j['images'] is List)
         ? (j['images'] as List).whereType<String>().toList()
         : <String>[];

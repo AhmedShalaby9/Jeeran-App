@@ -58,7 +58,11 @@ class PropertyBottomBar extends StatelessWidget {
             Expanded(
               child: CTAButton(
                 label: 'WhatsApp',
-                icon: const FaIcon(FontAwesomeIcons.whatsapp, size: 16, color: Colors.white),
+                icon: const FaIcon(
+                  FontAwesomeIcons.whatsapp,
+                  size: 16,
+                  color: Colors.white,
+                ),
                 color: AppColors.whatsapp,
                 onTap: _whatsapp,
               ),
@@ -68,7 +72,11 @@ class PropertyBottomBar extends StatelessWidget {
           Expanded(
             child: CTAButton(
               label: 'Call',
-              icon: const Icon(Icons.phone_rounded, size: 16, color: Colors.white),
+              icon: const Icon(
+                Icons.phone_rounded,
+                size: 16,
+                color: Colors.white,
+              ),
               color: AppColors.primary,
               onTap: _call,
             ),

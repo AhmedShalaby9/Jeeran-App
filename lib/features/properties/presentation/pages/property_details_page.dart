@@ -33,8 +33,14 @@ import 'property_image_viewer_page.dart';
 class PropertyDetailsPage extends StatefulWidget {
   final Property property;
   final AskScopeApi? askApi; // tests inject a fake
-  final Object? heroTag; // the card's photo flies into the gallery when this is set (see SharedPhoto)
-  const PropertyDetailsPage({super.key, required this.property, this.askApi, this.heroTag});
+  final Object?
+  heroTag; // the card's photo flies into the gallery when this is set (see SharedPhoto)
+  const PropertyDetailsPage({
+    super.key,
+    required this.property,
+    this.askApi,
+    this.heroTag,
+  });
 
   @override
   State<PropertyDetailsPage> createState() => _PropertyDetailsPageState();
@@ -143,7 +149,9 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
       sizeMax: p.sizeMax,
       isLaunch: p.isLaunch,
       hasOffer: p.hasOffer,
-      offerPct: (p.offerDiscountPercent ?? 0) > 0 ? p.offerDiscountPercent : null,
+      offerPct: (p.offerDiscountPercent ?? 0) > 0
+          ? p.offerDiscountPercent
+          : null,
       devInventory: false,
     );
   }
@@ -167,7 +175,10 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     for (final u in d.images) PropMedia('image', u),
     if (d.videoUrl != null)
       PropMedia('video', d.images.isEmpty ? null : d.images.first),
-    if (d.floorPlan != null && !(d.floorPlans.isNotEmpty && (d.devInventory || d.floorPlans.length > 1))) PropMedia('plan', d.floorPlan),
+    if (d.floorPlan != null &&
+        !(d.floorPlans.isNotEmpty &&
+            (d.devInventory || d.floorPlans.length > 1)))
+      PropMedia('plan', d.floorPlan),
   ];
 
   void _openMedia(PropertyPageData d, List<PropMedia> media, int i) {
@@ -232,10 +243,16 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                     onSave: _toggleSave,
                     heroTag: widget.heroTag,
                     tags: (d.isLaunch || d.hasOffer)
-                        ? Row(mainAxisSize: MainAxisSize.min, children: [
-                            if (d.isLaunch) ...[const UnitTag.launch(), const SizedBox(width: 6)],
-                            if (d.hasOffer) UnitTag.offer(pct: d.offerPct),
-                          ])
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (d.isLaunch) ...[
+                                const UnitTag.launch(),
+                                const SizedBox(width: 6),
+                              ],
+                              if (d.hasOffer) UnitTag.offer(pct: d.offerPct),
+                            ],
+                          )
                         : null,
                   ),
                   if (_failed)
@@ -267,13 +284,23 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
               RequestCallBar(
                 propertyId: d.id,
                 price: d.price,
-                fromPer: fromPerPeriod(defaultPlan(d.plans, downPercent: d.downPaymentPercent, years: d.installmentYears)),
+                fromPer: fromPerPeriod(
+                  defaultPlan(
+                    d.plans,
+                    downPercent: d.downPaymentPercent,
+                    years: d.installmentYears,
+                  ),
+                ),
               )
             else if (_data != null)
               ContactSellerBar(
                 sellerName: d.agentName,
-                onWhatsapp: (d.agentWhatsapp ?? '').isEmpty ? null : () => _whatsapp(d.agentWhatsapp!),
-                onCall: (d.agentMobile ?? '').isEmpty ? null : () => _call(d.agentMobile!),
+                onWhatsapp: (d.agentWhatsapp ?? '').isEmpty
+                    ? null
+                    : () => _whatsapp(d.agentWhatsapp!),
+                onCall: (d.agentMobile ?? '').isEmpty
+                    ? null
+                    : () => _call(d.agentMobile!),
               ),
           ],
         ),
@@ -305,66 +332,68 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (inv) ..._invHeader(d) else ...[
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        money(context, d.price),
-                        style: JV2.display(context, 32).copyWith(height: 1),
-                      ),
-                    ),
-                    const SizedBox(width: 7),
-                    Text(
-                      'explore.egp'.tr(),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: JV2.gold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  [
-                    if (d.pricePerM2 != null)
-                      'prop.per_m2'.tr(
-                        args: [nf.format(d.pricePerM2!.round())],
-                      ),
-                    'find.st_${d.status}'.tr(),
-                  ].join(' · '),
-                  style: const TextStyle(fontSize: 12.5, color: JV2.inkMute),
-                ),
-                const SizedBox(height: 13),
-                Text(d.title.pick(_ar), style: JV2.display(context, 23)),
-                if (location.isNotEmpty) ...[
-                  const SizedBox(height: 7),
+                if (inv)
+                  ..._invHeader(d)
+                else ...[
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
-                      const Icon(
-                        Icons.place_outlined,
-                        size: 14,
-                        color: JV2.inkMute,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
+                      Flexible(
                         child: Text(
-                          location,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: JV2.inkSub,
-                          ),
+                          money(context, d.price),
+                          style: JV2.display(context, 32).copyWith(height: 1),
+                        ),
+                      ),
+                      const SizedBox(width: 7),
+                      Text(
+                        'explore.egp'.tr(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: JV2.gold,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
-                ],
+                  const SizedBox(height: 4),
+                  Text(
+                    [
+                      if (d.pricePerM2 != null)
+                        'prop.per_m2'.tr(
+                          args: [nf.format(d.pricePerM2!.round())],
+                        ),
+                      'find.st_${d.status}'.tr(),
+                    ].join(' · '),
+                    style: const TextStyle(fontSize: 12.5, color: JV2.inkMute),
+                  ),
+                  const SizedBox(height: 13),
+                  Text(d.title.pick(_ar), style: JV2.display(context, 23)),
+                  if (location.isNotEmpty) ...[
+                    const SizedBox(height: 7),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.place_outlined,
+                          size: 14,
+                          color: JV2.inkMute,
+                        ),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            location,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: JV2.inkSub,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ],
             ),
@@ -487,25 +516,46 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    UnitSecHead('unit.amenities'.tr(), meta: 'unit.amenities_meta'.tr()),
+                    UnitSecHead(
+                      'unit.amenities'.tr(),
+                      meta: 'unit.amenities_meta'.tr(),
+                    ),
                     const SizedBox(height: 12),
-                    Wrap(spacing: 8, runSpacing: 8, children: [
-                      for (final a in d.sourceAmenities)
-                        Container(
-                          height: 32,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(color: JV2.surface, borderRadius: BorderRadius.circular(10), border: Border.all(color: JV2.line)),
-                          child: Text(a, style: const TextStyle(fontSize: 12.5, color: JV2.ink)),
-                        ),
-                    ]),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final a in d.sourceAmenities)
+                          Container(
+                            height: 32,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: JV2.surface,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: JV2.line),
+                            ),
+                            child: Text(
+                              a,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                color: JV2.ink,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ],
-            if (d.floorPlans.isNotEmpty && (d.devInventory || d.floorPlans.length > 1)) ...[
+            if (d.floorPlans.isNotEmpty &&
+                (d.devInventory || d.floorPlans.length > 1)) ...[
               const SizedBox(height: 24),
-              Padding(padding: const EdgeInsets.symmetric(horizontal: kPropPad), child: FloorPlansBlock(urls: d.floorPlans)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: kPropPad),
+                child: FloorPlansBlock(urls: d.floorPlans),
+              ),
             ],
             if (d.devInventory && d.developer != null) ...[
               const SizedBox(height: 24),
@@ -518,10 +568,20 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                     const SizedBox(height: 12),
                     DevInventoryCard(
                       developerName: d.developer!.name.pick(_ar),
-                      asOf: d.scrapedAt == null ? null : DateFormat('d MMM y', context.locale.toString()).format(d.scrapedAt!),
+                      asOf: d.scrapedAt == null
+                          ? null
+                          : DateFormat(
+                              'd MMM y',
+                              context.locale.toString(),
+                            ).format(d.scrapedAt!),
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => DeveloperPage(developerId: d.developer!.id, name: d.developer!.name.pick(_ar))),
+                        MaterialPageRoute(
+                          builder: (_) => DeveloperPage(
+                            developerId: d.developer!.id,
+                            name: d.developer!.name.pick(_ar),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -563,23 +623,47 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     final compound = d.compound?.name.pick(_ar) ?? '';
     final building = d.building.pick(_ar);
     final sMin = d.sizeMin ?? d.size, sMax = d.sizeMax ?? d.size;
-    final published = d.scrapedAt == null ? null : DateFormat('d MMM y', context.locale.toString()).format(d.scrapedAt!);
+    final published = d.scrapedAt == null
+        ? null
+        : DateFormat('d MMM y', context.locale.toString()).format(d.scrapedAt!);
     TextStyle small = const TextStyle(fontSize: 11.5, color: JV2.inkSub);
     return [
       if (compound.isNotEmpty)
         Text.rich(
-          TextSpan(children: [
-            if (building.isNotEmpty) TextSpan(text: '$building · '),
-            TextSpan(text: compound, style: const TextStyle(color: JV2.navy, fontWeight: FontWeight.w600)),
-          ]),
+          TextSpan(
+            children: [
+              if (building.isNotEmpty) TextSpan(text: '$building · '),
+              TextSpan(
+                text: compound,
+                style: const TextStyle(
+                  color: JV2.navy,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
           style: const TextStyle(fontSize: 12.5, color: JV2.inkSub),
         ),
       const SizedBox(height: 8),
-      Text(d.title.pick(_ar), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, height: 1.3, letterSpacing: -0.2, color: JV2.ink)),
+      Text(
+        d.title.pick(_ar),
+        style: const TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          height: 1.3,
+          letterSpacing: -0.2,
+          color: JV2.ink,
+        ),
+      ),
       const SizedBox(height: 16),
       Container(
         key: const Key('unit-price-card'),
-        decoration: BoxDecoration(color: JV2.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: JV2.line), boxShadow: JV2.shadowMd),
+        decoration: BoxDecoration(
+          color: JV2.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: JV2.line),
+          boxShadow: JV2.shadowMd,
+        ),
         child: IntrinsicHeight(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -591,11 +675,32 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('unit.price'.tr(), style: const TextStyle(fontSize: 11, color: JV2.inkSub)),
+                      Text(
+                        'unit.price'.tr(),
+                        style: const TextStyle(fontSize: 11, color: JV2.inkSub),
+                      ),
                       const SizedBox(height: 2),
-                      Text(d.price == null ? '—' : '${'unit.egp'.tr()} ${fmtFull(d.price!)}', maxLines: 1, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700, color: JV2.ink, letterSpacing: -0.3)),
+                      Text(
+                        d.price == null
+                            ? '—'
+                            : '${'unit.egp'.tr()} ${fmtFull(d.price!)}',
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontSize: 21,
+                          fontWeight: FontWeight.w700,
+                          color: JV2.ink,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
                       const SizedBox(height: 3),
-                      Text('unit.this_model'.tr(namedArgs: {'range': rangeShort(d.priceMin!, d.priceMax!)}), style: small),
+                      Text(
+                        'unit.this_model'.tr(
+                          namedArgs: {
+                            'range': rangeShort(d.priceMin!, d.priceMax!),
+                          },
+                        ),
+                        style: small,
+                      ),
                     ],
                   ),
                 ),
@@ -608,14 +713,32 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('unit.size'.tr(), style: const TextStyle(fontSize: 11, color: JV2.inkSub)),
+                      Text(
+                        'unit.size'.tr(),
+                        style: const TextStyle(fontSize: 11, color: JV2.inkSub),
+                      ),
                       const SizedBox(height: 2),
-                      Text(sMin == null || sMax == null ? '—' : '${rangeNum(sMin, sMax)} ${'unit.m2'.tr()}', maxLines: 1, style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700, color: JV2.ink)),
+                      Text(
+                        sMin == null || sMax == null
+                            ? '—'
+                            : '${rangeNum(sMin, sMax)} ${'unit.m2'.tr()}',
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontSize: 21,
+                          fontWeight: FontWeight.w700,
+                          color: JV2.ink,
+                        ),
+                      ),
                       const SizedBox(height: 3),
-                      Text([
-                        if ((d.beds ?? 0) > 0) 'unit.bd'.tr(namedArgs: {'n': '${d.beds}'}),
-                        if ((d.baths ?? 0) > 0) 'unit.ba'.tr(namedArgs: {'n': '${d.baths}'}),
-                      ].join(' · '), style: small),
+                      Text(
+                        [
+                          if ((d.beds ?? 0) > 0)
+                            'unit.bd'.tr(namedArgs: {'n': '${d.beds}'}),
+                          if ((d.baths ?? 0) > 0)
+                            'unit.ba'.tr(namedArgs: {'n': '${d.baths}'}),
+                        ].join(' · '),
+                        style: small,
+                      ),
                     ],
                   ),
                 ),
@@ -626,7 +749,10 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
       ),
       if (published != null) ...[
         const SizedBox(height: 8),
-        Text('unit.published'.tr(namedArgs: {'date': published}), style: const TextStyle(fontSize: 11.5, color: JV2.inkMute)),
+        Text(
+          'unit.published'.tr(namedArgs: {'date': published}),
+          style: const TextStyle(fontSize: 11.5, color: JV2.inkMute),
+        ),
       ],
     ];
   }
@@ -652,7 +778,19 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     final payment = <String>[
       if (d.paymentOptions.isNotEmpty)
         d.paymentOptions.map(paymentLabel).join(' · '),
-      if (d.downPaymentPercent != null && d.installmentYears != null)
+      // a resale states its down payment as a sum of money
+      if (d.downPaymentAmount != null && d.installmentYears != null)
+        'prop.down_amount_years'.tr(
+          args: [
+            nf.format(d.downPaymentAmount!.round()),
+            '${d.installmentYears}',
+          ],
+        )
+      else if (d.downPaymentAmount != null)
+        'prop.down_amount_only'.tr(
+          args: [nf.format(d.downPaymentAmount!.round())],
+        )
+      else if (d.downPaymentPercent != null && d.installmentYears != null)
         'prop.down_years'.tr(
           args: [_trim(d.downPaymentPercent!), '${d.installmentYears}'],
         )
@@ -667,7 +805,8 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     return [
       if (d.propertyType.isNotEmpty)
         ('prop.f_type'.tr(), 'type.${d.propertyType}'.tr()),
-      if (d.building.pick(_ar).isNotEmpty) ('unit.d_building'.tr(), d.building.pick(_ar)),
+      if (d.building.pick(_ar).isNotEmpty)
+        ('unit.d_building'.tr(), d.building.pick(_ar)),
       ('prop.f_purpose'.tr(), 'find.st_${d.status}'.tr()),
       ('prop.f_sale_type'.tr(), 'prop.sale_${d.listingType}'.tr()),
       if (d.size != null) ('prop.f_built'.tr(), m2(d.size!)),
@@ -683,7 +822,12 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
         ('prop.f_phase'.tr(), d.phase.pick(_ar)),
       if (payment.isNotEmpty) ('prop.f_payment'.tr(), payment.join('\n')),
       if (d.maintenance.pick(_ar).isNotEmpty)
-        (d.devInventory ? 'unit.d_maintenance'.tr() : 'prop.f_maintenance'.tr(), d.maintenance.pick(_ar)),
+        (
+          d.devInventory
+              ? 'unit.d_maintenance'.tr()
+              : 'prop.f_maintenance'.tr(),
+          d.maintenance.pick(_ar),
+        ),
     ];
   }
 

@@ -81,7 +81,9 @@ class PropertyFilterParams extends Equatable {
       type: type == _nil ? this.type : type as String?,
       status: status == _nil ? this.status : status as String?,
       projectId: projectId == _nil ? this.projectId : projectId as int?,
-      projectName: projectName == _nil ? this.projectName : projectName as String?,
+      projectName: projectName == _nil
+          ? this.projectName
+          : projectName as String?,
       isFeatured: isFeatured == _nil ? this.isFeatured : isFeatured as bool?,
       minPrice: minPrice == _nil ? this.minPrice : minPrice as String?,
       maxPrice: maxPrice == _nil ? this.maxPrice : maxPrice as String?,
@@ -96,20 +98,20 @@ class PropertyFilterParams extends Equatable {
 
   @override
   List<Object?> get props => [
-        page,
-        perPage,
-        type,
-        status,
-        projectId,
-        projectName,
-        isFeatured,
-        minPrice,
-        maxPrice,
-        bedrooms,
-        q,
-        agentName,
-        sort,
-        order,
-        isApproved,
-      ];
+    page,
+    perPage,
+    type,
+    status,
+    projectId,
+    projectName,
+    isFeatured,
+    minPrice,
+    maxPrice,
+    bedrooms,
+    q,
+    agentName,
+    sort,
+    order,
+    isApproved,
+  ];
 }

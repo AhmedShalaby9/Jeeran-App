@@ -11,7 +11,8 @@ import '../../../../core/widgets/jv2.dart';
 class AddPropertyForm {
   PropertyType? propertyType;
   PropertyStatus? propertyStatus;
-  PropertyState? location; // which state/city (avoids name clash with Flutter State)
+  PropertyState?
+  location; // which state/city (avoids name clash with Flutter State)
   int? projectId;
   String projectTitle = '';
 
@@ -62,42 +63,42 @@ class AddPropertyForm {
       agentName.trim().isNotEmpty && agentMobile.trim().isNotEmpty;
 
   bool isStepValid(int step) => switch (step) {
-        1 => step1Valid,
-        2 => step2Valid,
-        3 => step3Valid,
-        4 => step4Valid,
-        _ => step5Valid,
-      };
+    1 => step1Valid,
+    2 => step2Valid,
+    3 => step3Valid,
+    4 => step4Valid,
+    _ => step5Valid,
+  };
 
   Map<String, dynamic> toBody(List<String> imageUrls) => {
-        'title_ar': titleAr.trim(),
-        'title_en': titleEn.trim(),
-        'content_ar': contentAr.trim(),
-        'content_en': contentEn.trim(),
-        'property_type': propertyType!.apiKey,
-        'property_status': propertyStatus!.apiKey,
-        'price': double.parse(price.replaceAll(',', '')),
-        'size': double.parse(size),
-        'bedrooms': bedrooms,
-        'bathrooms': bathrooms,
-        'country': 'egypt',
-        'state': location!.apiKey,
-        'project_id': projectId,
-        'listing_type': listingType,
-        if (finishing != null) 'finishing': finishing,
-        if (payment.isNotEmpty) 'payment_options': payment.toList(),
-        if (amenities.isNotEmpty) 'features': amenities.toList(),
-        'images': imageUrls,
-        'agent_name': agentName.trim(),
-        'agent_mobile': agentMobile.trim(),
-        'agent_whatsapp': agentWhatsapp.trim().isNotEmpty
-            ? agentWhatsapp.trim()
-            : agentMobile.trim(),
-        'agent_email': agentEmail.trim(),
-        if (videoUrl != null && videoUrl!.trim().isNotEmpty)
-          'video_url': videoUrl!.trim(),
-        if (isFeatured) 'is_featured': true,
-      };
+    'title_ar': titleAr.trim(),
+    'title_en': titleEn.trim(),
+    'content_ar': contentAr.trim(),
+    'content_en': contentEn.trim(),
+    'property_type': propertyType!.apiKey,
+    'property_status': propertyStatus!.apiKey,
+    'price': double.parse(price.replaceAll(',', '')),
+    'size': double.parse(size),
+    'bedrooms': bedrooms,
+    'bathrooms': bathrooms,
+    'country': 'egypt',
+    'state': location!.apiKey,
+    'project_id': projectId,
+    'listing_type': listingType,
+    if (finishing != null) 'finishing': finishing,
+    if (payment.isNotEmpty) 'payment_options': payment.toList(),
+    if (amenities.isNotEmpty) 'features': amenities.toList(),
+    'images': imageUrls,
+    'agent_name': agentName.trim(),
+    'agent_mobile': agentMobile.trim(),
+    'agent_whatsapp': agentWhatsapp.trim().isNotEmpty
+        ? agentWhatsapp.trim()
+        : agentMobile.trim(),
+    'agent_email': agentEmail.trim(),
+    if (videoUrl != null && videoUrl!.trim().isNotEmpty)
+      'video_url': videoUrl!.trim(),
+    if (isFeatured) 'is_featured': true,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -172,7 +173,10 @@ class WizardInput extends StatelessWidget {
         suffixStyle: const TextStyle(fontSize: 14, color: AppColors.inkSub),
         filled: true,
         fillColor: JV2.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: JV2.line),
@@ -223,7 +227,10 @@ class WizardTextArea extends StatelessWidget {
         hintStyle: const TextStyle(fontSize: 15, color: AppColors.inkMute),
         filled: true,
         fillColor: JV2.surface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(color: JV2.line),
@@ -437,7 +444,10 @@ class WizardCounterRow extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     hint!,
-                    style: const TextStyle(fontSize: 12, color: AppColors.inkMute),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.inkMute,
+                    ),
                   ),
                 ],
               ],

@@ -80,7 +80,8 @@ class PropGallery extends StatelessWidget {
   final ValueChanged<int> onTapMedia;
   final VoidCallback onSave;
   final Widget? tags; // Launch / Offer marks, bottom-start
-  final Object? heroTag; // the first photo is the end of a shared-element flight from the card
+  final Object?
+  heroTag; // the first photo is the end of a shared-element flight from the card
 
   const PropGallery({
     super.key,
@@ -140,7 +141,10 @@ class PropGallery extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       if (heroTag != null && i == 0 && m.kind == 'image')
-                        SharedPhoto(tag: heroTag!, child: Photo(url: m.url, radius: 0))
+                        SharedPhoto(
+                          tag: heroTag!,
+                          child: Photo(url: m.url, radius: 0),
+                        )
                       else
                         Photo(url: m.url, radius: 0),
                       if (m.kind == 'plan')
@@ -222,7 +226,8 @@ class PropGallery extends StatelessWidget {
               ],
             ),
           ),
-          if (tags != null) PositionedDirectional(start: kPropPad, bottom: 34, child: tags!),
+          if (tags != null)
+            PositionedDirectional(start: kPropPad, bottom: 34, child: tags!),
           if (aiCover && index == 0)
             PositionedDirectional(
               end: kPropPad,
@@ -638,13 +643,20 @@ class ContactSellerBar extends StatelessWidget {
   final String? sellerName;
   final VoidCallback? onCall;
   final VoidCallback? onWhatsapp;
-  const ContactSellerBar({super.key, this.sellerName, this.onCall, this.onWhatsapp});
+  const ContactSellerBar({
+    super.key,
+    this.sellerName,
+    this.onCall,
+    this.onWhatsapp,
+  });
 
   void _open(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: JV2.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
       builder: (sheet) => SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(kPropPad, 14, kPropPad, 18),
@@ -652,12 +664,24 @@ class ContactSellerBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Container(width: 38, height: 4, decoration: BoxDecoration(color: JV2.line, borderRadius: BorderRadius.circular(2)))),
+              Center(
+                child: Container(
+                  width: 38,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: JV2.line,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               Text('prop.contact_seller'.tr(), style: JV2.display(sheet, 21)),
               if ((sellerName ?? '').isNotEmpty) ...[
                 const SizedBox(height: 4),
-                Text(sellerName!, style: const TextStyle(fontSize: 13, color: JV2.inkSub)),
+                Text(
+                  sellerName!,
+                  style: const TextStyle(fontSize: 13, color: JV2.inkSub),
+                ),
               ],
               const SizedBox(height: 16),
               if (onCall != null)
@@ -670,7 +694,8 @@ class ContactSellerBar extends StatelessWidget {
                     onCall!();
                   },
                 ),
-              if (onCall != null && onWhatsapp != null) const SizedBox(height: 10),
+              if (onCall != null && onWhatsapp != null)
+                const SizedBox(height: 10),
               if (onWhatsapp != null)
                 _ContactOption(
                   key: const Key('contact-whatsapp'),
@@ -693,8 +718,16 @@ class ContactSellerBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (onCall == null && onWhatsapp == null) return const SizedBox.shrink();
     return Container(
-      padding: EdgeInsets.fromLTRB(kPropPad, 12, kPropPad, MediaQuery.of(context).padding.bottom + 12),
-      decoration: const BoxDecoration(color: Color(0xF0FAFBFD), border: Border(top: BorderSide(color: JV2.line))),
+      padding: EdgeInsets.fromLTRB(
+        kPropPad,
+        12,
+        kPropPad,
+        MediaQuery.of(context).padding.bottom + 12,
+      ),
+      decoration: const BoxDecoration(
+        color: Color(0xF0FAFBFD),
+        border: Border(top: BorderSide(color: JV2.line)),
+      ),
       child: JV2PrimaryButton(
         key: const Key('contact-seller'),
         height: 52,
@@ -702,9 +735,18 @@ class ContactSellerBar extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.support_agent_rounded, size: 19, color: Colors.white),
+            const Icon(
+              Icons.support_agent_rounded,
+              size: 19,
+              color: Colors.white,
+            ),
             const SizedBox(width: 8),
-            Flexible(child: Text('prop.contact_seller'.tr(), overflow: TextOverflow.ellipsis)),
+            Flexible(
+              child: Text(
+                'prop.contact_seller'.tr(),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),
@@ -717,7 +759,13 @@ class _ContactOption extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback onTap;
-  const _ContactOption({super.key, required this.icon, required this.label, required this.onTap, this.color = JV2.navy});
+  const _ContactOption({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.color = JV2.navy,
+  });
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -726,17 +774,33 @@ class _ContactOption extends StatelessWidget {
     child: Container(
       height: 56,
       padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(color: JV2.bgDeep, borderRadius: BorderRadius.circular(15), border: Border.all(color: JV2.line)),
+      decoration: BoxDecoration(
+        color: JV2.bgDeep,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: JV2.line),
+      ),
       child: Row(
         children: [
           Container(
             width: 34,
             height: 34,
-            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(11)),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(11),
+            ),
             child: Icon(icon, size: 18, color: Colors.white),
           ),
           const SizedBox(width: 12),
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: JV2.ink))),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: JV2.ink,
+              ),
+            ),
+          ),
           Icon(chevronIcon(context), size: 16, color: JV2.inkMute),
         ],
       ),

@@ -73,7 +73,9 @@ class PropertyRepositoryImpl implements PropertyRepository {
   }
 
   @override
-  Future<Either<Failure, void>> createProperty(Map<String, dynamic> data) async {
+  Future<Either<Failure, void>> createProperty(
+    Map<String, dynamic> data,
+  ) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
       await remoteDataSource.createProperty(data);
@@ -84,7 +86,10 @@ class PropertyRepositoryImpl implements PropertyRepository {
   }
 
   @override
-  Future<Either<Failure, void>> updateProperty(int id, Map<String, dynamic> data) async {
+  Future<Either<Failure, void>> updateProperty(
+    int id,
+    Map<String, dynamic> data,
+  ) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
       await remoteDataSource.updateProperty(id, data);
@@ -106,7 +111,10 @@ class PropertyRepositoryImpl implements PropertyRepository {
   }
 
   @override
-  Future<Either<Failure, void>> rejectProperty(int id, String rejectionReason) async {
+  Future<Either<Failure, void>> rejectProperty(
+    int id,
+    String rejectionReason,
+  ) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
       await remoteDataSource.rejectProperty(id, rejectionReason);

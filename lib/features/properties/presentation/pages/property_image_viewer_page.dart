@@ -48,10 +48,15 @@ class _PropertyImageViewerPageState extends State<PropertyImageViewerPage> {
   // Scroll so the active thumb is centered in the strip
   double _thumbScrollOffset(int index) {
     const itemW = _thumbW + _thumbGap;
-    final screenW = WidgetsBinding
-            .instance.platformDispatcher.views.first.physicalSize.width /
+    final screenW =
         WidgetsBinding
-            .instance.platformDispatcher.views.first.devicePixelRatio;
+            .instance
+            .platformDispatcher
+            .views
+            .first
+            .physicalSize
+            .width /
+        WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
     final target = index * itemW - (screenW / 2) + (_thumbW / 2);
     return target.clamp(0.0, double.maxFinite);
   }
@@ -160,7 +165,9 @@ class _PropertyImageViewerPageState extends State<PropertyImageViewerPage> {
                     // Counter badge
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 5),
+                        horizontal: 12,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.45),
                         borderRadius: BorderRadius.circular(20),
@@ -204,8 +211,7 @@ class _PropertyImageViewerPageState extends State<PropertyImageViewerPage> {
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
                   itemCount: widget.images.length,
-                  separatorBuilder: (_, __) =>
-                      const SizedBox(width: _thumbGap),
+                  separatorBuilder: (_, __) => const SizedBox(width: _thumbGap),
                   itemBuilder: (_, i) {
                     final active = i == _current;
                     return GestureDetector(
@@ -227,7 +233,7 @@ class _PropertyImageViewerPageState extends State<PropertyImageViewerPage> {
                                   BoxShadow(
                                     color: Colors.white.withValues(alpha: 0.25),
                                     blurRadius: 6,
-                                  )
+                                  ),
                                 ]
                               : null,
                         ),

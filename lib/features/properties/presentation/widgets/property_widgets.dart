@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
 
 class GlassButton extends StatelessWidget {
@@ -95,7 +95,12 @@ class ContactCircle extends StatelessWidget {
   final Color color;
   final Widget icon;
   final VoidCallback onTap;
-  const ContactCircle({super.key, required this.color, required this.icon, required this.onTap});
+  const ContactCircle({
+    super.key,
+    required this.color,
+    required this.icon,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -135,7 +140,13 @@ class CTAButton extends StatelessWidget {
   final Widget icon;
   final Color color;
   final VoidCallback onTap;
-  const CTAButton({super.key, required this.label, required this.icon, required this.color, required this.onTap});
+  const CTAButton({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) => GestureDetector(
