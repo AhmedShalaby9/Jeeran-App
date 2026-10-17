@@ -262,22 +262,18 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 ],
               ),
             ),
-            if (_data != null && d.devInventory)
+            // a primary unit is sold by the developer: Jeeran calls the buyer back; a resale unit has an owner to contact
+            if (_data != null && d.listingType == 'primary')
               RequestCallBar(
                 propertyId: d.id,
-                title: d.title.pick(_ar),
-                referenceCode: d.referenceCode,
                 price: d.price,
                 fromPer: fromPerPeriod(defaultPlan(d.plans, downPercent: d.downPaymentPercent, years: d.installmentYears)),
               )
             else if (_data != null)
-              ContactBar(
-                onMessage: (d.agentWhatsapp ?? '').isEmpty
-                    ? null
-                    : () => _whatsapp(d.agentWhatsapp!),
-                onCall: (d.agentMobile ?? '').isEmpty
-                    ? null
-                    : () => _call(d.agentMobile!),
+              ContactSellerBar(
+                sellerName: d.agentName,
+                onWhatsapp: (d.agentWhatsapp ?? '').isEmpty ? null : () => _whatsapp(d.agentWhatsapp!),
+                onCall: (d.agentMobile ?? '').isEmpty ? null : () => _call(d.agentMobile!),
               ),
           ],
         ),
@@ -688,7 +684,6 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
       if (payment.isNotEmpty) ('prop.f_payment'.tr(), payment.join('\n')),
       if (d.maintenance.pick(_ar).isNotEmpty)
         (d.devInventory ? 'unit.d_maintenance'.tr() : 'prop.f_maintenance'.tr(), d.maintenance.pick(_ar)),
-      if (d.referenceCode != null) ('prop.f_reference'.tr(), d.referenceCode!),
     ];
   }
 

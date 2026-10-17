@@ -1,5 +1,6 @@
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
+import '../ask/ask_api.dart';
 
 enum AskScopeType { developer, compound, property }
 
@@ -37,10 +38,12 @@ class ScopeInfo {
 
 class ScopedReply {
   final String reply;
-  final List<(String label, String value)>
-  facts; // the numbers the answer rests on
+  final AskRefs
+  refs; // the cards the answer rests on: units, plans, compounds, facts…
   final AskLimit? limit;
-  const ScopedReply(this.reply, this.facts, this.limit);
+  const ScopedReply(this.reply, this.refs, this.limit);
+
+  List<(String label, String value)> get facts => refs.facts;
 }
 
 AskLimit? _limit(dynamic v) => v is Map<String, dynamic>
@@ -80,23 +83,23 @@ class AskScopeApi {
     return (res.data['data']['id'] as num).toInt();
   }
 
-  Future<ScopedReply> send(int sessionId, String text, String lang) async {
+  Future<ScopedReply> send(
+    int sessionId,
+    String text,
+    String lang, {
+    int? voiceId,
+  }) async {
     final res = await client.post(
       ApiEndpoints.chatMessages(sessionId),
-      data: {'content': text},
+      data: {'content': text, 'voice_id': ?voiceId},
       headers: _lang(lang),
     );
     final data = res.data['data'] as Map<String, dynamic>;
-    final refs = data['references'];
-    final rawFacts = refs is Map<String, dynamic> && refs['facts'] is List
-        ? refs['facts'] as List
-        : const [];
-    return ScopedReply(data['reply'] as String? ?? '', [
-      for (final f in rawFacts.whereType<Map<String, dynamic>>())
-        if ((f['label'] as String?)?.isNotEmpty == true &&
-            (f['value'] as String?)?.isNotEmpty == true)
-          (f['label'] as String, f['value'] as String),
-    ], _limit(data['limit']));
+    return ScopedReply(
+      data['reply'] as String? ?? '',
+      AskRefs.fromJson(data['references']),
+      _limit(data['limit']),
+    );
   }
 
   Future<void> widen(int sessionId) =>

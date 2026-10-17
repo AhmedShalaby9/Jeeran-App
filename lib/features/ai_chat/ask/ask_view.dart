@@ -107,7 +107,9 @@ class _AskViewState extends State<AskView> {
 
   void _voiceNotice(String key) {
     if (!mounted) return;
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(SnackBar(content: Text(key.tr())));
+    ScaffoldMessenger.maybeOf(
+      context,
+    )?.showSnackBar(SnackBar(content: Text(key.tr())));
   }
 
   Future<void> _startVoice() async {
@@ -153,7 +155,11 @@ class _AskViewState extends State<AskView> {
         _voiceNotice('voice.nospeech_title');
         return;
       }
-      final heard = await _voiceApi.transcribe(path, seconds: seconds, language: _lang);
+      final heard = await _voiceApi.transcribe(
+        path,
+        seconds: seconds,
+        language: _lang,
+      );
       if (!mounted) return;
       if (heard.transcript.isEmpty) {
         _voiceNotice('voice.nospeech_title');
@@ -164,7 +170,8 @@ class _AskViewState extends State<AskView> {
     } catch (_) {
       _voiceNotice('voice.failed_title');
     } finally {
-      if (mounted && _voice != AskVoice.idle) setState(() => _voice = AskVoice.idle);
+      if (mounted && _voice != AskVoice.idle)
+        setState(() => _voice = AskVoice.idle);
     }
   }
 

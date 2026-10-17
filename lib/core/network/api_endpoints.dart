@@ -2,6 +2,9 @@
   // App Settings
   static const String appSettings = '/settings';
   static const String contact = '/contact';
+  static const String callRequests = '/call-requests';
+  static const String meProfile = '/me/profile';
+  static const String meContactPhone = '/me/contact-phone';
 
   // Auth
   static const String login = '/auth/login';

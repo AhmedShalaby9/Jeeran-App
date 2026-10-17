@@ -787,7 +787,21 @@
     "tab_primary": "أولي",
     "tab_resale": "إعادة بيع",
     "primary_empty": "لا توجد وحدات أولية في هذا الكمبوند الآن.",
-    "resale_empty": "لا توجد وحدات إعادة بيع في هذا الكمبوند الآن."
+    "resale_empty": "لا توجد وحدات إعادة بيع في هذا الكمبوند الآن.",
+    "master_plan": "المخطط العام",
+    "gallery": "المعرض",
+    "tap_to_zoom": "اضغط للتكبير",
+    "not_published": "غير منشور",
+    "n_photos": {
+      "zero": "لا صور",
+      "one": "صورة",
+      "two": "صورتان",
+      "few": "{} صور",
+      "many": "{} صورة",
+      "other": "{} صورة"
+    },
+    "location": "الموقع",
+    "directions": "الاتجاهات"
   },
   "find": {
     "placeholder": "كمبوند أو منطقة أو مطوّر",
@@ -1094,7 +1108,7 @@
     "f_finishing": "التشطيب",
     "f_delivery": "التسليم",
     "f_phase": "المرحلة",
-    "f_payment": "السداد",
+    "f_payment": "السداد يبدأ من",
     "f_maintenance": "الصيانة",
     "f_reference": "المرجع",
     "down_years": "مقدم {}٪ · {} سنوات",
@@ -1115,7 +1129,10 @@
     "plan": "مخطط",
     "load_failed": "تعذّر تحميل هذا الإعلان.",
     "retry": "حاول مجدداً",
-    "sqm_unit": "{} م²"
+    "sqm_unit": "{} م²",
+    "contact_seller": "تواصل مع البائع",
+    "contact_call": "اتصال",
+    "contact_whatsapp": "واتساب"
   },
   "notif": {
     "title": "الإشعارات",
@@ -1684,7 +1701,7 @@
     "call_failed": "تعذّر إرسال الطلب. حاول مرة أخرى.",
     "call_sent_short": "تم الطلب",
     "call_sign_in": "سجّل الدخول لطلب مكالمة.",
-    "published": "السعر المنشور من المطوّر · {date}",
+    "published": "الأسعار منشورة في · {date}",
     "published_prices": "أسعار المطوّر المنشورة · {date}",
     "price": "السعر",
     "size": "المساحة",
@@ -1722,6 +1739,16 @@
     "no_resale_text": "عندما يعرض مالك هنا وحدته ستظهر في هذا التبويب.",
     "follow_note": "المتابعة تُرسل لك كل جديد عن هذا الكمبوند.",
     "from_price": "ابتداءً من {price}",
-    "published_prices_nodate": "أسعار المطوّر المنشورة"
+    "published_prices_nodate": "أسعار المطوّر المنشورة",
+    "phone_unverified_title": "هل هذا هو الرقم الصحيح؟",
+    "phone_unverified_body": "سنتصل بك على هذا الرقم، لكنه غير موثّق. هل تود المتابعة به أم تغييره؟",
+    "phone_missing_title": "أضف رقم هاتفك",
+    "phone_missing_body": "نحتاج إلى رقم للاتصال بك.",
+    "phone_not_verified": "غير موثّق",
+    "phone_continue": "المتابعة بهذا الرقم",
+    "phone_change": "تغيير الرقم",
+    "phone_hint": "مثال: ‎+20 10 1234 5678",
+    "phone_save": "حفظ ومتابعة",
+    "phone_invalid": "أدخل رقم هاتف صحيحاً."
   }
 }

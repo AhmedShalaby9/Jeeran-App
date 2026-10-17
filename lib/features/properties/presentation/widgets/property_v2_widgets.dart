@@ -632,90 +632,114 @@ class FeatureGrid extends StatelessWidget {
   }
 }
 
-/// Bottom bar: Message (WhatsApp) and Call seller. A button hides when its number is missing.
-class ContactBar extends StatelessWidget {
-  final VoidCallback? onMessage;
+/// The bottom bar of a resale unit: one button, "Contact the seller", that offers a phone call or WhatsApp
+/// (whichever numbers the seller left). Primary units use the request-a-call bar instead.
+class ContactSellerBar extends StatelessWidget {
+  final String? sellerName;
   final VoidCallback? onCall;
-  const ContactBar({super.key, this.onMessage, this.onCall});
+  final VoidCallback? onWhatsapp;
+  const ContactSellerBar({super.key, this.sellerName, this.onCall, this.onWhatsapp});
 
-  @override
-  Widget build(BuildContext context) {
-    if (onMessage == null && onCall == null) return const SizedBox.shrink();
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        kPropPad,
-        12,
-        kPropPad,
-        MediaQuery.of(context).padding.bottom + 12,
-      ),
-      decoration: const BoxDecoration(
-        color: Color(0xF0FAFBFD),
-        border: Border(top: BorderSide(color: JV2.line)),
-      ),
-      child: Row(
-        children: [
-          if (onMessage != null)
-            Expanded(
-              flex: 100,
-              child: GestureDetector(
-                onTap: onMessage,
-                child: Container(
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: JV2.surface,
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: JV2.line),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.chat_bubble_outline_rounded,
-                        size: 18,
-                        color: JV2.ink,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'prop.message'.tr(),
-                        style: const TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
-                          color: JV2.ink,
-                        ),
-                      ),
-                    ],
-                  ),
+  void _open(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: JV2.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(22))),
+      builder: (sheet) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(kPropPad, 14, kPropPad, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(child: Container(width: 38, height: 4, decoration: BoxDecoration(color: JV2.line, borderRadius: BorderRadius.circular(2)))),
+              const SizedBox(height: 16),
+              Text('prop.contact_seller'.tr(), style: JV2.display(sheet, 21)),
+              if ((sellerName ?? '').isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(sellerName!, style: const TextStyle(fontSize: 13, color: JV2.inkSub)),
+              ],
+              const SizedBox(height: 16),
+              if (onCall != null)
+                _ContactOption(
+                  key: const Key('contact-call'),
+                  icon: Icons.call_rounded,
+                  label: 'prop.contact_call'.tr(),
+                  onTap: () {
+                    Navigator.pop(sheet);
+                    onCall!();
+                  },
                 ),
-              ),
-            ),
-          if (onMessage != null && onCall != null) const SizedBox(width: 10),
-          if (onCall != null)
-            Expanded(
-              flex: onMessage != null ? 115 : 100,
-              child: JV2PrimaryButton(
-                height: 52,
-                onPressed: onCall,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.call_rounded,
-                      size: 17,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        'prop.call_seller'.tr(),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+              if (onCall != null && onWhatsapp != null) const SizedBox(height: 10),
+              if (onWhatsapp != null)
+                _ContactOption(
+                  key: const Key('contact-whatsapp'),
+                  icon: Icons.chat_rounded,
+                  label: 'prop.contact_whatsapp'.tr(),
+                  color: const Color(0xFF1FA855),
+                  onTap: () {
+                    Navigator.pop(sheet);
+                    onWhatsapp!();
+                  },
                 ),
-              ),
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    if (onCall == null && onWhatsapp == null) return const SizedBox.shrink();
+    return Container(
+      padding: EdgeInsets.fromLTRB(kPropPad, 12, kPropPad, MediaQuery.of(context).padding.bottom + 12),
+      decoration: const BoxDecoration(color: Color(0xF0FAFBFD), border: Border(top: BorderSide(color: JV2.line))),
+      child: JV2PrimaryButton(
+        key: const Key('contact-seller'),
+        height: 52,
+        onPressed: () => _open(context),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.support_agent_rounded, size: 19, color: Colors.white),
+            const SizedBox(width: 8),
+            Flexible(child: Text('prop.contact_seller'.tr(), overflow: TextOverflow.ellipsis)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ContactOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  const _ContactOption({super.key, required this.icon, required this.label, required this.onTap, this.color = JV2.navy});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    behavior: HitTestBehavior.opaque,
+    child: Container(
+      height: 56,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(color: JV2.bgDeep, borderRadius: BorderRadius.circular(15), border: Border.all(color: JV2.line)),
+      child: Row(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(11)),
+            child: Icon(icon, size: 18, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: JV2.ink))),
+          Icon(chevronIcon(context), size: 16, color: JV2.inkMute),
+        ],
+      ),
+    ),
+  );
 }

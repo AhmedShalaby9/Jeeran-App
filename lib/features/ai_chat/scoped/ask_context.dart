@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
@@ -6,8 +8,15 @@ import '../../../core/di/injection_container.dart';
 import '../../../core/error/exceptions.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/jv2.dart';
+import '../../compounds/presentation/pages/compound_page.dart';
 import '../../explore/presentation/widgets/explore_widgets.dart';
+import '../../properties/data/models/property_model.dart';
+import '../../properties/presentation/pages/property_details_page.dart';
+import '../../voice/voice_api.dart';
+import '../../voice/voice_services.dart';
+import '../ask/ask_api.dart';
 import '../ask/ask_view.dart';
+import '../ask/ask_widgets.dart';
 import 'ask_scope_api.dart';
 
 String _lang(BuildContext c) => c.locale.languageCode;
@@ -187,19 +196,27 @@ Future<void> showAskSheet(
 class _Turn {
   final bool user;
   final String text;
-  final List<(String, String)> facts;
-  const _Turn(this.user, this.text, [this.facts = const []]);
+  final AskRefs refs;
+  const _Turn(this.user, this.text, [this.refs = AskRefs.none]);
 }
 
 class AskContextSheet extends StatefulWidget {
   final AskScope scope;
   final AskScopeApi api;
   final String? firstQuestion;
+
+  /// Voice notes: the microphone sits in the input (off while the store review build hides voice).
+  final bool voiceNotes;
+  final VoiceApi? voiceApi;
+  final VoiceRecorder? recorder; // tests inject a fake
   const AskContextSheet({
     super.key,
     required this.scope,
     required this.api,
     this.firstQuestion,
+    this.voiceNotes = true,
+    this.voiceApi,
+    this.recorder,
   });
 
   @override
@@ -217,6 +234,14 @@ class _AskContextSheetState extends State<AskContextSheet> {
   bool _thinking = false;
   String? _error;
   AskLimit? _limit;
+
+  late final VoiceApi _voiceApi = widget.voiceApi ?? VoiceApi(sl<ApiClient>());
+  VoiceRecorder? _recorder; // made when the first voice note starts
+  VoiceRecorder get _rec => _recorder ??= widget.recorder ?? DeviceRecorder();
+  AskVoice _voice = AskVoice.idle;
+  int _voiceSeconds = 0;
+  Timer? _voiceTick;
+  static const _maxVoiceSeconds = 120; // what the server accepts
 
   AskScope get _scope => widget.scope;
 
@@ -236,6 +261,8 @@ class _AskContextSheetState extends State<AskContextSheet> {
 
   @override
   void dispose() {
+    _voiceTick?.cancel();
+    if (_voice == AskVoice.recording) _recorder?.cancel();
     _input.dispose();
     _scroll.dispose();
     super.dispose();
@@ -256,7 +283,78 @@ class _AskContextSheetState extends State<AskContextSheet> {
     }
   }
 
-  Future<void> _ask(String text) async {
+  // ── voice notes ──────────────────────────────────────────
+
+  void _voiceNotice(String key) {
+    if (!mounted) return;
+    ScaffoldMessenger.maybeOf(
+      context,
+    )?.showSnackBar(SnackBar(content: Text(key.tr())));
+  }
+
+  Future<void> _startVoice() async {
+    if (_thinking || _voice != AskVoice.idle) return;
+    if (!await _rec.requestPermission()) {
+      _voiceNotice('voice.denied_sub');
+      return;
+    }
+    try {
+      await _rec.start();
+    } catch (_) {
+      _voiceNotice('voice.failed_sub');
+      return;
+    }
+    if (!mounted) return;
+    setState(() {
+      _voice = AskVoice.recording;
+      _voiceSeconds = 0;
+    });
+    _voiceTick = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      setState(() => _voiceSeconds++);
+      if (_voiceSeconds >= _maxVoiceSeconds) _sendVoice();
+    });
+  }
+
+  Future<void> _cancelVoice() async {
+    _voiceTick?.cancel();
+    await _rec.cancel();
+    if (mounted) setState(() => _voice = AskVoice.idle);
+  }
+
+  /// Stops, turns the recording into text, and asks that text about this record.
+  Future<void> _sendVoice() async {
+    if (_voice != AskVoice.recording) return;
+    _voiceTick?.cancel();
+    final seconds = _voiceSeconds;
+    setState(() => _voice = AskVoice.transcribing);
+    try {
+      final path = await _rec.stop();
+      if (path == null || seconds < 1) {
+        _voiceNotice('voice.nospeech_title');
+        return;
+      }
+      final heard = await _voiceApi.transcribe(
+        path,
+        seconds: seconds,
+        language: _lang(context),
+      );
+      if (!mounted) return;
+      if (heard.transcript.isEmpty) {
+        _voiceNotice('voice.nospeech_title');
+        return;
+      }
+      setState(() => _voice = AskVoice.idle);
+      await _ask(heard.transcript, voiceId: heard.id);
+    } catch (_) {
+      _voiceNotice('voice.failed_title');
+    } finally {
+      if (mounted && _voice != AskVoice.idle)
+        setState(() => _voice = AskVoice.idle);
+    }
+  }
+
+  Future<void> _ask(String text, {int? voiceId}) async {
     final q = text.trim();
     if (q.isEmpty || _thinking) return;
     final lang = _lang(context);
@@ -272,10 +370,15 @@ class _AskContextSheetState extends State<AskContextSheet> {
         _widened ? null : _scope,
         lang,
       );
-      final reply = await widget.api.send(_sessionId!, q, lang);
+      final reply = await widget.api.send(
+        _sessionId!,
+        q,
+        lang,
+        voiceId: voiceId,
+      );
       if (!mounted) return;
       setState(() {
-        _turns.add(_Turn(false, reply.reply, reply.facts));
+        _turns.add(_Turn(false, reply.reply, reply.refs));
         _limit = reply.limit ?? _limit;
       });
     } on ServerException catch (e) {
@@ -482,57 +585,127 @@ class _AskContextSheetState extends State<AskContextSheet> {
                       child: Row(
                         children: [
                           Expanded(
-                            child: TextField(
-                              controller: _input,
-                              enabled: !noLeft,
-                              textInputAction: TextInputAction.send,
-                              onSubmitted: _ask,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: JV2.ink,
-                              ),
-                              textAlignVertical: TextAlignVertical.center,
-                              decoration: InputDecoration(
-                                border: InputBorder.none,
-                                filled: false,
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                contentPadding: EdgeInsets.zero,
-                                isDense: true,
-                                hintText: 'ask.input_hint'.tr(args: [label]),
-                              ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: noLeft ? null : () => _ask(_input.text),
-                            child: Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                gradient: const LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [JV2.goldHi, JV2.gold],
-                                ),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x4DB8893D),
-                                    blurRadius: 12,
-                                    offset: Offset(0, 4),
+                            child: _voice == AskVoice.recording
+                                ? AskRecordingStrip(seconds: _voiceSeconds)
+                                : _voice == AskVoice.transcribing
+                                ? const AskTranscribingStrip()
+                                : TextField(
+                                    controller: _input,
+                                    enabled: !noLeft,
+                                    textInputAction: TextInputAction.send,
+                                    onSubmitted: _ask,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: JV2.ink,
+                                    ),
+                                    textAlignVertical: TextAlignVertical.center,
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      filled: false,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      disabledBorder: InputBorder.none,
+                                      contentPadding: EdgeInsets.zero,
+                                      isDense: true,
+                                      hintText: 'ask.input_hint'.tr(
+                                        args: [label],
+                                      ),
+                                    ),
                                   ),
-                                ],
-                              ),
-                              child: Icon(
-                                noLeft
-                                    ? Icons.hourglass_empty_rounded
-                                    : Icons.arrow_upward_rounded,
-                                size: 18,
-                                color: Colors.white,
+                          ),
+                          if (_voice == AskVoice.recording) ...[
+                            GestureDetector(
+                              key: const Key('voice-cancel'),
+                              onTap: _cancelVoice,
+                              child: const SizedBox(
+                                width: 38,
+                                height: 38,
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 20,
+                                  color: JV2.danger,
+                                ),
                               ),
                             ),
-                          ),
+                            GestureDetector(
+                              key: const Key('voice-send'),
+                              onTap: _sendVoice,
+                              child: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [JV2.goldHi, JV2.gold],
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.check_rounded,
+                                  size: 20,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            if (widget.voiceNotes)
+                              GestureDetector(
+                                key: const Key('ask-mic'),
+                                onTap:
+                                    noLeft ||
+                                        _thinking ||
+                                        _voice != AskVoice.idle
+                                    ? null
+                                    : _startVoice,
+                                child: SizedBox(
+                                  width: 38,
+                                  height: 38,
+                                  child: Icon(
+                                    Icons.mic_none_rounded,
+                                    size: 21,
+                                    color:
+                                        noLeft ||
+                                            _thinking ||
+                                            _voice != AskVoice.idle
+                                        ? JV2.inkMute
+                                        : JV2.ink,
+                                  ),
+                                ),
+                              ),
+                            GestureDetector(
+                              key: const Key('ask-send'),
+                              onTap: noLeft || _voice != AskVoice.idle
+                                  ? null
+                                  : () => _ask(_input.text),
+                              child: Container(
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  gradient: const LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [JV2.goldHi, JV2.gold],
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x4DB8893D),
+                                      blurRadius: 12,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  noLeft
+                                      ? Icons.hourglass_empty_rounded
+                                      : Icons.arrow_upward_rounded,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -686,7 +859,12 @@ class _AskContextSheetState extends State<AskContextSheet> {
           padding: const EdgeInsets.only(bottom: 14),
           child: t.user
               ? _UserBubble(t.text)
-              : _AssistantBubble(t.text, t.facts),
+              : _AssistantBubble(
+                  t.text,
+                  t.refs,
+                  onAnswer: _ask,
+                  canAnswer: identical(t, _turns.last) && !_thinking,
+                ),
         ),
       if (_thinking)
         Padding(
@@ -838,8 +1016,91 @@ class _UserBubble extends StatelessWidget {
 
 class _AssistantBubble extends StatelessWidget {
   final String text;
-  final List<(String, String)> facts;
-  const _AssistantBubble(this.text, this.facts);
+  final AskRefs refs;
+  final void Function(String text) onAnswer;
+  final bool canAnswer;
+  const _AssistantBubble(
+    this.text,
+    this.refs, {
+    required this.onAnswer,
+    required this.canAnswer,
+  });
+
+  List<(String, String)> get facts => refs.facts;
+
+  void _openProperty(BuildContext context, Map<String, dynamic> raw) {
+    // references carry numbers; the property model reads strings
+    final fixed = {
+      ...raw,
+      'price': raw['price']?.toString(),
+      'size': raw['size']?.toString(),
+    };
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            PropertyDetailsPage(property: PropertyModel.fromJson(fixed)),
+      ),
+    );
+  }
+
+  /// Units shown by a plan card are not shown a second time in the rail.
+  List<Map<String, dynamic>> get _railItems {
+    final shown = {for (final p in refs.plans) p.propertyId};
+    return [
+      for (final p in refs.properties)
+        if (!shown.contains(p['id'] is num ? (p['id'] as num).toInt() : -1)) p,
+    ];
+  }
+
+  Widget _cards(BuildContext context) {
+    final onProperty = (Map<String, dynamic> p) => _openProperty(context, p);
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: 38),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (refs.questions.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: AskQuestionsCard(
+                questions: refs.questions,
+                enabled: canAnswer,
+                onSend: onAnswer,
+              ),
+            ),
+          if (refs.actions.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: AskActionChips(actions: refs.actions),
+            ),
+          for (final p in refs.plans)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: AskPlanCard(ref: p, onTap: onProperty),
+            ),
+          if (_railItems.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: AskPropertyRail(items: _railItems, onTap: onProperty),
+            ),
+          if (refs.projects.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: AskCompoundChips(
+                items: refs.projects,
+                onTap: (id, name) => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CompoundPage(compoundId: id, name: name),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -882,6 +1143,7 @@ class _AssistantBubble extends StatelessWidget {
             ),
           ],
         ),
+        _cards(context),
         if (facts.isNotEmpty) ...[
           const SizedBox(height: 10),
           Padding(

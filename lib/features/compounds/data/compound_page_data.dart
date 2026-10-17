@@ -136,6 +136,12 @@ class CompoundPageData {
   final int primaryCount;
   final int resaleCount;
   final List<CompoundFaq> faqs;
+  final String? masterPlan; // an image of the compound's master plan, when one is published
+  final double? latitude;
+  final double? longitude;
+
+  /// The map card shows when the compound has a pin.
+  bool get hasPin => latitude != null && longitude != null;
 
   const CompoundPageData({
     required this.id,
@@ -168,6 +174,9 @@ class CompoundPageData {
     this.primaryCount = 0,
     this.resaleCount = 0,
     this.faqs = const [],
+    this.masterPlan,
+    this.latitude,
+    this.longitude,
   });
 
   factory CompoundPageData.fromJson(Map<String, dynamic> j) {
@@ -240,6 +249,9 @@ class CompoundPageData {
           .map(CompoundFaq.fromJson)
           .where((f) => !f.question.isEmpty && !f.answer.isEmpty)
           .toList(),
+      masterPlan: _s(j['master_plan']).trim().isEmpty ? null : _s(j['master_plan']).trim(),
+      latitude: _d(j['latitude']),
+      longitude: _d(j['longitude']),
     );
   }
 

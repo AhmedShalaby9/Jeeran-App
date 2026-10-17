@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:jeeran_flutter/features/properties/domain/entities/property.dart';
 import 'package:jeeran_flutter/features/units/data/payment_plan.dart';
 import 'package:jeeran_flutter/features/units/data/unit_format.dart';
+import 'package:jeeran_flutter/features/units/presentation/phone_confirm_sheet.dart';
 import 'package:jeeran_flutter/features/units/presentation/request_call_bar.dart';
 import 'package:jeeran_flutter/features/units/presentation/unit_card.dart';
 import 'package:jeeran_flutter/features/units/presentation/unit_widgets.dart';
@@ -275,14 +276,13 @@ void main() {
         expect(find.text('2 / 2'), findsNothing);
 
         // "Request a call" sends the unit to the team, once
-        final sent = <(String, String)>[];
+        final sent = <int>[];
         host.value = RequestCallBar(
           propertyId: 7,
-          title: 'Apartment in Redwood Tower',
-          referenceCode: 'RED-00912',
           price: 15900000,
           fromPer: 'From 347K / quarter',
-          send: (s, m) async => sent.add((s, m)),
+          loadPhone: () async => const CallerPhone('+201011112222', true),
+          send: (id) async => sent.add(id),
         );
         await _settle(tester);
         expect(find.text('EGP 15.9M'), findsOneWidget);
@@ -291,8 +291,7 @@ void main() {
         await _settle(tester);
         await _settle(tester);
         expect(sent.length, 1);
-        expect(sent.single.$1, contains('RED-00912'));
-        expect(sent.single.$2, contains('#7'));
+        expect(sent.single, 7);
         expect(find.text('Requested'), findsOneWidget);
         await tester.tap(find.byKey(const Key('request-call')));
         await _settle(tester);

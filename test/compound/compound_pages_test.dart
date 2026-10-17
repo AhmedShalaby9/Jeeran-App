@@ -43,6 +43,9 @@ Map<String, dynamic> _compound({List<Map<String, dynamic>> phases = const [], bo
         {'question_en': 'How many floors?', 'answer_en': '12 floors', 'question_ar': 'كم عدد الأدوار؟', 'answer_ar': '12 دوراً'},
         {'question_en': 'When is delivery?', 'answer_en': 'Phase one in 2027', 'question_ar': 'متى التسليم؟', 'answer_ar': 'المرحلة الأولى 2027'},
       ],
+      'master_plan': 'https://x/plan.jpg',
+      'latitude': '30.1162660',
+      'longitude': '31.8851720',
       'followers_count': 12,
       'is_following': false,
       'latest_update': {'id': 4, 'title': 'Phase 4 released', 'is_fresh': true},
@@ -222,6 +225,11 @@ void main() {
         expect(find.text(lang == 'ar' ? 'مراسي' : 'Marassi'), findsWidgets);
         expect(find.byType(CallBar), findsOneWidget);
         expect(find.byIcon(Icons.call_rounded), findsOneWidget);
+        // master plan + gallery tiles and the location card (a pin exists)
+        expect(find.byKey(const Key('tile-plan')), findsOneWidget);
+        expect(find.byKey(const Key('tile-gallery')), findsOneWidget);
+        expect(find.text('compound.tap_to_zoom'.tr()), findsOneWidget);
+        expect(find.byKey(const Key('map-card')), findsOneWidget);
 
         // ── two market tabs and About, no Phases; each lists only its own market
         expect(find.text('compound.tab_phases'.tr()), findsNothing);

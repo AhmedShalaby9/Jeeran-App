@@ -12,17 +12,33 @@ class AskAction {
   final int entityId;
   final String nameAr;
   final String nameEn;
-  const AskAction(this.action, this.changed, this.entityType, this.entityId, this.nameAr, this.nameEn);
+  const AskAction(
+    this.action,
+    this.changed,
+    this.entityType,
+    this.entityId,
+    this.nameAr,
+    this.nameEn,
+  );
 
   static AskAction? fromJson(dynamic j) {
     if (j is! Map<String, dynamic>) return null;
     final action = _s(j['action']);
     final type = _s(j['entity_type']);
     if (action == null || type == null || _i(j['entity_id']) == 0) return null;
-    return AskAction(action, j['changed'] == true, type, _i(j['entity_id']), _s(j['name_ar']) ?? '', _s(j['name_en']) ?? '');
+    return AskAction(
+      action,
+      j['changed'] == true,
+      type,
+      _i(j['entity_id']),
+      _s(j['name_ar']) ?? '',
+      _s(j['name_en']) ?? '',
+    );
   }
 
-  String name(bool arabic) => arabic ? (nameAr.isNotEmpty ? nameAr : nameEn) : (nameEn.isNotEmpty ? nameEn : nameAr);
+  String name(bool arabic) => arabic
+      ? (nameAr.isNotEmpty ? nameAr : nameEn)
+      : (nameEn.isNotEmpty ? nameEn : nameAr);
 }
 
 /// A question the assistant asks before a search, with answers the person can tap.
@@ -34,7 +50,10 @@ class AskQuestion {
   static AskQuestion? fromJson(dynamic j) {
     if (j is! Map<String, dynamic>) return null;
     final q = _s(j['question']);
-    final o = (j['options'] is List ? j['options'] as List : const []).whereType<String>().where((x) => x.trim().isNotEmpty).toList();
+    final o = (j['options'] is List ? j['options'] as List : const [])
+        .whereType<String>()
+        .where((x) => x.trim().isNotEmpty)
+        .toList();
     if (q == null || o.length < 2) return null;
     return AskQuestion(q, o);
   }
@@ -47,7 +66,13 @@ class AskPlanRef {
   final int plansCount;
   final int? deliveryYear;
   final DateTime? publishedOn; // when the developer published these figures
-  const AskPlanRef(this.property, this.plan, this.plansCount, this.deliveryYear, [this.publishedOn]);
+  const AskPlanRef(
+    this.property,
+    this.plan,
+    this.plansCount,
+    this.deliveryYear, [
+    this.publishedOn,
+  ]);
 
   int get propertyId => _i(property['id']);
 
@@ -55,13 +80,18 @@ class AskPlanRef {
     if (j is! Map<String, dynamic>) return null;
     final property = j['property'];
     final plan = j['plan'];
-    if (property is! Map<String, dynamic> || plan is! Map<String, dynamic>) return null;
+    if (property is! Map<String, dynamic> || plan is! Map<String, dynamic>)
+      return null;
     return AskPlanRef(
       {...property, 'price': property['price']?.toString()},
       PaymentPlan.fromJson(plan),
       _i(j['plans_count']),
-      property['delivery_year'] is num ? (property['delivery_year'] as num).toInt() : null,
-      property['published_on'] is String ? DateTime.tryParse(property['published_on'] as String) : null,
+      property['delivery_year'] is num
+          ? (property['delivery_year'] as num).toInt()
+          : null,
+      property['published_on'] is String
+          ? DateTime.tryParse(property['published_on'] as String)
+          : null,
     );
   }
 }
@@ -107,11 +137,13 @@ class AskRefs {
           if (AskPlanRef.fromJson(p) != null) AskPlanRef.fromJson(p)!,
       ],
       actions: [
-        for (final a in (j['actions'] is List ? j['actions'] as List : const []))
+        for (final a
+            in (j['actions'] is List ? j['actions'] as List : const []))
           if (AskAction.fromJson(a) != null) AskAction.fromJson(a)!,
       ],
       questions: [
-        for (final q in (j['questions'] is List ? j['questions'] as List : const []))
+        for (final q
+            in (j['questions'] is List ? j['questions'] as List : const []))
           if (AskQuestion.fromJson(q) != null) AskQuestion.fromJson(q)!,
       ],
     );

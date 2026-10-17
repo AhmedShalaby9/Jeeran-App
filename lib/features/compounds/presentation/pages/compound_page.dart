@@ -16,7 +16,9 @@ import '../../../follow/presentation/follow_alerts.dart';
 import '../../../units/presentation/unit_widgets.dart';
 import '../../../../core/widgets/shared_photo.dart';
 import '../../data/compound_page_data.dart';
+import '../widgets/compound_media.dart';
 import '../widgets/compound_units.dart';
+import 'compound_media_pages.dart';
 import '../widgets/facility_icon.dart';
 import '../widgets/page_widgets.dart';
 
@@ -189,6 +191,18 @@ class _CompoundPageState extends State<CompoundPage> {
                     ('${d.deliveredSince}', 'compound.stat_delivered'.tr()),
                 ]),
               const SizedBox(height: 16),
+              MediaTiles(
+                photos: d.images.length,
+                hasPlan: d.masterPlan != null,
+                onPlan: () => openMasterPlan(context, name: d.name.pick(_ar), url: d.masterPlan!),
+                onGallery: () => openGallery(context, name: d.name.pick(_ar), images: d.images),
+              ),
+              if (d.hasPin) ...[
+                const SizedBox(height: 12),
+                // the location card; tapping it does nothing yet (no map screen)
+                MapCard(area: d.area.pick(_ar).isNotEmpty ? d.area.pick(_ar) : d.name.pick(_ar)),
+              ],
+              const SizedBox(height: 16),
               if (_follow != null) ...[
                 AlertsStrip(c: _follow!),
                 const SizedBox(height: 16),
@@ -239,9 +253,13 @@ class _CompoundPageState extends State<CompoundPage> {
             PageView.builder(
               itemCount: d.images.length,
               onPageChanged: (i) => setState(() => _photo = i),
-              itemBuilder: (_, i) => i == 0 && widget.heroTag != null
-                  ? SharedPhoto(tag: widget.heroTag!, child: Photo(url: d.images[i], radius: 0))
-                  : Photo(url: d.images[i], radius: 0),
+              itemBuilder: (_, i) => GestureDetector(
+                key: Key('hero-photo-$i'),
+                onTap: () => openPhotos(context, name: d.name.pick(_ar), images: d.images, index: i),
+                child: i == 0 && widget.heroTag != null
+                    ? SharedPhoto(tag: widget.heroTag!, child: Photo(url: d.images[i], radius: 0))
+                    : Photo(url: d.images[i], radius: 0),
+              ),
             ),
           // keep the top controls legible on any photo
           const IgnorePointer(

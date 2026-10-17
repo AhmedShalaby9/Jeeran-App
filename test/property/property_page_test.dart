@@ -20,7 +20,7 @@ import 'package:jeeran_flutter/features/properties/presentation/pages/property_d
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Shape captured from `GET /properties/:id` with X-Api-Version: 2.
-Map<String, dynamic> _payload({String? whatsapp = '+201111111111', String? mobile = '+202222222222', bool extras = true}) => {
+Map<String, dynamic> _payload({String? whatsapp = '+201111111111', String? mobile = '+202222222222', bool extras = true, String listing = 'resale'}) => {
       'id': 10,
       'title_ar': 'شالية بحر',
       'title_en': 'Sea view chalet',
@@ -28,7 +28,7 @@ Map<String, dynamic> _payload({String? whatsapp = '+201111111111', String? mobil
       'content_en': 'Front-row chalet in Bayside.',
       'property_type': 'chalet',
       'property_status': 'for_sale',
-      'listing_type': 'primary',
+      'listing_type': listing,
       'price': '12400000.00',
       'price_per_m2': 67391,
       'size': '184.00',
@@ -268,8 +268,17 @@ void main() {
         expect(find.byIcon(Icons.share_outlined), findsNothing);
         expect(find.byIcon(Icons.map_outlined), findsNothing);
         expect(find.textContaining('/ month'), findsNothing);
-        expect(find.text('prop.call_seller'.tr()), findsOneWidget);
-        expect(find.text('prop.message'.tr()), findsOneWidget);
+        // a resale unit: one "Contact the seller" button that offers call and WhatsApp
+        expect(find.text('prop.contact_seller'.tr()), findsOneWidget);
+        expect(find.byKey(const Key('request-call')), findsNothing);
+        await tester.tap(find.byKey(const Key('contact-seller')));
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(find.byKey(const Key('contact-call')), findsOneWidget);
+        expect(find.byKey(const Key('contact-whatsapp')), findsOneWidget);
+        await tester.tapAt(const Offset(20, 40));
+        await tester.pump(const Duration(milliseconds: 400));
+        await tester.pump(const Duration(milliseconds: 400));
 
         // ── the chain links up to the compound and the developer
         expect(find.text(lang == 'ar' ? 'مراسي' : 'Marassi'), findsWidgets);
@@ -283,14 +292,18 @@ void main() {
         // ── a number missing hides its button
         api = await setUpApi(_payload(whatsapp: null, extras: false));
         await _show(tester, host, PropertyDetailsPage(property: _listItem));
-        expect(find.text('prop.message'.tr()), findsNothing);
-        expect(find.text('prop.call_seller'.tr()), findsOneWidget);
+        expect(find.text('prop.contact_seller'.tr()), findsOneWidget);
         expect(find.text('prop.f_garden'.tr()), findsNothing);
 
         api = await setUpApi(_payload(whatsapp: null, mobile: null));
         await _show(tester, host, PropertyDetailsPage(property: _listItem));
-        expect(find.text('prop.call_seller'.tr()), findsNothing);
-        expect(find.text('prop.message'.tr()), findsNothing);
+        expect(find.text('prop.contact_seller'.tr()), findsNothing);
+
+        // a primary unit has no seller to contact: the request goes to Jeeran
+        api = await setUpApi(_payload(listing: 'primary'));
+        await _show(tester, host, PropertyDetailsPage(property: _listItem));
+        expect(find.byKey(const Key('request-call')), findsOneWidget);
+        expect(find.text('prop.contact_seller'.tr()), findsNothing);
 
         // ── the Ask sheet: tap a suggestion → scoped session, answer, fact table
         api = await setUpApi(_payload());

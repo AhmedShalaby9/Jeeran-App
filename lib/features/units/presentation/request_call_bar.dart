@@ -8,26 +8,28 @@ import '../../../core/storage/app_storage.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/jv2.dart';
 import '../data/unit_format.dart';
+import 'phone_confirm_sheet.dart';
 
 /// The bottom bar of developer inventory: the price, the instalment, and "Request a call" —
 /// there is no individual seller to call, so Jeeran calls the buyer back. The request reaches
-/// the team as a contact message (dashboard › Messages) that names the unit.
+/// the team in the dashboard's Call Requests (`POST /call-requests`). Used for primary units only;
+/// a resale unit shows [ContactSellerBar] instead.
 class RequestCallBar extends StatefulWidget {
   final int propertyId;
-  final String title;
-  final String? referenceCode;
   final double? price;
   final String? fromPer; // "From 347K / quarter"
-  final Future<void> Function(String subject, String message)? send; // tests inject a fake
+  final Future<void> Function(int propertyId)? send; // tests inject a fake
+  final Future<CallerPhone> Function()? loadPhone; // tests inject a fake
+  final Future<void> Function(String number)? savePhone; // tests inject a fake
 
   const RequestCallBar({
     super.key,
     required this.propertyId,
-    required this.title,
-    this.referenceCode,
     this.price,
     this.fromPer,
     this.send,
+    this.loadPhone,
+    this.savePhone,
   });
 
   @override
@@ -45,14 +47,22 @@ class _RequestCallBarState extends State<RequestCallBar> {
       return;
     }
     setState(() => _busy = true);
-    final subject = 'Call request${widget.referenceCode == null ? '' : ' · ${widget.referenceCode}'}';
-    final message = 'Please call me back about unit #${widget.propertyId}: ${widget.title}'
-        '${widget.price == null ? '' : ' (EGP ${fmtFull(widget.price!)})'}.';
     try {
+      // the team calls this number: if it was never verified, the buyer confirms or changes it first
+      final phone = await (widget.loadPhone ?? _loadPhone)();
+      if (!mounted) return;
+      if (phone.needsConfirming) {
+        final choice = await showPhoneConfirmSheet(context, phone: phone, onSave: widget.savePhone ?? _savePhone);
+        if (!mounted) return;
+        if (choice == null) {
+          setState(() => _busy = false); // closed the sheet: nothing is sent
+          return;
+        }
+      }
       if (widget.send != null) {
-        await widget.send!(subject, message);
+        await widget.send!(widget.propertyId);
       } else {
-        await sl<ApiClient>().post(ApiEndpoints.contact, data: {'subject': subject, 'message': message});
+        await sl<ApiClient>().post(ApiEndpoints.callRequests, data: {'property_id': widget.propertyId});
       }
       if (!mounted) return;
       setState(() {
@@ -65,6 +75,17 @@ class _RequestCallBarState extends State<RequestCallBar> {
       setState(() => _busy = false);
       AppSnackbar.show(context, message: 'unit.call_failed'.tr(), icon: Icons.error_outline_rounded, iconColor: JV2.danger);
     }
+  }
+
+  Future<CallerPhone> _loadPhone() async {
+    final res = await sl<ApiClient>().get(ApiEndpoints.meProfile);
+    final d = (res.data['data'] ?? const {}) as Map<String, dynamic>;
+    final number = d['contact_phone'];
+    return CallerPhone(number is String && number.trim().isNotEmpty ? number.trim() : null, d['phone_verified'] == true);
+  }
+
+  Future<void> _savePhone(String number) async {
+    await sl<ApiClient>().put(ApiEndpoints.meContactPhone, data: {'phone': number});
   }
 
   @override

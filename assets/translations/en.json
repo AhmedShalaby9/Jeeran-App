@@ -747,7 +747,17 @@
     "tab_primary": "Primary",
     "tab_resale": "Resale",
     "primary_empty": "No primary units listed in this compound right now.",
-    "resale_empty": "No resale listings in this compound right now."
+    "resale_empty": "No resale listings in this compound right now.",
+    "master_plan": "Master plan",
+    "gallery": "Gallery",
+    "tap_to_zoom": "Tap to zoom",
+    "not_published": "Not published",
+    "n_photos": {
+      "one": "{} photo",
+      "other": "{} photos"
+    },
+    "location": "Location",
+    "directions": "Directions"
   },
   "find": {
     "placeholder": "Compound, area or developer",
@@ -1006,7 +1016,7 @@
     "f_finishing": "Finishing",
     "f_delivery": "Delivery",
     "f_phase": "Phase",
-    "f_payment": "Payment",
+    "f_payment": "Payment starts from",
     "f_maintenance": "Maintenance",
     "f_reference": "Reference",
     "down_years": "{}% down · {} years",
@@ -1023,7 +1033,10 @@
     "plan": "PLAN",
     "load_failed": "Couldn’t load this listing.",
     "retry": "Try again",
-    "sqm_unit": "{} m²"
+    "sqm_unit": "{} m²",
+    "contact_seller": "Contact the seller",
+    "contact_call": "Call",
+    "contact_whatsapp": "WhatsApp"
   },
   "notif": {
     "title": "Notifications",
@@ -1547,7 +1560,7 @@
     "call_failed": "Couldn't send the request. Try again.",
     "call_sent_short": "Requested",
     "call_sign_in": "Sign in to request a call.",
-    "published": "Developer's published price · {date}",
+    "published": "Prices published at · {date}",
     "published_prices": "Developer's published prices · {date}",
     "price": "Price",
     "size": "Size",
@@ -1585,6 +1598,16 @@
     "no_resale_text": "When an owner here lists a unit, it shows up in this tab.",
     "follow_note": "Following sends every update for this compound.",
     "from_price": "From {price}",
-    "published_prices_nodate": "Developer's published prices"
+    "published_prices_nodate": "Developer's published prices",
+    "phone_unverified_title": "Is this the right number?",
+    "phone_unverified_body": "We'll call you back on this number, but it isn't verified. Would you like to continue with it, or change it?",
+    "phone_missing_title": "Add your phone number",
+    "phone_missing_body": "We need a number to call you back on.",
+    "phone_not_verified": "Not verified",
+    "phone_continue": "Continue with this number",
+    "phone_change": "Change number",
+    "phone_hint": "e.g. +20 10 1234 5678",
+    "phone_save": "Save and continue",
+    "phone_invalid": "Enter a valid phone number."
   }
 }
