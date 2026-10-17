@@ -1514,7 +1514,7 @@
     "notify_me": "Notify me",
     "sheet_eyebrow": "Alerts",
     "sheet_title": "We will notify you when {} does this.",
-    "sheet_sub": "Following keeps it in Saved and turns on every alert below, as push notifications.",
+    "sheet_sub": "Following keeps it in Saved. Tap to choose what to be notified about — everything is on to start.",
     "sheet_foot": "Turn them off any time from this page or in Notification settings.",
     "sheet_on": "Alerts are on",
     "ev_phase": "New phases",

@@ -71,6 +71,39 @@ void main() {
       },
     );
 
+    test('every kind of news is on by default; each can be unticked but one always stays', () async {
+      final api = _Api();
+      final c = _ctl(api);
+      expect(c.events, {'phase', 'launch', 'listing', 'news'});
+      // not alerting yet: the choice is kept here until "Notify me"
+      expect(await c.toggleEvent('news'), isTrue);
+      expect(await c.toggleEvent('phase'), isTrue);
+      expect(c.events, {'launch', 'listing'});
+      expect(api.calls, isEmpty);
+      await c.setAlerts(true);
+      expect(api.calls.any((x) => x.startsWith('PUT') && x.contains('enabled: true') && x.contains('events: [launch, listing]')), isTrue);
+      // alerts on: a change is saved at once
+      api.calls.clear();
+      await c.toggleEvent('launch');
+      expect(c.events, {'listing'});
+      expect(api.calls.single, contains('events: [listing]'));
+      // the last one cannot go
+      api.calls.clear();
+      await c.toggleEvent('listing');
+      expect(c.events, {'listing'});
+      expect(api.calls, isEmpty);
+      // a failed save puts it back
+      api.fail = true;
+      expect(await c.toggleEvent('news'), isFalse);
+      expect(c.events, {'listing'});
+      // a developer has no phases of its own
+      final d = FollowController(service: FollowService(apiClient: api), type: FollowType.developer, id: 2, name: 'Emaar', following: false, alertsOn: false);
+      expect(d.events, {'launch', 'listing', 'news'});
+      // a saved choice comes back as it was
+      final saved = FollowController(service: FollowService(apiClient: api), type: FollowType.project, id: 4, name: 'M', following: true, alertsOn: true, events: ['news']);
+      expect(saved.events, {'news'});
+    });
+
     test(
       'muting keeps the follow; "notify me" while not following follows first',
       () async {
@@ -183,6 +216,10 @@ void main() {
             findsOneWidget,
           );
           expect(find.text('follow.ev_listing'.tr()), findsWidgets);
+          // everything is ticked to start; untick News, then Notify me
+          await tester.tap(find.byKey(const Key('event-news')));
+          await tester.pump(const Duration(milliseconds: 300));
+          expect(c.events.contains('news'), isFalse);
           await tester.tap(find.byKey(const Key('notify-me')));
           await tester.pump(const Duration(milliseconds: 500));
           await tester.pump(const Duration(milliseconds: 500));

@@ -34,10 +34,27 @@ class FollowService {
   }
 
   /// Mute or unmute this place's notifications without unfollowing it (it stays in Saved).
-  Future<void> setAlerts(FollowType type, int id, bool enabled) async {
+  Future<void> setAlerts(
+    FollowType type,
+    int id,
+    bool enabled, {
+    Set<String>? events,
+  }) async {
     await apiClient.put(
       '/user-subscriptions/alerts',
-      data: {..._body(type, id), 'enabled': enabled},
+      data: {
+        ..._body(type, id),
+        'enabled': enabled,
+        if (events != null) 'events': events.toList(),
+      },
+    );
+  }
+
+  /// Choose which kinds of news this place sends (phase · launch · listing · news).
+  Future<void> setEvents(FollowType type, int id, Set<String> events) async {
+    await apiClient.put(
+      '/user-subscriptions/alerts',
+      data: {..._body(type, id), 'events': events.toList()},
     );
   }
 

@@ -56,9 +56,11 @@ class DeveloperPageData {
   final String? logo;
   final String? cover;
   final bool isVerified;
-  final bool isTop; // the source's "top developer" mark — not Jeeran's verified tick
+  final bool
+  isTop; // the source's "top developer" mark — not Jeeran's verified tick
   final bool isFollowing;
   final bool alertsOn; // following and not muted
+  final List<String>? alertEvents; // which kinds it sends; null = all
   final int followersCount;
   final int compoundsCount;
   final int unitsCount;
@@ -79,6 +81,7 @@ class DeveloperPageData {
     this.isTop = false,
     required this.isFollowing,
     this.alertsOn = false,
+    this.alertEvents,
     required this.followersCount,
     required this.compoundsCount,
     required this.unitsCount,
@@ -112,6 +115,9 @@ class DeveloperPageData {
       isTop: j['is_top'] == true,
       isFollowing: j['is_following'] == true,
       alertsOn: j['is_following'] == true && j['alerts_enabled'] != false,
+      alertEvents: j['alert_events'] is List
+          ? (j['alert_events'] as List).whereType<String>().toList()
+          : null,
       followersCount: _int(j['followers_count']) ?? 0,
       compoundsCount: _int(stats['compounds_count']) ?? compounds.length,
       unitsCount: _int(stats['units_count']) ?? 0,

@@ -69,6 +69,7 @@ class _CompoundPageState extends State<CompoundPage> {
             name: data.name.pick(_ar),
             following: data.isFollowing,
             alertsOn: data.alertsOn,
+            events: data.alertEvents,
           );
         });
       }

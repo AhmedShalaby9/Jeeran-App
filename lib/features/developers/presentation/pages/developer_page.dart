@@ -63,6 +63,7 @@ class _DeveloperPageState extends State<DeveloperPage> {
             name: data.name.pick(_ar),
             following: data.isFollowing,
             alertsOn: data.alertsOn,
+            events: data.alertEvents,
           );
         });
       }

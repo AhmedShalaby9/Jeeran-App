@@ -80,7 +80,8 @@ class CompoundDeveloperBrief {
   final Bi name;
   final String? logo;
   final bool isVerified;
-  final bool isTop; // the source's "top developer" mark; not the same as Jeeran's verified tick
+  final bool
+  isTop; // the source's "top developer" mark; not the same as Jeeran's verified tick
   final int compoundsCount;
   final int unitsCount;
   const CompoundDeveloperBrief(
@@ -119,6 +120,7 @@ class CompoundPageData {
   final int followersCount;
   final bool isFollowing;
   final bool alertsOn; // following and not muted
+  final List<String>? alertEvents; // which kinds it sends; null = all
   final CompoundUpdate? latestUpdate;
   final List<CompoundPhase> phases;
   final List<String> unitTypes;
@@ -136,7 +138,8 @@ class CompoundPageData {
   final int primaryCount;
   final int resaleCount;
   final List<CompoundFaq> faqs;
-  final String? masterPlan; // an image of the compound's master plan, when one is published
+  final String?
+  masterPlan; // an image of the compound's master plan, when one is published
   final double? latitude;
   final double? longitude;
 
@@ -157,6 +160,7 @@ class CompoundPageData {
     required this.followersCount,
     required this.isFollowing,
     this.alertsOn = false,
+    this.alertEvents,
     required this.latestUpdate,
     required this.phases,
     required this.unitTypes,
@@ -219,6 +223,9 @@ class CompoundPageData {
       followersCount: _i(j['followers_count']) ?? 0,
       isFollowing: j['is_following'] == true,
       alertsOn: j['is_following'] == true && j['alerts_enabled'] != false,
+      alertEvents: j['alert_events'] is List
+          ? (j['alert_events'] as List).whereType<String>().toList()
+          : null,
       latestUpdate:
           update is Map<String, dynamic> && _s(update['title']).isNotEmpty
           ? CompoundUpdate(_s(update['title']), update['is_fresh'] == true)
@@ -249,7 +256,9 @@ class CompoundPageData {
           .map(CompoundFaq.fromJson)
           .where((f) => !f.question.isEmpty && !f.answer.isEmpty)
           .toList(),
-      masterPlan: _s(j['master_plan']).trim().isEmpty ? null : _s(j['master_plan']).trim(),
+      masterPlan: _s(j['master_plan']).trim().isEmpty
+          ? null
+          : _s(j['master_plan']).trim(),
       latitude: _d(j['latitude']),
       longitude: _d(j['longitude']),
     );

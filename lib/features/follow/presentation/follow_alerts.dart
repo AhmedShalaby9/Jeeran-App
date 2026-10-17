@@ -15,6 +15,9 @@ class FollowController extends ChangeNotifier {
   bool alertsOn;
   bool busy = false;
 
+  /// Which kinds of news it sends; every kind by default.
+  late Set<String> events;
+
   FollowController({
     required this.service,
     required this.type,
@@ -22,9 +25,42 @@ class FollowController extends ChangeNotifier {
     required this.name,
     required this.following,
     required bool alertsOn,
-  }) : alertsOn = following && alertsOn;
+    Iterable<String>? events,
+  }) : alertsOn = following && alertsOn {
+    final all = allEvents(type == FollowType.project);
+    final picked = events?.where(all.contains).toSet();
+    this.events = picked == null || picked.isEmpty ? {...all} : picked;
+  }
+
+  /// Every kind a compound (or a developer, which has no phases of its own) can send.
+  static List<String> allEvents(bool compound) => [
+    if (compound) 'phase',
+    'launch',
+    'listing',
+    'news',
+  ];
 
   bool get isCompound => type == FollowType.project;
+
+  /// Tick or untick one kind. At least one stays on (to hear nothing, mute it). Saved at once when alerts are on;
+  /// otherwise kept here until "Notify me".
+  Future<bool> toggleEvent(String key) async {
+    if (busy) return true;
+    final was = {...events};
+    final next = was.contains(key) ? ({...was}..remove(key)) : {...was, key};
+    if (next.isEmpty) return true;
+    events = next;
+    notifyListeners();
+    if (!alertsOn) return true;
+    try {
+      await service.setEvents(type, id, next);
+      return true;
+    } catch (_) {
+      events = was;
+      notifyListeners();
+      return false;
+    }
+  }
 
   /// Follow ⇄ Unfollow. Returns false (state restored) when the server said no.
   Future<bool> toggleFollow() async {
@@ -32,6 +68,7 @@ class FollowController extends ChangeNotifier {
     final was = (following, alertsOn);
     following = !was.$1;
     alertsOn = following; // a new follow starts with every notification on
+    events = {...allEvents(isCompound)};
     busy = true;
     notifyListeners();
     try {
@@ -62,7 +99,7 @@ class FollowController extends ChangeNotifier {
       }
       alertsOn = on;
       notifyListeners();
-      await service.setAlerts(type, id, on);
+      await service.setAlerts(type, id, on, events: on ? events : null);
       return true;
     } catch (_) {
       following = was.$1;
@@ -84,17 +121,18 @@ void _failed(BuildContext context) => ScaffoldMessenger.of(
 ).showSnackBar(SnackBar(content: Text('follow.failed'.tr())));
 
 /// What following a place sends you, for the disclosure sheet and the strip.
-List<(String label, String note)> followEvents(bool compound) => compound
+List<(String key, String label, String note)> followEvents(bool compound) =>
+    compound
     ? [
-        ('follow.ev_phase'.tr(), 'follow.ev_phase_n'.tr()),
-        ('follow.ev_launch'.tr(), 'follow.ev_launch_n'.tr()),
-        ('follow.ev_listing'.tr(), 'follow.ev_listing_n_c'.tr()),
-        ('follow.ev_news'.tr(), 'follow.ev_news_n'.tr()),
+        ('phase', 'follow.ev_phase'.tr(), 'follow.ev_phase_n'.tr()),
+        ('launch', 'follow.ev_launch'.tr(), 'follow.ev_launch_n'.tr()),
+        ('listing', 'follow.ev_listing'.tr(), 'follow.ev_listing_n_c'.tr()),
+        ('news', 'follow.ev_news'.tr(), 'follow.ev_news_n'.tr()),
       ]
     : [
-        ('follow.ev_launch'.tr(), 'follow.ev_launch_n'.tr()),
-        ('follow.ev_listing'.tr(), 'follow.ev_listing_n_d'.tr()),
-        ('follow.ev_news'.tr(), 'follow.ev_news_n'.tr()),
+        ('launch', 'follow.ev_launch'.tr(), 'follow.ev_launch_n'.tr()),
+        ('listing', 'follow.ev_listing'.tr(), 'follow.ev_listing_n_d'.tr()),
+        ('news', 'follow.ev_news'.tr(), 'follow.ev_news_n'.tr()),
       ];
 
 /// The Follow / Following button on its own; fills the width it is given.
@@ -211,14 +249,20 @@ class HeroFollow extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                c.following ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                c.following
+                    ? Icons.favorite_rounded
+                    : Icons.favorite_border_rounded,
                 size: 17,
                 color: c.following ? JV2.danger : JV2.ink,
               ),
               const SizedBox(width: 7),
               Text(
                 (c.following ? 'follow.following' : 'follow.follow_short').tr(),
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: JV2.ink),
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: JV2.ink,
+                ),
               ),
             ],
           ),
@@ -491,7 +535,9 @@ class AlertsStrip extends StatelessWidget {
                     spacing: 6,
                     runSpacing: 6,
                     children: [
-                      for (final e in followEvents(c.isCompound))
+                      for (final e in followEvents(
+                        c.isCompound,
+                      ).where((e) => c.events.contains(e.$1)))
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -503,7 +549,7 @@ class AlertsStrip extends StatelessWidget {
                             border: Border.all(color: JV2.goldEdge),
                           ),
                           child: Text(
-                            e.$1,
+                            e.$2,
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -610,56 +656,77 @@ Future<void> showAlertsSheet(BuildContext context, FollowController c) {
                 child: Column(
                   children: [
                     for (final (i, e) in followEvents(c.isCompound).indexed)
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          border: i == 0
-                              ? null
-                              : const Border(top: BorderSide(color: JV2.line)),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 26,
-                              height: 26,
-                              decoration: BoxDecoration(
-                                color: JV2.goldFilm,
-                                borderRadius: BorderRadius.circular(9),
-                                border: Border.all(color: JV2.goldEdge),
-                              ),
-                              child: const Icon(
-                                Icons.check_rounded,
-                                size: 13,
-                                color: JV2.gold,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    e.$1,
-                                    style: const TextStyle(
-                                      fontSize: 13.5,
-                                      fontWeight: FontWeight.w600,
-                                      color: JV2.ink,
-                                    ),
+                      GestureDetector(
+                        key: Key('event-${e.$1}'),
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () async {
+                          if (!await c.toggleEvent(e.$1) && context.mounted)
+                            _failed(context);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            border: i == 0
+                                ? null
+                                : const Border(
+                                    top: BorderSide(color: JV2.line),
                                   ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    e.$2,
-                                    style: const TextStyle(
-                                      fontSize: 11.5,
-                                      height: 1.4,
-                                      color: JV2.inkSub,
-                                    ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 140),
+                                width: 26,
+                                height: 26,
+                                decoration: BoxDecoration(
+                                  color: c.events.contains(e.$1)
+                                      ? JV2.goldFilm
+                                      : JV2.surface,
+                                  borderRadius: BorderRadius.circular(9),
+                                  border: Border.all(
+                                    color: c.events.contains(e.$1)
+                                        ? JV2.goldEdge
+                                        : JV2.line,
                                   ),
-                                ],
+                                ),
+                                child: c.events.contains(e.$1)
+                                    ? const Icon(
+                                        Icons.check_rounded,
+                                        size: 13,
+                                        color: JV2.gold,
+                                      )
+                                    : null,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      e.$2,
+                                      style: TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w600,
+                                        color: c.events.contains(e.$1)
+                                            ? JV2.ink
+                                            : JV2.inkSub,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      e.$3,
+                                      style: const TextStyle(
+                                        fontSize: 11.5,
+                                        height: 1.4,
+                                        color: JV2.inkSub,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                   ],
