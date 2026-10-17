@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
 import 'admin_news_list_page.dart';
 import 'admin_properties_page.dart';
-import 'admin_seller_requests_page.dart';
 
 class AdminPanelPage extends StatelessWidget {
   const AdminPanelPage({super.key});
@@ -35,17 +34,6 @@ class AdminPanelPage extends StatelessWidget {
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const AdminPropertiesPage()),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _AdminCard(
-            icon: Icons.people_outline,
-            title: 'admin.seller_requests'.tr(),
-            subtitle: 'admin.seller_requests_subtitle'.tr(),
-            color: AppColors.success,
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AdminSellerRequestsPage()),
             ),
           ),
         ],

@@ -15,9 +15,11 @@ import 'ask_entry.dart';
 
 bool isArabic(BuildContext context) => context.locale.languageCode == 'ar';
 
-bool isRtl(BuildContext context) => Directionality.of(context) == ui.TextDirection.rtl;
+bool isRtl(BuildContext context) =>
+    Directionality.of(context) == ui.TextDirection.rtl;
 
-IconData chevronIcon(BuildContext context) => isRtl(context) ? Icons.chevron_left_rounded : Icons.chevron_right_rounded;
+IconData chevronIcon(BuildContext context) =>
+    isRtl(context) ? Icons.chevron_left_rounded : Icons.chevron_right_rounded;
 
 /// Network image with the design's soft placeholder gradient behind it.
 class Photo extends StatelessWidget {
@@ -53,7 +55,11 @@ class Photo extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [const Color(0xFFE9EEF4), const Color(0xFFD9E1EA), tint.withValues(alpha: 0.5)],
+                  colors: [
+                    const Color(0xFFE9EEF4),
+                    const Color(0xFFD9E1EA),
+                    tint.withValues(alpha: 0.5),
+                  ],
                 ),
               ),
             ),
@@ -86,7 +92,12 @@ class ExploreTopBar extends StatelessWidget {
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 14, sigmaY: 14),
         child: Container(
-          padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 8, 20, 12),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            MediaQuery.of(context).padding.top + 8,
+            20,
+            12,
+          ),
           decoration: const BoxDecoration(
             color: Color(0xE6FAFBFD), // .9
             border: Border(bottom: BorderSide(color: JV2.line)),
@@ -102,11 +113,18 @@ class ExploreTopBar extends StatelessWidget {
                   key: const Key('explore-greeting'),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: JV2.inkSub),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: JV2.inkSub,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
-              if (onShortcut != null) ...[_DoIt(onTap: onShortcut!), const SizedBox(width: 10)],
+              if (onShortcut != null) ...[
+                _DoIt(onTap: onShortcut!),
+                const SizedBox(width: 10),
+              ],
               const _Bell(),
             ],
           ),
@@ -130,16 +148,30 @@ class _DoIt extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(13),
         gradient: const LinearGradient(colors: [JV2.navyLift, JV2.navy]),
-        boxShadow: const [BoxShadow(color: Color(0x330B2A4A), blurRadius: 14, offset: Offset(0, 6))],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x330B2A4A),
+            blurRadius: 14,
+            offset: Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.auto_awesome_rounded, size: 13, color: Color(0xFFE5C48F)),
+          const Icon(
+            Icons.auto_awesome_rounded,
+            size: 13,
+            color: Color(0xFFE5C48F),
+          ),
           const SizedBox(width: 6),
           Text(
             'explore.do_it'.tr(),
-            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: Colors.white),
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
           ),
         ],
       ),
@@ -169,16 +201,29 @@ class _Bell extends StatelessWidget {
                 color: JV2.surface,
                 borderRadius: BorderRadius.circular(13),
                 border: Border.all(color: JV2.line),
-                boxShadow: const [BoxShadow(color: Color(0x0D0B2A4A), blurRadius: 2, offset: Offset(0, 1))],
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0D0B2A4A),
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                  ),
+                ],
               ),
-              child: const Icon(Icons.notifications_none_rounded, size: 20, color: JV2.ink),
+              child: const Icon(
+                Icons.notifications_none_rounded,
+                size: 20,
+                color: JV2.ink,
+              ),
             ),
             if (count > 0)
               PositionedDirectional(
                 top: -5,
                 end: -5,
                 child: Container(
-                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     color: JV2.goldHi,
@@ -188,7 +233,11 @@ class _Bell extends StatelessWidget {
                   alignment: Alignment.center,
                   child: Text(
                     count > 99 ? '99+' : '$count',
-                    style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.white),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -243,7 +292,12 @@ class ExploreSearchEntry extends StatelessWidget {
   final VoidCallback? onAsk; // null hides the Ask button (store review build)
   final VoidCallback? onVoice; // null hides the mic
 
-  const ExploreSearchEntry({super.key, required this.onSearch, this.onAsk, this.onVoice});
+  const ExploreSearchEntry({
+    super.key,
+    required this.onSearch,
+    this.onAsk,
+    this.onVoice,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -264,17 +318,30 @@ class ExploreSearchEntry extends StatelessWidget {
                   color: JV2.surface,
                   borderRadius: BorderRadius.circular(15),
                   border: Border.all(color: JV2.line),
-                  boxShadow: const [BoxShadow(color: Color(0x0D0B2A4A), blurRadius: 2, offset: Offset(0, 1))],
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0D0B2A4A),
+                      blurRadius: 2,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.search_rounded, size: 22, color: JV2.inkMute),
+                    const Icon(
+                      Icons.search_rounded,
+                      size: 22,
+                      color: JV2.inkMute,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'explore.search_hint'.tr(),
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 14.5, color: JV2.inkMute),
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          color: JV2.inkMute,
+                        ),
                       ),
                     ),
                   ],
@@ -298,14 +365,24 @@ class ExploreSearchEntry extends StatelessWidget {
                       end: Alignment(0.5, 1),
                       colors: [JV2.navyLift, JV2.navy],
                     ),
-                    boxShadow: const [BoxShadow(color: Color(0x3D0B2A4A), blurRadius: 20, offset: Offset(0, 8))],
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x3D0B2A4A),
+                        blurRadius: 20,
+                        offset: Offset(0, 8),
+                      ),
+                    ],
                   ),
                   clipBehavior: Clip.antiAlias,
                   child: const Stack(
                     alignment: Alignment.center,
                     children: [
                       JV2GoldSweep(width: 22),
-                      Icon(Icons.auto_awesome_rounded, size: 22, color: Colors.white),
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        size: 22,
+                        color: Colors.white,
+                      ),
                     ],
                   ),
                 ),
@@ -327,7 +404,11 @@ class ExploreSearchEntry extends StatelessWidget {
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(color: JV2.line),
                   ),
-                  child: const Icon(Icons.mic_none_rounded, size: 22, color: JV2.ink),
+                  child: const Icon(
+                    Icons.mic_none_rounded,
+                    size: 22,
+                    color: JV2.ink,
+                  ),
                 ),
               ),
             ),
@@ -345,7 +426,12 @@ class SectionHead extends StatelessWidget {
   final String title;
   final VoidCallback? onAction;
 
-  const SectionHead({super.key, required this.eyebrow, required this.title, this.onAction});
+  const SectionHead({
+    super.key,
+    required this.eyebrow,
+    required this.title,
+    this.onAction,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -382,7 +468,11 @@ class SectionHead extends StatelessWidget {
                   children: [
                     Text(
                       'explore.see_all'.tr(),
-                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: JV2.inkSub),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: JV2.inkSub,
+                      ),
                     ),
                     Icon(chevronIcon(context), size: 16, color: JV2.inkMute),
                   ],
@@ -454,7 +544,8 @@ class QuickGrid extends StatelessWidget {
                           decoration: BoxDecoration(
                             gradient: RadialGradient(
                               center: const AlignmentDirectional(1, -1),
-                              radius: 1.9, // of the tile's height, so the tint reaches across the whole width
+                              radius:
+                                  1.9, // of the tile's height, so the tint reaches across the whole width
                               colors: [t.tint, t.tint.withValues(alpha: 0)],
                               stops: const [0, 0.85],
                             ),
@@ -471,7 +562,11 @@ class QuickGrid extends StatelessWidget {
                               t.labelKey.tr(),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: JV2.ink),
+                              style: const TextStyle(
+                                fontSize: 14.5,
+                                fontWeight: FontWeight.w700,
+                                color: JV2.ink,
+                              ),
                             ),
                             const SizedBox(height: 3),
                             Text(
@@ -491,76 +586,6 @@ class QuickGrid extends StatelessWidget {
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-// ── seller request status ─────────────────────────────────
-
-class SellerStatusRow extends StatelessWidget {
-  final SellerRequestStatus request;
-  final VoidCallback onRejectedTap;
-
-  const SellerStatusRow({super.key, required this.request, required this.onRejectedTap});
-
-  String _submitted() {
-    final d = request.createdAt;
-    if (d == null) return '';
-    final days = DateTime.now().difference(d).inDays;
-    if (days <= 0) return 'explore.today'.tr();
-    if (days == 1) return 'explore.yesterday'.tr();
-    return 'explore.days_ago'.tr(args: ['$days']);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final rejected = request.isRejected;
-    final c = rejected ? JV2.danger : JV2.warnText;
-    final bg = rejected ? const Color(0x14C23B3B) : const Color(0x1AB8893D);
-    final title = rejected ? 'explore.seller_rejected_title' : 'explore.seller_pending_title';
-    final sub = rejected ? 'explore.seller_rejected_sub'.tr() : 'explore.seller_pending_sub'.tr(args: [_submitted()]);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: GestureDetector(
-        onTap: rejected ? onRejectedTap : null,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: c.withValues(alpha: 0.2)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: c,
-                  shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: c.withValues(alpha: 0.13), spreadRadius: 4)],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title.tr(),
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: JV2.ink),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(sub, style: const TextStyle(fontSize: 11.5, color: JV2.inkSub)),
-                  ],
-                ),
-              ),
-              if (rejected) Icon(chevronIcon(context), size: 16, color: c),
-            ],
-          ),
-        ),
       ),
     );
   }

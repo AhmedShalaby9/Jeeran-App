@@ -8,6 +8,7 @@ import '../bloc/auth_event.dart';
 
 class RecaptchaWebViewPage extends StatefulWidget {
   final String phone;
+
   /// When provided, called with the recaptcha token instead of dispatching
   /// [AuthSendOtpRestEvent] — lets callers other than phone login (e.g.
   /// profile phone verification) reuse this same challenge screen.
@@ -28,7 +29,8 @@ class _RecaptchaWebViewPageState extends State<RecaptchaWebViewPage> {
   static const _projectId = 'studio-6503153993-be5d6';
   static const _messagingSenderId = '844365789676';
 
-  static const _html = '''
+  static const _html =
+      '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -107,11 +109,13 @@ class _RecaptchaWebViewPageState extends State<RecaptchaWebViewPage> {
         'RecaptchaChannel',
         onMessageReceived: (msg) => _onRecaptchaToken(msg.message),
       )
-      ..setNavigationDelegate(NavigationDelegate(
-        onPageFinished: (_) {
-          if (mounted) setState(() => _isLoading = false);
-        },
-      ))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) {
+            if (mounted) setState(() => _isLoading = false);
+          },
+        ),
+      )
       ..loadHtmlString(_html, baseUrl: 'https://$_authDomain');
   }
 

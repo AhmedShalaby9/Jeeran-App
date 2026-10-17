@@ -33,17 +33,13 @@ class ExploreCubit extends Cubit<ExploreState> {
     }
     try {
       final data = await dataSource.getHome();
-      emit(
-        ExploreState(status: ExploreStatus.loaded, data: data),
-      );
+      emit(ExploreState(status: ExploreStatus.loaded, data: data));
 
       MainBadges.savedCount.value = data.savedCount;
       MainBadges.youAttention.value = data.youAttention;
       sl<UnreadCountCubit>().set(data.unreadCount);
     } catch (_) {
-      emit(
-        ExploreState(status: ExploreStatus.failure, data: state.data),
-      );
+      emit(ExploreState(status: ExploreStatus.failure, data: state.data));
     }
   }
 }

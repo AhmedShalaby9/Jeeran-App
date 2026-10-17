@@ -8,21 +8,36 @@ class TermsFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(24, 20, 24, 20 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(
+        24,
+        20,
+        24,
+        20 + MediaQuery.of(context).padding.bottom,
+      ),
       child: RichText(
         textAlign: TextAlign.center,
         text: TextSpan(
-          style: const TextStyle(fontSize: 11, color: AppColors.inkMute, height: 1.5),
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppColors.inkMute,
+            height: 1.5,
+          ),
           children: [
             TextSpan(text: 'auth.terms_prefix'.tr()),
             TextSpan(
               text: 'auth.terms_of_service'.tr(),
-              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             TextSpan(text: 'auth.terms_connector'.tr()),
             TextSpan(
               text: 'auth.privacy_policy'.tr(),
-              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

@@ -20,19 +20,14 @@ import '../notifications/presentation/pages/notification_settings_page.dart';
 import '../profile/profile_page.dart';
 import '../properties/presentation/pages/add_property_page.dart';
 import '../properties/presentation/pages/my_properties_page.dart';
-import '../seller_request/presentation/bloc/seller_request_bloc.dart';
-import '../seller_request/presentation/bloc/seller_request_event.dart';
-import '../seller_request/presentation/bloc/seller_request_state.dart';
 import 'you_api.dart';
 
 const double _pad = 20;
 
-/// The You tab: who you are, where your seller request stands, and — once approved — the whole
-/// Selling section, so the tab bar never changes shape when a buyer becomes a seller.
+/// The You tab: who you are, your listings (everyone can list: there are no separate sellers), and your settings.
 class YouPage extends StatefulWidget {
   final YouApi? api; // tests inject a fake
-  final SellerRequestBloc? sellerBloc;
-  const YouPage({super.key, this.api, this.sellerBloc});
+  const YouPage({super.key, this.api});
 
   @override
   State<YouPage> createState() => _YouPageState();
@@ -40,8 +35,6 @@ class YouPage extends StatefulWidget {
 
 class _YouPageState extends State<YouPage> {
   late final YouApi _api = widget.api ?? YouApi(sl<ApiClient>());
-  late final SellerRequestBloc _sellerBloc =
-      widget.sellerBloc ?? sl<SellerRequestBloc>();
   YouSummary? _s;
   bool _failed = false;
 
@@ -74,50 +67,27 @@ class _YouPageState extends State<YouPage> {
   bool get _inReview => AppSettingsService.instance.inReview;
 
   @override
-  void dispose() {
-    if (widget.sellerBloc == null)
-      _sellerBloc
-          .close(); // ours to close; an injected one belongs to the caller
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final s = _s;
-    return BlocProvider.value(
-      value: _sellerBloc,
-      child: BlocListener<SellerRequestBloc, SellerRequestState>(
-        listener: (context, state) {
-          if (state is SellerRequestSuccess) {
-            _showRequestSent(context);
-            _load();
-          } else if (state is SellerRequestError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-          }
-        },
-        child: Scaffold(
-          backgroundColor: JV2.bgDeep,
-          body: Column(
-            children: [
-              _header(s),
-              Expanded(
-                child: s == null
-                    ? (_failed
-                          ? _failure()
-                          : const Center(
-                              child: CircularProgressIndicator(color: JV2.navy),
-                            ))
-                    : RefreshIndicator(
-                        color: JV2.navy,
-                        onRefresh: _load,
-                        child: _content(s),
-                      ),
-              ),
-            ],
+    return Scaffold(
+      backgroundColor: JV2.bgDeep,
+      body: Column(
+        children: [
+          _header(s),
+          Expanded(
+            child: s == null
+                ? (_failed
+                      ? _failure()
+                      : const Center(
+                          child: CircularProgressIndicator(color: JV2.navy),
+                        ))
+                : RefreshIndicator(
+                    color: JV2.navy,
+                    onRefresh: _load,
+                    child: _content(s),
+                  ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -155,10 +125,8 @@ class _YouPageState extends State<YouPage> {
     final sub = s?.email ?? s?.phone ?? '';
     final role = s == null
         ? null
-        : (s.isAdmin
-              ? 'you.role_admin'
-              : (s.isSeller ? 'you.role_seller' : 'you.role_buyer'));
-    final seller = s != null && (s.isSeller || s.isAdmin);
+        : (s.isAdmin ? 'you.role_admin' : 'you.role_customer');
+    const seller = true; // (the role pill is gold for everyone now)
     return Container(
       padding: EdgeInsets.fromLTRB(
         _pad,
@@ -295,10 +263,8 @@ class _YouPageState extends State<YouPage> {
 
   Widget _content(YouSummary s) {
     // PACKAGES DISABLED:     final ar = isArabic(context);
-    final seller = s.isSeller;
-    final canList = (seller && !_inReview) || s.isAdmin;
+    final canList = !_inReview || s.isAdmin; // everyone can list
     final lang = context.locale.languageCode;
-    final nf = DateFormat.yMMMd(context.locale.toString());
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -355,22 +321,7 @@ class _YouPageState extends State<YouPage> {
           ),
           const SizedBox(height: 22),
         ],
-        if (!seller && !s.isAdmin) ...[
-          if (s.request?.status == 'pending')
-            _requestBanner(
-              pending: true,
-              s: s,
-              date: s.request?.createdAt == null
-                  ? ''
-                  : nf.format(s.request!.createdAt!),
-            )
-          else if (s.request?.status == 'rejected')
-            _requestBanner(pending: false, s: s, date: '')
-          else
-            _upsell(),
-          const SizedBox(height: 22),
-        ],
-        if (seller && !_inReview) ...[
+        if (!s.isAdmin && !_inReview) ...[
           _Group(
             title: 'you.g_selling'.tr(),
             children: [
@@ -709,383 +660,6 @@ class _YouPageState extends State<YouPage> {
     );
   }
   */
-
-  Widget _upsell() {
-    return BlocBuilder<SellerRequestBloc, SellerRequestState>(
-      builder: (context, state) {
-        final loading = state is SellerRequestLoading;
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: _pad),
-          child: GestureDetector(
-            onTap: loading
-                ? null
-                : () => context.read<SellerRequestBloc>().add(
-                    const SubmitSellerRequestEvent(),
-                  ),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(18, 17, 18, 17),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [JV2.navyLift, JV2.navy, Color(0xFF071D34)],
-                  stops: [0, 0.64, 1],
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x330B2A4A),
-                    blurRadius: 28,
-                    offset: Offset(0, 12),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'you.upsell_eyebrow'.tr().toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 1.9,
-                      color: Color(0xFFE5C48F),
-                    ),
-                  ),
-                  const SizedBox(height: 7),
-                  Text(
-                    'you.upsell_title'.tr(),
-                    style: JV2
-                        .display(context, 21)
-                        .copyWith(color: Colors.white, height: 1.14),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 7,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0x24FFFFFF),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(color: const Color(0x33FFFFFF)),
-                        ),
-                        child: loading
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    'you.upsell_cta'.tr(),
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
-                                  Icon(
-                                    chevronIcon(context),
-                                    size: 12,
-                                    color: Colors.white,
-                                  ),
-                                ],
-                              ),
-                      ),
-                      const SizedBox(width: 9),
-                      Flexible(
-                        child: Text(
-                          'you.upsell_note'.tr(),
-                          style: const TextStyle(
-                            fontSize: 10.5,
-                            color: Color(0x99FFFFFF),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _requestBanner({
-    required bool pending,
-    required YouSummary s,
-    required String date,
-  }) {
-    final color = pending ? JV2.warnText : JV2.danger;
-    final dot = pending ? JV2.goldHi : JV2.danger;
-    return BlocBuilder<SellerRequestBloc, SellerRequestState>(
-      builder: (context, state) {
-        final loading = state is SellerRequestLoading;
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: _pad),
-          child: Container(
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-              color: pending
-                  ? const Color(0x17B8893D)
-                  : const Color(0x12C23B3B),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: color.withValues(alpha: 0.2)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: dot,
-                        boxShadow: [
-                          BoxShadow(
-                            color: dot.withValues(alpha: 0.2),
-                            spreadRadius: 4,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 9),
-                    Expanded(
-                      child: Text(
-                        (pending ? 'you.pending_title' : 'you.rejected_title')
-                            .tr(),
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w700,
-                          color: JV2.ink,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 7),
-                Text(
-                  pending
-                      ? 'you.pending_sub'.tr(args: [date])
-                      : (s.request?.reason ?? 'you.rejected_fallback'.tr()),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    height: 1.45,
-                    color: JV2.inkSub,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: loading
-                      ? null
-                      : pending
-                      ? () => _trackSheet(date)
-                      : () => context.read<SellerRequestBloc>().add(
-                          const SubmitSellerRequestEvent(),
-                        ),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 9,
-                    ),
-                    decoration: BoxDecoration(
-                      color: JV2.surface,
-                      borderRadius: BorderRadius.circular(11),
-                      border: Border.all(color: color.withValues(alpha: 0.27)),
-                    ),
-                    child: loading
-                        ? SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: color,
-                            ),
-                          )
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                (pending
-                                        ? 'you.pending_cta'
-                                        : 'you.rejected_cta')
-                                    .tr(),
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: color,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Icon(
-                                chevronIcon(context),
-                                size: 12,
-                                color: color,
-                              ),
-                            ],
-                          ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  // ── sheets and dialogs ──
-
-  void _trackSheet(String date) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      barrierColor: const Color(0x570B2A4A),
-      builder: (_) => Container(
-        padding: EdgeInsets.fromLTRB(
-          20,
-          12,
-          20,
-          MediaQuery.of(context).padding.bottom + 24,
-        ),
-        decoration: const BoxDecoration(
-          color: JV2.bgDeep,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: JV2.track,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text('you.track_title'.tr(), style: JV2.display(context, 22)),
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: JV2.surface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: JV2.line),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'you.track_status'.tr(),
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: JV2.ink,
-                          ),
-                        ),
-                      ),
-                      if (date.isNotEmpty)
-                        Text(
-                          date,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: JV2.inkSub,
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text('you.track_note'.tr(), style: JV2.sub.copyWith(fontSize: 13)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showRequestSent(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      barrierColor: const Color(0x570B2A4A),
-      builder: (_) => Container(
-        padding: EdgeInsets.fromLTRB(
-          24,
-          12,
-          24,
-          MediaQuery.of(context).padding.bottom + 24,
-        ),
-        decoration: const BoxDecoration(
-          color: JV2.bgDeep,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: JV2.track,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Lottie.asset(
-              'assets/animations/success.json',
-              width: 130,
-              height: 130,
-              repeat: false,
-            ),
-            Text(
-              'seller_request.success_title'.tr(),
-              textAlign: TextAlign.center,
-              style: JV2.display(context, 24),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'seller_request.success_message'.tr(),
-              textAlign: TextAlign.center,
-              style: JV2.sub,
-            ),
-            const SizedBox(height: 14),
-            Text(
-              'seller_request.approval_note'.tr(),
-              textAlign: TextAlign.center,
-              style: JV2.sub.copyWith(fontSize: 12.5),
-            ),
-            const SizedBox(height: 20),
-            JV2PrimaryButton(
-              height: 50,
-              onPressed: () => Navigator.pop(context),
-              child: Text('seller_request.got_it'.tr()),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _languageSheet() {
     showModalBottomSheet<void>(

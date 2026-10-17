@@ -47,7 +47,7 @@ class _You extends ApiClient {
           'name': 'Karim',
           'email': 'k@x.eg',
           'phone': '+201000000004',
-          'user_type': 'seller',
+          'user_type': 'customer',
         },
         'plan': {
           'name_en': 'Growth',

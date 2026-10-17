@@ -34,14 +34,28 @@ class ProfileFieldWrapper extends StatelessWidget {
                 ),
               ),
               if (required)
-                const Text(' *', style: TextStyle(color: AppColors.danger, fontSize: 13, fontWeight: FontWeight.w700)),
+                const Text(
+                  ' *',
+                  style: TextStyle(
+                    color: AppColors.danger,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 8),
           child,
           if (helper != null) ...[
             const SizedBox(height: 6),
-            Text(helper!, style: const TextStyle(fontSize: 11, color: AppColors.inkMute, height: 1.4)),
+            Text(
+              helper!,
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.inkMute,
+                height: 1.4,
+              ),
+            ),
           ],
         ],
       ),

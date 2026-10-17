@@ -373,7 +373,8 @@
     "seller_pending": "Under review",
     "start": "Start exploring",
     "join_seller": "Join us as a seller",
-    "seller_requested": "Seller request sent. We’ll review it shortly."
+    "seller_requested": "Seller request sent. We’ll review it shortly.",
+    "customer_account": "Customer account"
   },
   "errors": {
     "server": "Server error occurred",
@@ -1206,7 +1207,8 @@
     "privacy": "Privacy & security",
     "footer": "Jeeran {} · Egypt",
     "load_failed": "Couldn’t load your account.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "role_customer": "Customer"
   },
   "voice": {
     "title": "Talk to Jeeran",

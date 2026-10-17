@@ -8,6 +8,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/widgets/jv2.dart';
 import '../../../ai_ads/presentation/pages/ai_ads_page.dart';
 import '../../../main/presentation/pages/main_page.dart';
+import '../../../properties/presentation/pages/add_property_page.dart';
 import '../../../news/v2/news_list_page.dart';
 import '../../../compounds/presentation/pages/compound_page.dart';
 import '../../../developers/presentation/pages/developer_page.dart';
@@ -61,9 +62,9 @@ class BannerActions {
           MaterialPageRoute(builder: (_) => const AiAdsPage()),
         );
       case 'seller_signup':
-        MainPage.switchTab(
-          MainPage.tabYou,
-        ); // "Join us as a seller" lives in You
+        AddPropertyPage.push(
+          context,
+        ); // old "join as a seller" banners now start a listing
       default:
         break;
     }

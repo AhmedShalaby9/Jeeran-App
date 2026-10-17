@@ -220,10 +220,8 @@ void main() {
       expect(p.project?.developer?.name, 'Emaar Misr');
     });
 
-    test('news, seller request and tab badges', () {
+    test('news and tab badges', () {
       expect(d.news.single.title, 'News one');
-      expect(d.sellerRequest?.isRejected, isTrue);
-      expect(d.sellerRequest?.rejectionReason, 'Add a valid ID');
       expect(d.unreadCount, 2);
       expect(d.savedCount, 5);
       expect(d.youAttention, isTrue);
@@ -244,7 +242,6 @@ void main() {
     });
     expect(d.topBanners, isEmpty);
     expect(d.feedBanner, isNull);
-    expect(d.sellerRequest, isNull);
     expect(d.topCompounds, isEmpty); // the section hides itself
     expect(d.youAttention, isFalse);
   });

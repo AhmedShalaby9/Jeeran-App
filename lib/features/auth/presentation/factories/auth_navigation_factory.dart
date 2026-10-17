@@ -68,7 +68,11 @@ class AuthNavigationFactory {
     );
   }
 
-  static void _goToCompleteProfile(BuildContext context, String phone, {User? user}) {
+  static void _goToCompleteProfile(
+    BuildContext context,
+    String phone, {
+    User? user,
+  }) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -86,8 +90,8 @@ class AuthNavigationFactory {
   }
 
   static void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 }

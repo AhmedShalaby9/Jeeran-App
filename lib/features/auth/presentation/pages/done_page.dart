@@ -3,16 +3,11 @@ import 'dart:ui' as ui show TextDirection;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/di/injection_container.dart';
 import '../../../../core/widgets/jv2.dart';
 import '../../../main/presentation/pages/main_page.dart';
-import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
-import '../../../seller_request/presentation/bloc/seller_request_event.dart';
-import '../../../seller_request/presentation/bloc/seller_request_state.dart';
 
-/// Final step of sign-up: account summary + a seed for the seller flow.
+/// Final step of sign-up: the account summary, then into the app (everyone can list properties; nothing to apply for).
 class DonePage extends StatelessWidget {
   final String name;
   final String phone;
@@ -21,10 +16,7 @@ class DonePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<SellerRequestBloc>(),
-      child: _DoneView(name: name, phone: phone),
-    );
+    return _DoneView(name: name, phone: phone);
   }
 }
 
@@ -47,8 +39,6 @@ class _DoneViewState extends State<_DoneView> with TickerProviderStateMixin {
     vsync: this,
     duration: const Duration(milliseconds: 2800),
   )..repeat();
-
-  bool _sellerRequested = false;
 
   @override
   void dispose() {
@@ -137,11 +127,10 @@ class _DoneViewState extends State<_DoneView> with TickerProviderStateMixin {
     );
   }
 
-  Widget _summary(String sellerValue, Color sellerColor) {
+  Widget _summary() {
     final rows = [
-      ('done.buyer_account'.tr(), 'done.active'.tr(), JV2.success),
+      ('done.customer_account'.tr(), 'done.active'.tr(), JV2.success),
       ('done.mobile_verified'.tr(), widget.phone, JV2.inkSub),
-      ('done.seller_access'.tr(), sellerValue, sellerColor),
     ];
     return Container(
       padding: const EdgeInsets.all(4),
@@ -201,143 +190,85 @@ class _DoneViewState extends State<_DoneView> with TickerProviderStateMixin {
         ? 'done.title_anon'.tr()
         : 'done.title'.tr(args: [first]);
 
-    return BlocListener<SellerRequestBloc, SellerRequestState>(
-      listener: (context, state) {
-        if (state is SellerRequestSuccess) {
-          setState(() => _sellerRequested = true);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('done.seller_requested'.tr())));
-        } else if (state is SellerRequestError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
-        }
-      },
-      child: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle.dark,
-        child: Scaffold(
-          backgroundColor: JV2.bgDeep,
-          body: JV2Ambient(
-            intensity: 1.1,
-            child: Column(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: SingleChildScrollView(
-                      padding: EdgeInsets.fromLTRB(
-                        32,
-                        media.padding.top + 16,
-                        32,
-                        16,
-                      ),
-                      child: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: JV2.bgDeep,
+        body: JV2Ambient(
+          intensity: 1.1,
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      32,
+                      media.padding.top + 16,
+                      32,
+                      16,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _badge(),
+                        const SizedBox(height: 28),
+                        FadeTransition(
+                          opacity: CurvedAnimation(
+                            parent: _intro,
+                            curve: const Interval(0.27, 0.8),
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                title,
+                                textAlign: TextAlign.center,
+                                style: JV2.display(context, 34),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'done.sub'.tr(),
+                                textAlign: TextAlign.center,
+                                style: JV2.sub,
+                              ),
+                              const SizedBox(height: 28),
+                              _summary(),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  24,
+                  0,
+                  24,
+                  media.padding.bottom + 20,
+                ),
+                child: Column(
+                  children: [
+                    JV2PrimaryButton(
+                      onPressed: _start,
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          _badge(),
-                          const SizedBox(height: 28),
-                          FadeTransition(
-                            opacity: CurvedAnimation(
-                              parent: _intro,
-                              curve: const Interval(0.27, 0.8),
-                            ),
-                            child: Column(
-                              children: [
-                                Text(
-                                  title,
-                                  textAlign: TextAlign.center,
-                                  style: JV2.display(context, 34),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'done.sub'.tr(),
-                                  textAlign: TextAlign.center,
-                                  style: JV2.sub,
-                                ),
-                                const SizedBox(height: 28),
-                                BlocBuilder<
-                                  SellerRequestBloc,
-                                  SellerRequestState
-                                >(
-                                  builder: (_, _) => _summary(
-                                    _sellerRequested
-                                        ? 'done.seller_pending'.tr()
-                                        : 'done.not_requested'.tr(),
-                                    JV2.gold,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          Text('done.start'.tr()),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Directionality.of(context) == ui.TextDirection.rtl
+                                ? Icons.chevron_left_rounded
+                                : Icons.chevron_right_rounded,
                           ),
                         ],
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 52),
+                  ],
                 ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    24,
-                    0,
-                    24,
-                    media.padding.bottom + 20,
-                  ),
-                  child: Column(
-                    children: [
-                      JV2PrimaryButton(
-                        onPressed: _start,
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('done.start'.tr()),
-                            const SizedBox(width: 8),
-                            Icon(
-                              Directionality.of(context) == ui.TextDirection.rtl
-                                  ? Icons.chevron_left_rounded
-                                  : Icons.chevron_right_rounded,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      if (!_sellerRequested)
-                        BlocBuilder<SellerRequestBloc, SellerRequestState>(
-                          builder: (context, state) {
-                            final loading = state is SellerRequestLoading;
-                            return TextButton(
-                              onPressed: loading
-                                  ? null
-                                  : () => context.read<SellerRequestBloc>().add(
-                                      const SubmitSellerRequestEvent(),
-                                    ),
-                              style: TextButton.styleFrom(
-                                foregroundColor: JV2.inkSub,
-                                padding: const EdgeInsets.all(12),
-                              ),
-                              child: loading
-                                  ? const SizedBox(
-                                      width: 18,
-                                      height: 18,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(
-                                      'done.join_seller'.tr(),
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                            );
-                          },
-                        )
-                      else
-                        const SizedBox(height: 48),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

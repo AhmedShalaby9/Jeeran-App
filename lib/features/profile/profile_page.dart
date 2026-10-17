@@ -223,7 +223,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _body(ProfileData p) {
-    final seller = p.isSeller;
+    final seller = p.isCustomer;
     final since = p.since == null
         ? null
         : DateFormat.yMMMM(context.locale.toString()).format(p.since!);

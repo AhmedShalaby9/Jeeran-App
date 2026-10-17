@@ -91,32 +91,6 @@ class ExploreBanner extends Equatable {
   ];
 }
 
-/// Latest seller request of the signed-in user (null if they never applied).
-class SellerRequestStatus extends Equatable {
-  final String status; // pending | approved | rejected
-  final String? rejectionReason;
-  final DateTime? createdAt;
-
-  const SellerRequestStatus({
-    required this.status,
-    this.rejectionReason,
-    this.createdAt,
-  });
-
-  bool get isPending => status == 'pending';
-  bool get isRejected => status == 'rejected';
-
-  factory SellerRequestStatus.fromJson(Map<String, dynamic> j) =>
-      SellerRequestStatus(
-        status: j['status'] as String? ?? 'pending',
-        rejectionReason: j['rejection_reason'] as String?,
-        createdAt: DateTime.tryParse(j['created_at'] as String? ?? ''),
-      );
-
-  @override
-  List<Object?> get props => [status, rejectionReason, createdAt];
-}
-
 /// Everything the Explore screen paints, from `GET /home`.
 class ExploreData extends Equatable {
   final List<ExploreBanner> topBanners;
@@ -138,7 +112,6 @@ class ExploreData extends Equatable {
 
   /// The ten biggest developers, for the "Top developers" rail.
   final List<DeveloperSummary> topDevelopers;
-  final SellerRequestStatus? sellerRequest;
   final int unreadCount;
   final int savedCount;
   final bool youAttention;
@@ -155,7 +128,6 @@ class ExploreData extends Equatable {
     this.topIsByViews = false,
     this.counts = const {},
     this.topDevelopers = const [],
-    this.sellerRequest,
     this.unreadCount = 0,
     this.savedCount = 0,
     this.youAttention = false,
@@ -176,7 +148,6 @@ class ExploreData extends Equatable {
     final banners = j['banners'] as Map<String, dynamic>? ?? const {};
     final facets = j['facets'] as Map<String, dynamic>? ?? const {};
     final feed = banners['explore_feed'];
-    final seller = j['seller_request'];
 
     return ExploreData(
       topBanners: _list(
@@ -201,9 +172,6 @@ class ExploreData extends Equatable {
           (j['top_compounds'] as List).any(
             (e) => e is Map && ((e['views'] as num?) ?? 0) > 0,
           ),
-      sellerRequest: seller is Map<String, dynamic>
-          ? SellerRequestStatus.fromJson(seller)
-          : null,
       unreadCount: (j['unread_count'] as num?)?.toInt() ?? 0,
       savedCount: (j['saved_count'] as num?)?.toInt() ?? 0,
       youAttention: j['you_attention'] as bool? ?? false,
@@ -223,7 +191,6 @@ class ExploreData extends Equatable {
     topIsByViews,
     counts,
     topDevelopers,
-    sellerRequest,
     unreadCount,
     savedCount,
     youAttention,

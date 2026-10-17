@@ -39,41 +39,45 @@ class ProfileCTABar extends StatelessWidget {
               onTap: onContinue,
             )
           : showSkip
-              ? Row(
-                  children: [
-                    GestureDetector(
-                      onTap: onSkip,
-                      child: Container(
-                        height: 54,
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: AppColors.hairline, width: 1.5),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'auth.skip'.tr(),
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.inkSub),
-                          ),
+          ? Row(
+              children: [
+                GestureDetector(
+                  onTap: onSkip,
+                  child: Container(
+                    height: 54,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppColors.hairline, width: 1.5),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'auth.skip'.tr(),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.inkSub,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: AuthPrimaryButton(
-                        label: 'auth.complete_setup'.tr(),
-                        enabled: step2Valid,
-                        onTap: onComplete,
-                      ),
-                    ),
-                  ],
-                )
-              : AuthPrimaryButton(
-                  label: 'auth.complete_setup'.tr(),
-                  enabled: step2Valid,
-                  onTap: onComplete,
+                  ),
                 ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: AuthPrimaryButton(
+                    label: 'auth.complete_setup'.tr(),
+                    enabled: step2Valid,
+                    onTap: onComplete,
+                  ),
+                ),
+              ],
+            )
+          : AuthPrimaryButton(
+              label: 'auth.complete_setup'.tr(),
+              enabled: step2Valid,
+              onTap: onComplete,
+            ),
     );
   }
 }

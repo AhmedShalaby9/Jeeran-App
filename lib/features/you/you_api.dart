@@ -3,13 +3,6 @@ import '../../core/network/api_client.dart';
 String? _s(dynamic v) => v is String && v.trim().isNotEmpty ? v.trim() : null;
 int _i(dynamic v) => v is num ? v.toInt() : 0;
 
-class SellerRequestInfo {
-  final String status; // pending | approved | rejected
-  final String? reason;
-  final DateTime? createdAt;
-  const SellerRequestInfo(this.status, this.reason, this.createdAt);
-}
-
 class PlanInfo {
   final String nameAr;
   final String nameEn;
@@ -40,9 +33,8 @@ class YouSummary {
   final String name;
   final String? email;
   final String? phone;
-  final String userType; // buyer | seller | admin | super_admin
+  final String userType; // customer | admin | super_admin
   final String? picture;
-  final SellerRequestInfo? request;
   final PlanInfo? plan;
   final int live;
   final int inReview;
@@ -57,7 +49,6 @@ class YouSummary {
     required this.phone,
     required this.userType,
     required this.picture,
-    required this.request,
     required this.plan,
     required this.live,
     required this.inReview,
@@ -67,16 +58,12 @@ class YouSummary {
     required this.placesFollowed,
   });
 
-  bool get isSeller => userType == 'seller';
   bool get isAdmin => userType == 'admin' || userType == 'super_admin';
 
   factory YouSummary.fromJson(Map<String, dynamic> j) {
     final u = j['user'] is Map<String, dynamic>
         ? j['user'] as Map<String, dynamic>
         : const <String, dynamic>{};
-    final r = j['seller_request'] is Map<String, dynamic>
-        ? j['seller_request'] as Map<String, dynamic>
-        : null;
     final p = j['plan'] is Map<String, dynamic>
         ? j['plan'] as Map<String, dynamic>
         : null;
@@ -93,15 +80,8 @@ class YouSummary {
       name: _s(u['name']) ?? '',
       email: _s(u['email']),
       phone: _s(u['phone']),
-      userType: _s(u['user_type']) ?? 'buyer',
+      userType: _s(u['user_type']) ?? 'customer',
       picture: _s(u['profile_picture']),
-      request: r == null
-          ? null
-          : SellerRequestInfo(
-              _s(r['status']) ?? 'pending',
-              _s(r['rejection_reason']),
-              DateTime.tryParse(_s(r['created_at']) ?? '')?.toLocal(),
-            ),
       plan: p == null
           ? null
           : PlanInfo(

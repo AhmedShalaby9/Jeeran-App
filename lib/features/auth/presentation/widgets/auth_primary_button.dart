@@ -25,7 +25,13 @@ class AuthPrimaryButton extends StatelessWidget {
           color: enabled ? AppColors.primary : const Color(0xFFD5DAE2),
           borderRadius: BorderRadius.circular(14),
           boxShadow: enabled
-              ? [const BoxShadow(color: Color(0x380B2A4A), blurRadius: 16, offset: Offset(0, 6))]
+              ? [
+                  const BoxShadow(
+                    color: Color(0x380B2A4A),
+                    blurRadius: 16,
+                    offset: Offset(0, 6),
+                  ),
+                ]
               : null,
         ),
         child: Center(

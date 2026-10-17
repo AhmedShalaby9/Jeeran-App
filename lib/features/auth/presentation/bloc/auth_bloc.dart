@@ -38,7 +38,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       print('[FCM login] getToken FAILED: $e');
     }
 
-
     final platform = Platform.isAndroid ? 'android' : 'ios';
     String? deviceId;
     try {
@@ -50,46 +49,64 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       }
     } catch (_) {}
 
-    final result = await repository.login(event.phone, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
+    final result = await repository.login(
+      event.phone,
+      fcmToken: fcmToken,
+      platform: platform,
+      deviceId: deviceId,
+    );
     result.fold((failure) => emit(AuthError(_mapFailure(failure))), (user) {
       emit(
-        AuthPhoneChecked(
-          user: user,
-          isProfileComplete: user.isProfileComplete,
-        ),
+        AuthPhoneChecked(user: user, isProfileComplete: user.isProfileComplete),
       );
     });
   }
 
-  Future<void> _onSendOtp(AuthSendOtpEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onSendOtp(
+    AuthSendOtpEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     // staging has a static code and sends nothing, so there is nothing to prove with reCAPTCHA
     if (AppSettingsService.instance.otpTestMode) {
-      await _onSendOtpRest(AuthSendOtpRestEvent(phone: event.phone, recaptchaToken: 'static'), emit);
+      await _onSendOtpRest(
+        AuthSendOtpRestEvent(phone: event.phone, recaptchaToken: 'static'),
+        emit,
+      );
       return;
     }
     emit(AuthRecaptchaRequired(event.phone));
   }
 
-  Future<void> _onSendOtpRest(AuthSendOtpRestEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onSendOtpRest(
+    AuthSendOtpRestEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
-    final result = await repository.sendOtpRest(event.phone, event.recaptchaToken);
-    result.fold(
-      (failure) => emit(AuthError(_mapFailure(failure))),
-      (sessionInfo) {
-        _sessionInfo = sessionInfo;
-        emit(AuthOtpSent(phone: event.phone, isNewUser: false));
-      },
+    final result = await repository.sendOtpRest(
+      event.phone,
+      event.recaptchaToken,
     );
+    result.fold((failure) => emit(AuthError(_mapFailure(failure))), (
+      sessionInfo,
+    ) {
+      _sessionInfo = sessionInfo;
+      emit(AuthOtpSent(phone: event.phone, isNewUser: false));
+    });
   }
 
-  Future<void> _onVerifyOtp(AuthVerifyOtpEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onVerifyOtp(
+    AuthVerifyOtpEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     if (_sessionInfo == null) {
       emit(AuthError('Session expired. Please request a new code.'));
       return;
     }
     String? fcmToken;
-    try { fcmToken = await NotificationService.instance.getToken(); } catch (_) {}
+    try {
+      fcmToken = await NotificationService.instance.getToken();
+    } catch (_) {}
     final platform = Platform.isAndroid ? 'android' : 'ios';
     String? deviceId;
     try {
@@ -107,17 +124,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     result.fold(
       (failure) => emit(AuthError(_mapFailure(failure))),
-      (user) => emit(AuthPhoneChecked(
-        user: user,
-        isProfileComplete: user.isProfileComplete,
-      )),
+      (user) => emit(
+        AuthPhoneChecked(user: user, isProfileComplete: user.isProfileComplete),
+      ),
     );
   }
 
-  Future<void> _onSocialLogin(AuthSocialLoginEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onSocialLogin(
+    AuthSocialLoginEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     String? fcmToken;
-    try { fcmToken = await NotificationService.instance.getToken(); } catch (_) {}
+    try {
+      fcmToken = await NotificationService.instance.getToken();
+    } catch (_) {}
     final platform = Platform.isAndroid ? 'android' : 'ios';
     String? deviceId;
     try {
@@ -136,10 +157,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
     result.fold(
       (failure) => emit(AuthError(_mapFailure(failure))),
-      (user) => emit(AuthPhoneChecked(
-        user: user,
-        isProfileComplete: user.isProfileComplete,
-      )),
+      (user) => emit(
+        AuthPhoneChecked(user: user, isProfileComplete: user.isProfileComplete),
+      ),
     );
   }
 
@@ -149,16 +169,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
     final result = await repository.completeProfile(event.params);
-    result.fold(
-      (failure) => emit(AuthError(_mapFailure(failure))),
-      (user) {
-        if (event.isStep1) {
-          emit(AuthProfileStep1Completed(user));
-        } else {
-          emit(AuthProfileCompleted(user));
-        }
-      },
-    );
+    result.fold((failure) => emit(AuthError(_mapFailure(failure))), (user) {
+      if (event.isStep1) {
+        emit(AuthProfileStep1Completed(user));
+      } else {
+        emit(AuthProfileCompleted(user));
+      }
+    });
   }
 
   Future<void> _onSendProfileOtp(
@@ -166,7 +183,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
-    final result = await repository.sendProfileOtp(event.phone, event.recaptchaToken);
+    final result = await repository.sendProfileOtp(
+      event.phone,
+      event.recaptchaToken,
+    );
     result.fold(
       (failure) => emit(AuthError(_mapFailure(failure))),
       (_) => emit(AuthProfileOtpSent(event.phone)),
@@ -186,7 +206,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  Future<void> _onUpdateProfile(AuthUpdateProfileEvent event, Emitter<AuthState> emit) async {
+  Future<void> _onUpdateProfile(
+    AuthUpdateProfileEvent event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(AuthLoading());
     final result = await repository.completeProfile(event.params);
     result.fold(

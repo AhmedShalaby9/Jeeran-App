@@ -29,11 +29,24 @@ class AuthSocialButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: isLoading
-              ? [const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))]
+              ? [
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ]
               : [
                   icon,
                   const SizedBox(width: 8),
-                  Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.ink)),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.ink,
+                    ),
+                  ),
                 ],
         ),
       ),

@@ -40,7 +40,7 @@ class _HomeSliverAppBarView extends StatefulWidget {
 class _HomeSliverAppBarViewState extends State<_HomeSliverAppBarView> {
   @override
   Widget build(BuildContext context) {
-    final isSeller = widget.user?.isSeller ?? false;
+    final isSeller = widget.user?.isCustomer ?? false;
     final hasSubscription = isSeller && (widget.user?.subscriptionId != null);
     final showSubscribeBtn = isSeller && !hasSubscription;
     final showPremiumBadge = isSeller && hasSubscription;

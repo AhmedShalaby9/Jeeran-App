@@ -28,11 +28,12 @@ class ProfileData {
     this.liveListings,
   });
 
-  bool get isSeller => userType == 'seller';
+  /// Customers browse, buy and list; they can add a company and a bio to their profile.
+  bool get isCustomer => userType != 'admin' && userType != 'super_admin';
 
   factory ProfileData.fromJson(Map<String, dynamic> j) => ProfileData(
     name: _s(j['name']) ?? '',
-    userType: _s(j['user_type']) ?? 'buyer',
+    userType: _s(j['user_type']) ?? 'customer',
     email: _s(j['email']),
     phone: _s(j['phone']),
     picture: _s(j['profile_picture']),

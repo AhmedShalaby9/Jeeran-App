@@ -37,8 +37,12 @@ class SocialAuthProvider {
         // Base64url → Base64
         payload = payload.replaceAll('-', '+').replaceAll('_', '/');
         switch (payload.length % 4) {
-          case 2: payload += '=='; break;
-          case 3: payload += '='; break;
+          case 2:
+            payload += '==';
+            break;
+          case 3:
+            payload += '=';
+            break;
         }
         final decoded = utf8.decode(base64Decode(payload));
         final json = const JsonDecoder().convert(decoded);
@@ -72,9 +76,10 @@ class SocialAuthProvider {
 
     String? name;
     if (credential.givenName != null || credential.familyName != null) {
-      name = [credential.givenName, credential.familyName]
-          .where((s) => s != null && s.isNotEmpty)
-          .join(' ');
+      name = [
+        credential.givenName,
+        credential.familyName,
+      ].where((s) => s != null && s.isNotEmpty).join(' ');
       if (name.isEmpty) name = null;
     }
 
@@ -82,9 +87,13 @@ class SocialAuthProvider {
   }
 
   static String _generateNonce([int length = 32]) {
-    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
     final random = Random.secure();
-    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+    return List.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
   }
 
   static String _sha256ofString(String input) {

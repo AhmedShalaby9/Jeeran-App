@@ -20,9 +20,6 @@ import '../../../search/presentation/promotion_page.dart';
 import '../../../search/data/search_api.dart';
 import '../../../listing/shortcut_hub.dart';
 import '../../../../core/storage/app_storage.dart';
-import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
-import '../../../seller_request/presentation/bloc/seller_request_event.dart';
-import '../../../seller_request/presentation/bloc/seller_request_state.dart';
 import '../../data/models/explore_data.dart';
 import '../bloc/explore_cubit.dart';
 import '../widgets/explore_banners.dart';
@@ -125,23 +122,6 @@ class _ExploreViewState extends State<_ExploreView> {
     );
   }
 
-  Future<void> _showRejected(
-    BuildContext context,
-    SellerRequestStatus request,
-  ) async {
-    final resubmitted = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: JV2.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
-      ),
-      builder: (_) => _RejectedSheet(reason: request.rejectionReason),
-    );
-    if (resubmitted == true && context.mounted)
-      context.read<ExploreCubit>().load();
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ExploreCubit, ExploreState>(
@@ -152,10 +132,10 @@ class _ExploreViewState extends State<_ExploreView> {
         return Column(
           children: [
             ExploreTopBar(
-              // "Do it" is for sellers: list a property, change a price
+              // "Do it": list a property, change a price
               onShortcut:
                   AppStorage.isLoggedIn &&
-                      (AppStorage.isSeller || AppStorage.isAdmin) &&
+                      AppStorage.canList &&
                       !AppSettingsService.instance.inReview
                   ? () => ShortcutHub.open(context)
                   : null,
@@ -178,10 +158,6 @@ class _ExploreViewState extends State<_ExploreView> {
   }
 
   Widget _buildFeed(BuildContext context, ExploreData d) {
-    final seller = d.sellerRequest;
-    final showSeller =
-        seller != null && (seller.isPending || seller.isRejected);
-
     // "browse by who and where": totals are real, not estimates
     int n(String k) => d.counts[k] ?? 0;
     final tiles = [
@@ -235,11 +211,6 @@ class _ExploreViewState extends State<_ExploreView> {
               ),
       ),
       if (d.topBanners.isNotEmpty) BannerRail(banners: d.topBanners),
-      if (showSeller)
-        SellerStatusRow(
-          request: seller,
-          onRejectedTap: () => _showRejected(context, seller),
-        ),
       QuickGrid(tiles: tiles),
       if (d.launches.isNotEmpty)
         section([
@@ -414,119 +385,3 @@ class _ExploreSkeleton extends StatelessWidget {
 }
 
 /// Why the request was rejected, with the way back in.
-class _RejectedSheet extends StatefulWidget {
-  final String? reason;
-  const _RejectedSheet({this.reason});
-
-  @override
-  State<_RejectedSheet> createState() => _RejectedSheetState();
-}
-
-class _RejectedSheetState extends State<_RejectedSheet> {
-  late final SellerRequestBloc _bloc = sl<SellerRequestBloc>();
-
-  @override
-  void dispose() {
-    _bloc.close();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final reason = (widget.reason ?? '').trim();
-    return BlocProvider.value(
-      value: _bloc,
-      child: BlocConsumer<SellerRequestBloc, SellerRequestState>(
-        listener: (context, state) {
-          if (state is SellerRequestSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('explore.seller_resubmitted'.tr())),
-            );
-            Navigator.pop(context, true);
-          } else if (state is SellerRequestError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-          }
-        },
-        builder: (context, state) {
-          final loading = state is SellerRequestLoading;
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 14, 24, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: JV2.track,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Text(
-                    'explore.seller_rejected_dialog'.tr(),
-                    style: JV2.display(context, 24),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: const Color(0x14C23B3B),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(
-                      reason.isEmpty ? 'explore.seller_no_reason'.tr() : reason,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        height: 1.5,
-                        color: JV2.ink,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  JV2PrimaryButton(
-                    onPressed: loading
-                        ? null
-                        : () => context.read<SellerRequestBloc>().add(
-                            const SubmitSellerRequestEvent(),
-                          ),
-                    child: loading
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2.5,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text('explore.seller_resubmit'.tr()),
-                  ),
-                  const SizedBox(height: 4),
-                  Center(
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: Text(
-                        'explore.close'.tr(),
-                        style: const TextStyle(
-                          color: JV2.inkSub,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}

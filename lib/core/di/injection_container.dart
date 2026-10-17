@@ -42,10 +42,6 @@ import '../../features/favorites/data/datasources/favorites_remote_data_source.d
 import '../../features/favorites/data/repositories/favorites_repository_impl.dart';
 import '../../features/favorites/domain/repositories/favorites_repository.dart';
 import '../../features/favorites/presentation/bloc/favorites_bloc.dart';
-import '../../features/seller_request/data/datasources/seller_request_remote_data_source.dart';
-import '../../features/seller_request/data/repositories/seller_request_repository_impl.dart';
-import '../../features/seller_request/domain/repositories/seller_request_repository.dart';
-import '../../features/seller_request/presentation/bloc/seller_request_bloc.dart';
 // PACKAGES DISABLED: import '../../features/subscription/data/datasources/subscription_remote_data_source.dart';
 // PACKAGES DISABLED: import '../../features/subscription/data/repositories/subscription_repository_impl.dart';
 // PACKAGES DISABLED: import '../../features/subscription/domain/repositories/subscription_repository.dart';
@@ -82,7 +78,6 @@ Future<void> init() async {
   // PACKAGES DISABLED: sl.registerFactory(() => PlansBloc(repository: sl()));
   sl.registerFactory(() => AuthBloc(repository: sl()));
   sl.registerLazySingleton(() => FavoritesBloc(repository: sl()));
-  sl.registerFactory(() => SellerRequestBloc(repository: sl()));
   // PACKAGES DISABLED: sl.registerFactory(() => SubscriptionBloc(repository: sl()));
   sl.registerFactory(() => NotificationBloc(repository: sl()));
   sl.registerLazySingleton(() => UnreadCountCubit(repository: sl()));
@@ -119,9 +114,6 @@ Future<void> init() async {
   );
   sl.registerLazySingleton<FavoritesRepository>(
     () => FavoritesRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
-  );
-  sl.registerLazySingleton<SellerRequestRepository>(
-    () => SellerRequestRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );
   // PACKAGES DISABLED:
   // sl.registerLazySingleton<SubscriptionRepository>(
@@ -162,9 +154,6 @@ sl.registerLazySingleton<HomeLocalDataSource>(
   );
   sl.registerLazySingleton<FavoritesRemoteDataSource>(
     () => FavoritesRemoteDataSourceImpl(apiClient: sl()),
-  );
-  sl.registerLazySingleton<SellerRequestRemoteDataSource>(
-    () => SellerRequestRemoteDataSourceImpl(apiClient: sl()),
   );
   // PACKAGES DISABLED:
   // sl.registerLazySingleton<SubscriptionRemoteDataSource>(

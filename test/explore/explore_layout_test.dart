@@ -65,12 +65,6 @@ void main() {
                     const SizedBox(height: 20),
                     BannerRail(banners: d.topBanners),
                     const SizedBox(height: 20),
-                    if (d.sellerRequest != null)
-                      SellerStatusRow(
-                        request: d.sellerRequest!,
-                        onRejectedTap: () {},
-                      ),
-                    const SizedBox(height: 20),
                     QuickGrid(
                       tiles: [
                         for (final k in [

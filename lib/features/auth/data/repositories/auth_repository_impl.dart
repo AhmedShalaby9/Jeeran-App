@@ -19,10 +19,20 @@ class AuthRepositoryImpl implements AuthRepository {
   });
 
   @override
-  Future<Either<Failure, User>> login(String phone, {String? fcmToken, String? platform, String? deviceId}) async {
+  Future<Either<Failure, User>> login(
+    String phone, {
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  }) async {
     if (await networkInfo.isConnected) {
       try {
-        final user = await remoteDataSource.login(phone, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
+        final user = await remoteDataSource.login(
+          phone,
+          fcmToken: fcmToken,
+          platform: platform,
+          deviceId: deviceId,
+        );
         _saveToken(user);
         return Right(user);
       } on ServerException catch (e) {
@@ -34,10 +44,20 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> firebaseVerify(String idToken, {String? fcmToken, String? platform, String? deviceId}) async {
+  Future<Either<Failure, User>> firebaseVerify(
+    String idToken, {
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  }) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      final user = await remoteDataSource.firebaseVerify(idToken, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
+      final user = await remoteDataSource.firebaseVerify(
+        idToken,
+        fcmToken: fcmToken,
+        platform: platform,
+        deviceId: deviceId,
+      );
       _saveToken(user);
       return Right(user);
     } on ServerException catch (e) {
@@ -46,10 +66,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, String>> sendOtpRest(String phone, String recaptchaToken) async {
+  Future<Either<Failure, String>> sendOtpRest(
+    String phone,
+    String recaptchaToken,
+  ) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      final sessionInfo = await remoteDataSource.sendOtpRest(phone, recaptchaToken);
+      final sessionInfo = await remoteDataSource.sendOtpRest(
+        phone,
+        recaptchaToken,
+      );
       return Right(sessionInfo);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -57,10 +83,22 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId}) async {
+  Future<Either<Failure, User>> verifyOtpRest(
+    String sessionInfo,
+    String code, {
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  }) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      final user = await remoteDataSource.verifyOtpRest(sessionInfo, code, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
+      final user = await remoteDataSource.verifyOtpRest(
+        sessionInfo,
+        code,
+        fcmToken: fcmToken,
+        platform: platform,
+        deviceId: deviceId,
+      );
       _saveToken(user);
       return Right(user);
     } on ServerException catch (e) {
@@ -69,10 +107,24 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> socialLogin(String provider, String idToken, {String? name, String? fcmToken, String? platform, String? deviceId}) async {
+  Future<Either<Failure, User>> socialLogin(
+    String provider,
+    String idToken, {
+    String? name,
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  }) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      final user = await remoteDataSource.socialLogin(provider, idToken, name: name, fcmToken: fcmToken, platform: platform, deviceId: deviceId);
+      final user = await remoteDataSource.socialLogin(
+        provider,
+        idToken,
+        name: name,
+        fcmToken: fcmToken,
+        platform: platform,
+        deviceId: deviceId,
+      );
       _saveToken(user);
       return Right(user);
     } on ServerException catch (e) {
@@ -81,7 +133,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> completeProfile(CompleteProfileParams params) async {
+  Future<Either<Failure, User>> completeProfile(
+    CompleteProfileParams params,
+  ) async {
     if (await networkInfo.isConnected) {
       try {
         final user = await remoteDataSource.completeProfile(params);
@@ -96,10 +150,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> sendProfileOtp(String phone, String recaptchaToken) async {
+  Future<Either<Failure, bool>> sendProfileOtp(
+    String phone,
+    String recaptchaToken,
+  ) async {
     if (!await networkInfo.isConnected) return Left(NetworkFailure());
     try {
-      final result = await remoteDataSource.sendProfileOtp(phone, recaptchaToken);
+      final result = await remoteDataSource.sendProfileOtp(
+        phone,
+        recaptchaToken,
+      );
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

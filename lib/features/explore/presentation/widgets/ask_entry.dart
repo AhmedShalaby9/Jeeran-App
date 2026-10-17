@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/widgets/jv2.dart';
 
-const _sand = Color(0xFFE5C48F); // the light gold of the design's mic and labels
+const _sand = Color(
+  0xFFE5C48F,
+); // the light gold of the design's mic and labels
 
 /// Jeeran's front door on Explore (design "AI bar"): one navy card. Tap the text to type to Ask,
 /// tap the gold mic to talk. Replaces the search field and the mic button.
@@ -25,8 +27,19 @@ class AskEntry extends StatelessWidget {
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
-          gradient: const LinearGradient(begin: Alignment(-0.6, -1), end: Alignment(0.6, 1), colors: [JV2.navyLift, JV2.navy], stops: [0, 0.75]),
-          boxShadow: const [BoxShadow(color: Color(0x420B2A4A), blurRadius: 30, offset: Offset(0, 14))],
+          gradient: const LinearGradient(
+            begin: Alignment(-0.6, -1),
+            end: Alignment(0.6, 1),
+            colors: [JV2.navyLift, JV2.navy],
+            stops: [0, 0.75],
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x420B2A4A),
+              blurRadius: 30,
+              offset: Offset(0, 14),
+            ),
+          ],
         ),
         child: Stack(
           alignment: Alignment.center,
@@ -51,8 +64,15 @@ class AskEntry extends StatelessWidget {
                           Container(
                             width: 30,
                             height: 30,
-                            decoration: BoxDecoration(color: const Color(0x29E5C48F), borderRadius: BorderRadius.circular(10)),
-                            child: const Icon(Icons.auto_awesome_rounded, size: 15, color: _sand),
+                            decoration: BoxDecoration(
+                              color: const Color(0x29E5C48F),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 15,
+                              color: _sand,
+                            ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
@@ -62,7 +82,13 @@ class AskEntry extends StatelessWidget {
                               children: [
                                 Text(
                                   'explore.ask_jeeran'.tr().toUpperCase(),
-                                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1.5, color: _sand, height: 1.2),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.5,
+                                    color: _sand,
+                                    height: 1.2,
+                                  ),
                                 ),
                                 const SizedBox(height: 1),
                                 const RotatingPrompt(),
@@ -77,7 +103,14 @@ class AskEntry extends StatelessWidget {
                 if (onVoice != null)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Tooltip(message: 'explore.voice_tooltip'.tr(), child: GoldMic(key: const Key('explore-mic'), size: 52, onTap: onVoice!)),
+                    child: Tooltip(
+                      message: 'explore.voice_tooltip'.tr(),
+                      child: GoldMic(
+                        key: const Key('explore-mic'),
+                        size: 52,
+                        onTap: onVoice!,
+                      ),
+                    ),
                   ),
               ],
             ),
@@ -97,7 +130,10 @@ class _Sheen extends StatefulWidget {
 }
 
 class _SheenState extends State<_Sheen> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 6))..repeat();
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 6),
+  )..repeat();
 
   @override
   void dispose() {
@@ -121,7 +157,15 @@ class _SheenState extends State<_Sheen> with SingleTickerProviderStateMixin {
                   bottom: 0,
                   width: 60,
                   child: const DecoratedBox(
-                    decoration: BoxDecoration(gradient: LinearGradient(colors: [Color(0x00E5C48F), Color(0x38E5C48F), Color(0x00E5C48F)])),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0x00E5C48F),
+                          Color(0x38E5C48F),
+                          Color(0x00E5C48F),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -143,8 +187,12 @@ class RotatingPrompt extends StatefulWidget {
   State<RotatingPrompt> createState() => _RotatingPromptState();
 }
 
-class _RotatingPromptState extends State<RotatingPrompt> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 3200));
+class _RotatingPromptState extends State<RotatingPrompt>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 3200),
+  );
   int _i = 0;
 
   @override
@@ -174,9 +222,16 @@ class _RotatingPromptState extends State<RotatingPrompt> with SingleTickerProvid
         builder: (_, child) {
           final t = _c.value;
           // in during the first 12%, out during the last 12%
-          final opacity = t < 0.12 ? t / 0.12 : (t > 0.88 ? (1 - t) / 0.12 : 1.0);
-          final dy = t < 0.12 ? 8 * (1 - t / 0.12) : (t > 0.88 ? -8 * ((t - 0.88) / 0.12) : 0.0);
-          return Opacity(opacity: opacity.clamp(0.0, 1.0), child: Transform.translate(offset: Offset(0, dy), child: child));
+          final opacity = t < 0.12
+              ? t / 0.12
+              : (t > 0.88 ? (1 - t) / 0.12 : 1.0);
+          final dy = t < 0.12
+              ? 8 * (1 - t / 0.12)
+              : (t > 0.88 ? -8 * ((t - 0.88) / 0.12) : 0.0);
+          return Opacity(
+            opacity: opacity.clamp(0.0, 1.0),
+            child: Transform.translate(offset: Offset(0, dy), child: child),
+          );
         },
         child: Align(
           alignment: AlignmentDirectional.centerStart,
@@ -185,7 +240,11 @@ class _RotatingPromptState extends State<RotatingPrompt> with SingleTickerProvid
             key: Key('ask-prompt-$_i'),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 13.5, color: Color(0xEBFFFFFF), height: 1.45),
+            style: const TextStyle(
+              fontSize: 13.5,
+              color: Color(0xEBFFFFFF),
+              height: 1.45,
+            ),
           ),
         ),
       ),
@@ -204,8 +263,14 @@ class GoldMic extends StatefulWidget {
 }
 
 class _GoldMicState extends State<GoldMic> with TickerProviderStateMixin {
-  late final AnimationController _pulse = AnimationController(vsync: this, duration: const Duration(milliseconds: 2400))..repeat();
-  late final AnimationController _shine = AnimationController(vsync: this, duration: const Duration(milliseconds: 3200))..repeat();
+  late final AnimationController _pulse = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 2400),
+  )..repeat();
+  late final AnimationController _shine = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 3200),
+  )..repeat();
 
   @override
   void dispose() {
@@ -241,7 +306,13 @@ class _GoldMicState extends State<GoldMic> with TickerProviderStateMixin {
                         child: Container(
                           width: s,
                           height: s,
-                          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: const Color(0xBFE5C48F), width: 2)),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xBFE5C48F),
+                              width: 2,
+                            ),
+                          ),
                         ),
                       ),
                     );
@@ -250,15 +321,28 @@ class _GoldMicState extends State<GoldMic> with TickerProviderStateMixin {
               AnimatedBuilder(
                 animation: _pulse,
                 builder: (_, child) {
-                  final k = math.sin(_pulse.value * math.pi); // 0 → 1 → 0 over the cycle
+                  final k = math.sin(
+                    _pulse.value * math.pi,
+                  ); // 0 → 1 → 0 over the cycle
                   return Container(
                     width: s,
                     height: s,
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(begin: Alignment(-0.3, -1), end: Alignment(0.3, 1), colors: [_sand, JV2.goldHi], stops: [0, 0.7]),
-                      boxShadow: [BoxShadow(color: Color.fromRGBO(184, 137, 61, 0.38 + 0.12 * k), blurRadius: 26 + 4 * k, offset: Offset(0, 10 + 2 * k))],
+                      gradient: const LinearGradient(
+                        begin: Alignment(-0.3, -1),
+                        end: Alignment(0.3, 1),
+                        colors: [_sand, JV2.goldHi],
+                        stops: [0, 0.7],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color.fromRGBO(184, 137, 61, 0.38 + 0.12 * k),
+                          blurRadius: 26 + 4 * k,
+                          offset: Offset(0, 10 + 2 * k),
+                        ),
+                      ],
                     ),
                     child: child,
                   );
@@ -276,12 +360,24 @@ class _GoldMicState extends State<GoldMic> with TickerProviderStateMixin {
                           bottom: 0,
                           width: s * 0.35,
                           child: const DecoratedBox(
-                            decoration: BoxDecoration(gradient: LinearGradient(colors: [Color(0x00FFFFFF), Color(0x8CFFFFFF), Color(0x00FFFFFF)])),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0x00FFFFFF),
+                                  Color(0x8CFFFFFF),
+                                  Color(0x00FFFFFF),
+                                ],
+                              ),
+                            ),
                           ),
                         );
                       },
                     ),
-                    Icon(Icons.mic_none_rounded, size: s * 0.46, color: JV2.navy),
+                    Icon(
+                      Icons.mic_none_rounded,
+                      size: s * 0.46,
+                      color: JV2.navy,
+                    ),
                   ],
                 ),
               ),

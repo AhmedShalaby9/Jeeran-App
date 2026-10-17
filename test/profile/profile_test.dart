@@ -19,11 +19,11 @@ Map<String, dynamic> _json(String type) => {
   'profile_picture': null,
   'city': 'New Cairo',
   'preferred_language': null,
-  'company_name': type == 'seller' ? 'Al-Amin Properties' : null,
-  'bio': type == 'seller' ? 'Independent broker on the North Coast.' : null,
-  'seller_verified': type == 'seller',
+  'company_name': type == 'customer' ? 'Al-Amin Properties' : null,
+  'bio': type == 'customer' ? 'Independent broker on the North Coast.' : null,
+  'seller_verified': type == 'customer',
   'member_since': '2024-03-05T10:00:00.000Z',
-  'live_listings': type == 'seller' ? 18 : null,
+  'live_listings': type == 'customer' ? 18 : null,
 };
 
 class _Client extends ApiClient {
@@ -60,12 +60,12 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   test('parsing: seller extras are optional', () {
-    final b = ProfileData.fromJson({'name': 'A', 'user_type': 'buyer'});
-    expect(b.isSeller, isFalse);
+    final b = ProfileData.fromJson({'name': 'A', 'user_type': 'admin'});
+    expect(b.isCustomer, isFalse);
     expect(b.company, isNull);
     expect(b.liveListings, isNull);
-    final s = ProfileData.fromJson(_json('seller'));
-    expect(s.isSeller, isTrue);
+    final s = ProfileData.fromJson(_json('customer'));
+    expect(s.isCustomer, isTrue);
     expect(s.liveListings, 18);
     expect(s.sellerVerified, isTrue);
   });
@@ -122,7 +122,7 @@ void main() {
       }
 
       // ── seller: what buyers see
-      var c = await show('seller');
+      var c = await show('customer');
       expect(tester.takeException(), isNull);
       expect(find.text('Karim Al-Amin'), findsOneWidget);
       expect(find.text('18'), findsOneWidget);
@@ -152,7 +152,7 @@ void main() {
       expect(find.text('Karim Amin'), findsOneWidget);
 
       // ── buyer: no seller block, no seller fields
-      c = await show('buyer');
+      c = await show('admin');
       expect(find.text('profile.note_buyer'.tr()), findsOneWidget);
       expect(find.text('profile.live_listings'.tr()), findsNothing);
       await tester.tap(find.byKey(const Key('profile-edit')));

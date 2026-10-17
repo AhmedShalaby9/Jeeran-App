@@ -23,7 +23,11 @@ class ProfileAvatarPicker extends StatelessWidget {
                     colors: [AppColors.primary, AppColors.agentGradientEnd],
                   ),
                 ),
-                child: const Icon(Icons.person_rounded, size: 36, color: Colors.white),
+                child: const Icon(
+                  Icons.person_rounded,
+                  size: 36,
+                  color: Colors.white,
+                ),
               ),
               Positioned(
                 bottom: 0,
@@ -36,7 +40,11 @@ class ProfileAvatarPicker extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
-                  child: const Icon(Icons.camera_alt_rounded, size: 12, color: Colors.white),
+                  child: const Icon(
+                    Icons.camera_alt_rounded,
+                    size: 12,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
@@ -44,7 +52,11 @@ class ProfileAvatarPicker extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'auth.add_profile_photo'.tr(),
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primary),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(height: 2),
           Text(

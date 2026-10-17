@@ -31,7 +31,11 @@ class LoginHeader extends StatelessWidget {
                   color: AppColors.primary,
                   borderRadius: BorderRadius.circular(22),
                 ),
-                child: const Icon(Icons.home_work_rounded, color: Colors.white, size: 52),
+                child: const Icon(
+                  Icons.home_work_rounded,
+                  color: Colors.white,
+                  size: 52,
+                ),
               ),
             ),
           ),
@@ -49,7 +53,11 @@ class LoginHeader extends StatelessWidget {
           Text(
             'auth.enter_phone'.tr(),
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.inkSub, height: 1.4),
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.inkSub,
+              height: 1.4,
+            ),
           ),
         ],
       ),

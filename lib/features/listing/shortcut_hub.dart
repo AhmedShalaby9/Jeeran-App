@@ -77,7 +77,7 @@ class ShortcutHub extends StatelessWidget {
           ),
         );
 
-    final canList = this.canList ?? (AppStorage.isSeller || AppStorage.isAdmin);
+    final canList = this.canList ?? AppStorage.canList;
     final tiles = <Widget>[
       if (canList)
         tile(

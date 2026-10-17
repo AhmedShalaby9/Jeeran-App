@@ -37,7 +37,11 @@ class ProfileSelectField extends StatelessWidget {
                 ),
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded, size: 20, color: AppColors.inkSub),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 20,
+              color: AppColors.inkSub,
+            ),
           ],
         ),
       ),

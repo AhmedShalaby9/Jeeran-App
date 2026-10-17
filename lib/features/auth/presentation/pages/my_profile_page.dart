@@ -46,8 +46,7 @@ class _MyProfilePageState extends State<MyProfilePage>
 
   // ── helpers ─────────────────────────────────────────────────────
   bool get _canSave =>
-      _nameCtrl.text.trim().length >= 2 &&
-      _emailCtrl.text.contains('@');
+      _nameCtrl.text.trim().length >= 2 && _emailCtrl.text.contains('@');
 
   String get _formattedDob {
     if (_dob == null) return '';
@@ -174,27 +173,51 @@ class _MyProfilePageState extends State<MyProfilePage>
                         autofocus: true,
                         decoration: InputDecoration(
                           hintText: 'Search...',
-                          hintStyle: const TextStyle(color: AppColors.inkMute, fontSize: 14),
-                          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.inkSub, size: 20),
+                          hintStyle: const TextStyle(
+                            color: AppColors.inkMute,
+                            fontSize: 14,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search_rounded,
+                            color: AppColors.inkSub,
+                            size: 20,
+                          ),
                           filled: true,
                           fillColor: const Color(0xFFF5F6F8),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.hairline, width: 1.5),
+                            borderSide: BorderSide(
+                              color: AppColors.hairline,
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.hairline, width: 1.5),
+                            borderSide: BorderSide(
+                              color: AppColors.hairline,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                         onChanged: (v) => setInner(() {
                           query = v;
-                          filtered = options.where((o) => o.toLowerCase().contains(query.toLowerCase())).toList();
+                          filtered = options
+                              .where(
+                                (o) => o.toLowerCase().contains(
+                                  query.toLowerCase(),
+                                ),
+                              )
+                              .toList();
                         }),
                       ),
                     ),
@@ -216,14 +239,27 @@ class _MyProfilePageState extends State<MyProfilePage>
                             color: selected
                                 ? AppColors.primary.withValues(alpha: 0.06)
                                 : Colors.transparent,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 14,
+                            ),
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Text(opt, style: const TextStyle(fontSize: 15, color: AppColors.ink)),
+                                  child: Text(
+                                    opt,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      color: AppColors.ink,
+                                    ),
+                                  ),
                                 ),
                                 if (selected)
-                                  const Icon(Icons.check_rounded, size: 18, color: AppColors.primary),
+                                  const Icon(
+                                    Icons.check_rounded,
+                                    size: 18,
+                                    color: AppColors.primary,
+                                  ),
                               ],
                             ),
                           ),
@@ -276,13 +312,13 @@ class _MyProfilePageState extends State<MyProfilePage>
           } else if (state is AuthProfileUpdated) {
             _populateFromUser(state.user);
             setState(() => _isEditing = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('profile.saved'.tr())),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('profile.saved'.tr())));
           } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
         builder: (context, state) {
@@ -328,7 +364,8 @@ class _MyProfilePageState extends State<MyProfilePage>
                               current: _country,
                               onSelect: (v) => setState(() {
                                 _country = v;
-                                _countryCode = kCountryCodeMap[v] ?? _countryCode;
+                                _countryCode =
+                                    kCountryCodeMap[v] ?? _countryCode;
                               }),
                             ),
                             onDobTap: _pickDate,
@@ -467,48 +504,52 @@ class _ProfileView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _sectionLabel('profile.personal_info'.tr()),
-                _InfoCard(rows: [
-                  _InfoRow(
-                    icon: Icons.person_outline_rounded,
-                    label: 'auth.full_name'.tr(),
-                    value: name,
-                  ),
-                  _InfoRow(
-                    icon: Icons.phone_outlined,
-                    label: 'auth.phone'.tr(),
-                    value: phone,
-                  ),
-                  if (email != null && email.isNotEmpty)
+                _InfoCard(
+                  rows: [
                     _InfoRow(
-                      icon: Icons.email_outlined,
-                      label: 'auth.email'.tr(),
-                      value: email,
+                      icon: Icons.person_outline_rounded,
+                      label: 'auth.full_name'.tr(),
+                      value: name,
                     ),
-                ]),
+                    _InfoRow(
+                      icon: Icons.phone_outlined,
+                      label: 'auth.phone'.tr(),
+                      value: phone,
+                    ),
+                    if (email != null && email.isNotEmpty)
+                      _InfoRow(
+                        icon: Icons.email_outlined,
+                        label: 'auth.email'.tr(),
+                        value: email,
+                      ),
+                  ],
+                ),
 
                 const SizedBox(height: 16),
                 _sectionLabel('profile.details'.tr()),
-                _InfoCard(rows: [
-                  if (gender != null && gender.isNotEmpty)
+                _InfoCard(
+                  rows: [
+                    if (gender != null && gender.isNotEmpty)
+                      _InfoRow(
+                        icon: Icons.wc_outlined,
+                        label: 'auth.gender'.tr(),
+                        value: gender,
+                      ),
+                    if (dob != null)
+                      _InfoRow(
+                        icon: Icons.cake_outlined,
+                        label: 'auth.date_of_birth'.tr(),
+                        value:
+                            '${dob.year}-${dob.month.toString().padLeft(2, '0')}-'
+                            '${dob.day.toString().padLeft(2, '0')}',
+                      ),
                     _InfoRow(
-                      icon: Icons.wc_outlined,
-                      label: 'auth.gender'.tr(),
-                      value: gender,
+                      icon: Icons.flag_outlined,
+                      label: 'auth.country'.tr(),
+                      value: country,
                     ),
-                  if (dob != null)
-                    _InfoRow(
-                      icon: Icons.cake_outlined,
-                      label: 'auth.date_of_birth'.tr(),
-                      value:
-                          '${dob.year}-${dob.month.toString().padLeft(2, '0')}-'
-                          '${dob.day.toString().padLeft(2, '0')}',
-                    ),
-                  _InfoRow(
-                    icon: Icons.flag_outlined,
-                    label: 'auth.country'.tr(),
-                    value: country,
-                  ),
-                ]),
+                  ],
+                ),
 
                 // empty-state hint
                 if ((email == null || email.isEmpty) ||
@@ -528,17 +569,17 @@ class _ProfileView extends StatelessWidget {
   }
 
   Widget _sectionLabel(String text) => Padding(
-        padding: const EdgeInsets.only(left: 4, bottom: 8),
-        child: Text(
-          text.toUpperCase(),
-          style: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: AppColors.inkMute,
-            letterSpacing: 1.2,
-          ),
-        ),
-      );
+    padding: const EdgeInsets.only(left: 4, bottom: 8),
+    child: Text(
+      text.toUpperCase(),
+      style: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        color: AppColors.inkMute,
+        letterSpacing: 1.2,
+      ),
+    ),
+  );
 }
 
 // ── avatar banner ────────────────────────────────────────────────
@@ -718,7 +759,11 @@ class _InfoRow {
   final IconData icon;
   final String label;
   final String value;
-  const _InfoRow({required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 }
 
 // ── complete profile banner ──────────────────────────────────────
@@ -757,7 +802,11 @@ class _CompleteProfileBanner extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.secondary),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 18,
+              color: AppColors.secondary,
+            ),
           ],
         ),
       ),
@@ -872,12 +921,19 @@ class _EditForm extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           decoration: const BoxDecoration(
                             border: Border(
-                              right: BorderSide(color: AppColors.hairline, width: 1.5),
+                              right: BorderSide(
+                                color: AppColors.hairline,
+                                width: 1.5,
+                              ),
                             ),
                           ),
                           child: Text(
                             countryCode,
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.ink),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.ink,
+                            ),
                           ),
                         ),
                         Expanded(
@@ -886,11 +942,19 @@ class _EditForm extends StatelessWidget {
                             keyboardType: TextInputType.phone,
                             decoration: InputDecoration(
                               hintText: 'auth.phone_hint'.tr(),
-                              hintStyle: const TextStyle(color: AppColors.inkMute, fontSize: 15),
+                              hintStyle: const TextStyle(
+                                color: AppColors.inkMute,
+                                fontSize: 15,
+                              ),
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
                             ),
-                            style: const TextStyle(fontSize: 16, color: AppColors.ink),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: AppColors.ink,
+                            ),
                             onChanged: (_) => onChanged(),
                           ),
                         ),
@@ -920,27 +984,36 @@ class _EditForm extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: const Color(0xFFF5F6F8),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.hairline, width: 1.5),
+                        border: Border.all(
+                          color: AppColors.hairline,
+                          width: 1.5,
+                        ),
                       ),
                       child: Row(
                         children: [
                           Expanded(
                             child: Text(
-                              dob == null ? 'auth.select_date'.tr() : formattedDob,
+                              dob == null
+                                  ? 'auth.select_date'.tr()
+                                  : formattedDob,
                               style: TextStyle(
                                 fontSize: 16,
-                                color: dob == null ? AppColors.inkMute : AppColors.ink,
+                                color: dob == null
+                                    ? AppColors.inkMute
+                                    : AppColors.ink,
                               ),
                             ),
                           ),
-                          const Icon(Icons.calendar_today_rounded, size: 16, color: AppColors.inkSub),
+                          const Icon(
+                            Icons.calendar_today_rounded,
+                            size: 16,
+                            color: AppColors.inkSub,
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
-
-
 
                 const SizedBox(height: 8),
               ],
@@ -958,8 +1031,9 @@ class _EditForm extends StatelessWidget {
                 onPressed: canSave ? onSave : null,
                 style: FilledButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  disabledBackgroundColor:
-                      AppColors.inkMute.withValues(alpha: 0.3),
+                  disabledBackgroundColor: AppColors.inkMute.withValues(
+                    alpha: 0.3,
+                  ),
                   minimumSize: const Size.fromHeight(52),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),

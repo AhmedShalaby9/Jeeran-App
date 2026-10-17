@@ -6,11 +6,34 @@ import '../../domain/repositories/auth_repository.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> login(String phone, {String? fcmToken, String? platform, String? deviceId});
-  Future<UserModel> firebaseVerify(String idToken, {String? fcmToken, String? platform, String? deviceId});
+  Future<UserModel> login(
+    String phone, {
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  });
+  Future<UserModel> firebaseVerify(
+    String idToken, {
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  });
   Future<String> sendOtpRest(String phone, String recaptchaToken);
-  Future<UserModel> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId});
-  Future<UserModel> socialLogin(String provider, String idToken, {String? name, String? fcmToken, String? platform, String? deviceId});
+  Future<UserModel> verifyOtpRest(
+    String sessionInfo,
+    String code, {
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  });
+  Future<UserModel> socialLogin(
+    String provider,
+    String idToken, {
+    String? name,
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  });
   Future<UserModel> completeProfile(CompleteProfileParams params);
   Future<bool> sendProfileOtp(String phone, String recaptchaToken);
   Future<UserModel> getMe();
@@ -22,7 +45,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<UserModel> login(String phone, {String? fcmToken, String? platform, String? deviceId}) async {
+  Future<UserModel> login(
+    String phone, {
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  }) async {
     try {
       final response = await apiClient.post(
         ApiEndpoints.login,
@@ -45,7 +73,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserModel> firebaseVerify(String idToken, {String? fcmToken, String? platform, String? deviceId}) async {
+  Future<UserModel> firebaseVerify(
+    String idToken, {
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  }) async {
     try {
       final response = await apiClient.post(
         ApiEndpoints.firebaseVerify,
@@ -86,7 +119,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserModel> verifyOtpRest(String sessionInfo, String code, {String? fcmToken, String? platform, String? deviceId}) async {
+  Future<UserModel> verifyOtpRest(
+    String sessionInfo,
+    String code, {
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  }) async {
     try {
       final response = await apiClient.post(
         ApiEndpoints.verifyOtpRest,
@@ -110,7 +149,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserModel> socialLogin(String provider, String idToken, {String? name, String? fcmToken, String? platform, String? deviceId}) async {
+  Future<UserModel> socialLogin(
+    String provider,
+    String idToken, {
+    String? name,
+    String? fcmToken,
+    String? platform,
+    String? deviceId,
+  }) async {
     try {
       final response = await apiClient.post(
         ApiEndpoints.socialLogin,
@@ -143,8 +189,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           'name': params.name,
           'email': params.email,
           if (params.gender != null) 'gender': params.gender,
-          if (params.dob != null) 'date_of_birth': params.dob!.toIso8601String(),
-          if (params.preferredLanguage != null) 'preferred_language': params.preferredLanguage,
+          if (params.dob != null)
+            'date_of_birth': params.dob!.toIso8601String(),
+          if (params.preferredLanguage != null)
+            'preferred_language': params.preferredLanguage,
           if (params.country != null) 'country': params.country,
           if (params.countryCode != null) 'country_code': params.countryCode,
           if (params.phoneNumber != null) 'phone_number': params.phoneNumber,

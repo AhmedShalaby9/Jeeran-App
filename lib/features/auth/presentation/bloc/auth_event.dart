@@ -30,11 +30,13 @@ class AuthVerifyOtpEvent extends AuthEvent {
   List<Object?> get props => [phone, otp];
 }
 
-
 class AuthSendOtpRestEvent extends AuthEvent {
   final String phone;
   final String recaptchaToken;
-  const AuthSendOtpRestEvent({required this.phone, required this.recaptchaToken});
+  const AuthSendOtpRestEvent({
+    required this.phone,
+    required this.recaptchaToken,
+  });
   @override
   List<Object?> get props => [phone, recaptchaToken];
 }
@@ -43,7 +45,11 @@ class AuthSocialLoginEvent extends AuthEvent {
   final String provider;
   final String idToken;
   final String? name;
-  const AuthSocialLoginEvent({required this.provider, required this.idToken, this.name});
+  const AuthSocialLoginEvent({
+    required this.provider,
+    required this.idToken,
+    this.name,
+  });
   @override
   List<Object?> get props => [provider, idToken, name];
 }

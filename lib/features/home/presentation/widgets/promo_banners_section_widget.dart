@@ -12,9 +12,6 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../main/presentation/pages/main_page.dart';
 import '../../../properties/presentation/pages/add_property_page.dart';
-import '../../../seller_request/presentation/bloc/seller_request_bloc.dart';
-import '../../../seller_request/presentation/bloc/seller_request_event.dart';
-import '../../../seller_request/presentation/bloc/seller_request_state.dart';
 
 // ── Position router ───────────────────────────────────────────────────────────
 
@@ -32,16 +29,6 @@ class PromoBannerAtPosition extends StatelessWidget {
     final type = banners[position];
     final delay = Duration(milliseconds: position * 120);
 
-    // Subscription check — AuthBloc is provided by MainPage above.
-    final isSeller = AppStorage.isSeller;
-    bool hasSubscription = false;
-    if (isSeller) {
-      final authState = context.read<AuthBloc>().state;
-      if (authState is AuthMeLoaded) {
-        hasSubscription = authState.user.subscriptionId != null;
-      }
-    }
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -52,11 +39,7 @@ class PromoBannerAtPosition extends StatelessWidget {
             riseDelay: delay,
           )
         else
-          _SellerBanner(
-            isSeller: isSeller,
-            hasSubscription: hasSubscription,
-            riseDelay: delay,
-          ),
+          _SellerBanner(riseDelay: delay),
       ],
     );
   }
@@ -85,49 +68,14 @@ class _AiAdsBanner extends StatelessWidget {
   }
 }
 
-// ── Seller banner — three cases ───────────────────────────────────────────────
-//
-//  Case 1 · buyer/guest → submit seller request via API (inline, no navigation)
-//  Case 2 · seller, no active subscription → switch to packages tab (index 3)
-//  Case 3 · seller with active subscription → open Add Property wizard
+// ── "Add a property" banner — everyone can list now, so it opens the listing flow ──
 
 class _SellerBanner extends StatelessWidget {
-  final bool isSeller;
-  final bool hasSubscription;
   final Duration riseDelay;
-
-  const _SellerBanner({
-    required this.isSeller,
-    required this.hasSubscription,
-    required this.riseDelay,
-  });
+  const _SellerBanner({required this.riseDelay});
 
   @override
   Widget build(BuildContext context) {
-    // Case 1: not a seller — needs its own SellerRequestBloc to call the API
-    if (!isSeller) {
-      return BlocProvider(
-        create: (_) => sl<SellerRequestBloc>(),
-        child: _SellerRequestBannerBody(riseDelay: riseDelay),
-      );
-    }
-
-    // Case 2: seller with no active subscription
-    if (!hasSubscription) {
-      return _PromoBannerCard(
-        onTap: () => MainPage.switchTab(3),
-        riseDelay: riseDelay,
-        gradientColors: const [Color(0xFF3D2200), Color(0xFF7F5C1F), Color(0xFFB8893D)],
-        gradientStops: const [0.0, 0.52, 1.0],
-        glowColor: const Color(0x99B8893D),
-        particleColor: const Color(0x50B8893D),
-        icon: Icons.workspace_premium_rounded,
-        title: 'home.promo_get_subscription_title'.tr(),
-        subtitle: 'home.promo_get_subscription_subtitle'.tr(),
-      );
-    }
-
-    // Case 3: seller with active subscription
     return _PromoBannerCard(
       onTap: () => AddPropertyPage.push(context),
       riseDelay: riseDelay,
@@ -141,153 +89,6 @@ class _SellerBanner extends StatelessWidget {
     );
   }
 }
-
-// ── Case 1 body: buyer submits seller request inline ─────────────────────────
-
-class _SellerRequestBannerBody extends StatelessWidget {
-  final Duration riseDelay;
-  const _SellerRequestBannerBody({required this.riseDelay});
-
-  void _onTap(BuildContext context) {
-    context.read<SellerRequestBloc>().add(const SubmitSellerRequestEvent());
-  }
-
-  void _showSuccessSheet(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.grey.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Lottie.asset(
-                'assets/animations/success.json',
-                width: 140, height: 140,
-                repeat: false,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'seller_request.success_title'.tr(),
-                style: const TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.w800,
-                  color: AppColors.ink, letterSpacing: -0.3,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'seller_request.success_message'.tr(),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14, fontWeight: FontWeight.w600,
-                  color: AppColors.inkSub,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.tagPrimaryBg,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 2),
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.access_time_rounded,
-                        size: 16, color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'seller_request.approval_note'.tr(),
-                        style: const TextStyle(
-                          fontSize: 13, color: AppColors.inkSub, height: 1.55,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'seller_request.got_it'.tr(),
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<SellerRequestBloc, SellerRequestState>(
-      listener: (context, state) {
-        if (state is SellerRequestSuccess) {
-          _showSuccessSheet(context);
-        }
-      },
-      builder: (context, state) {
-        final isLoading = state is SellerRequestLoading;
-        return _PromoBannerCard(
-          onTap: isLoading ? () {} : () => _onTap(context),
-          riseDelay: riseDelay,
-          isLoading: isLoading,
-          gradientColors: const [Color(0xFF3D2200), Color(0xFF7F5C1F), Color(0xFFB8893D)],
-          gradientStops: const [0.0, 0.52, 1.0],
-          glowColor: const Color(0x99B8893D),
-          particleColor: const Color(0x50B8893D),
-          icon: Icons.storefront_rounded,
-          title: 'home.promo_seller_title'.tr(),
-          subtitle: 'home.promo_seller_subtitle'.tr(),
-        );
-      },
-    );
-  }
-}
-
-// ── Animated card ─────────────────────────────────────────────────────────────
 
 class _PromoBannerCard extends StatefulWidget {
   final VoidCallback onTap;

@@ -97,7 +97,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         'city': _city.text.trim(),
         'profile_picture': _picture ?? '',
         'preferred_language': _lang,
-        if (_p.isSeller) ...{
+        if (_p.isCustomer) ...{
           'company_name': _company.text.trim(),
           'bio': _bio.text.trim(),
         },
@@ -131,7 +131,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final seller = _p.isSeller;
+    final seller = _p.isCustomer;
     return Scaffold(
       backgroundColor: JV2.bgDeep,
       body: Column(

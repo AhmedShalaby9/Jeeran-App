@@ -36,8 +36,12 @@ class AppStorage {
 
   static String? get userType => _box.get(_keyUserType) as String?;
 
-  /// Convenience — true only when the stored user type is 'seller'.
-  static bool get isSeller => userType == 'seller';
+  /// Convenience — a signed-in customer (there are no separate buyers and sellers any more: customers browse, buy and list).
+  /// Older sessions stored 'buyer' or 'seller'; those are customers too.
+  static bool get isCustomer => userType != null && !isAdmin;
+
+  /// Who may list a property: customers and admins.
+  static bool get canList => userType != null;
 
   /// Convenience — true when the stored user type is 'admin' or 'super_admin'.
   static bool get isAdmin {

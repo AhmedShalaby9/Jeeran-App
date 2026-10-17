@@ -49,14 +49,11 @@ class User extends Equatable {
     this.updatedAt,
   });
 
-  /// Returns true only when the user is a seller.
-  bool get isSeller => userType == 'seller';
+  /// Customers browse, buy and list; admins run the platform.
+  bool get isCustomer => userType != null && !isAdmin;
 
   /// Returns true for admin and super_admin users.
   bool get isAdmin => userType == 'admin' || userType == 'super_admin';
-
-  /// Returns true for buyer users (or any non-seller, non-admin).
-  bool get isBuyer => !isSeller && !isAdmin;
 
   @override
   List<Object?> get props => [
