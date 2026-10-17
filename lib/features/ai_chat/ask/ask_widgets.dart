@@ -7,6 +7,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 
 import '../../../core/widgets/jv2.dart';
 import '../../explore/presentation/widgets/explore_widgets.dart';
+import '../../listing/listing_checklist.dart';
 import '../../units/data/unit_format.dart';
 import '../../units/presentation/unit_widgets.dart';
 import '../../../core/di/injection_container.dart';
@@ -547,6 +548,8 @@ class AskAssistantMsg extends StatelessWidget {
   final void Function(String text)?
   onAnswer; // taps on the question buttons send this as the next message
   final bool canAnswer; // only the latest answer takes taps
+  final String?
+  saidAbout; // what the person said just before (carried into a listing it starts)
 
   const AskAssistantMsg({
     super.key,
@@ -559,6 +562,7 @@ class AskAssistantMsg extends StatelessWidget {
     required this.onNews,
     this.onAnswer,
     this.canAnswer = false,
+    this.saidAbout,
   });
 
   /// Units shown by a plan card are not shown a second time in the rail.
@@ -638,6 +642,11 @@ class AskAssistantMsg extends StatelessWidget {
                     enabled: canAnswer,
                     onSend: onAnswer!,
                   ),
+                ],
+                // a listing the person asked for: the checklist of what it understood, with a way to finish it
+                if (done && refs.listing != null) ...[
+                  const SizedBox(height: 14),
+                  ListingChecklistCard(reply: refs.listing!, said: saidAbout),
                 ],
                 // what the assistant did for the person, each with an Undo
                 if (done && refs.actions.isNotEmpty) ...[

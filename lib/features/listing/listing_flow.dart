@@ -35,6 +35,10 @@ class ListingFlow extends StatefulWidget {
   final ListingView initialView;
   final int initialStep;
 
+  /// A listing started in a chat: what the assistant understood, shown in "Tell Jeeran" as if it had been said there.
+  final DraftReply? initialReply;
+  final String? initialSaid;
+
   /// Edit this listing instead of creating one.
   final int? editId;
   const ListingFlow({
@@ -45,6 +49,8 @@ class ListingFlow extends StatefulWidget {
     this.recorder,
     this.voiceApi,
     this.initialDraft,
+    this.initialReply,
+    this.initialSaid,
     this.initialView = ListingView.start,
     this.initialStep = 1,
   });
@@ -67,6 +73,28 @@ class ListingFlow extends StatefulWidget {
           builder: (_) => const ListingFlow(initialView: ListingView.assistant),
         ),
       );
+
+  /// A chat answer started a listing: carry on in the assistant with the table it showed.
+  static Future<void> openFromChat(
+    BuildContext context,
+    DraftReply reply, {
+    String? said,
+  }) {
+    final draft = ListingDraft()
+      ..apply(reply.draft, reply.compound, reply.filled);
+    return Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => ListingFlow(
+          initialDraft: draft,
+          initialReply: reply,
+          initialSaid: said,
+          initialView: ListingView.assistant,
+        ),
+      ),
+    );
+  }
 
   /// Edit one of the seller's own listings.
   static Future<bool?> edit(BuildContext context, int id) =>
@@ -473,6 +501,8 @@ class _ListingFlowState extends State<ListingFlow> {
       case ListingView.assistant:
         return ShortcutPage(
           draft: _d,
+          initialReply: widget.initialReply,
+          initialSaid: widget.initialSaid,
           api: _api,
           recorder: widget.recorder,
           voiceApi: widget.voiceApi,
@@ -906,7 +936,35 @@ class _ListingFlowState extends State<ListingFlow> {
 
   Widget _stepBasics() {
     final c = _d.compound;
+    final sale = _d.effectiveListingType(admin: AppStorage.isAdmin);
     return _gap([
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ChipPicker(
+            label: 'listing.f_sale_type'.tr(),
+            cols: 2,
+            value: sale,
+            options: [
+              for (final t in ListingDraft.listingTypes)
+                (t, 'prop.sale_$t'.tr()),
+            ],
+            onChanged: (v) => setState(() => _d.listingType = v ?? sale),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 7),
+            child: Text(
+              'listing.sale_type_$sale'.tr(),
+              key: const Key('sale-type-note'),
+              style: const TextStyle(
+                fontSize: 11.5,
+                height: 1.45,
+                color: JV2.inkSub,
+              ),
+            ),
+          ),
+        ],
+      ),
       ChipPicker(
         label: 'listing.f_type'.tr(),
         cols: 3,
@@ -917,12 +975,13 @@ class _ListingFlowState extends State<ListingFlow> {
       ),
       ChipPicker(
         label: 'listing.f_purpose'.tr(),
-        cols: 2,
+        cols: 3,
         ai: _d.ai.contains('status'),
         value: _d.status,
         options: [
           ('for_sale', 'listing.sale'.tr()),
           ('for_rent', 'listing.rent'.tr()),
+          ('for_rent_furnished', 'listing.rent_furnished'.tr()),
         ],
         onChanged: (v) => _touch('status', () => _d.status = v ?? 'for_sale'),
       ),
@@ -1090,7 +1149,7 @@ class _ListingFlowState extends State<ListingFlow> {
               x,
               x == 'ready'
                   ? 'listing.d_ready'.tr()
-                  : (x == '2029' ? '2029+' : x),
+                  : (x == ListingDraft.deliveries.last ? '$x+' : x),
             ),
         ],
         onChanged: (v) => _touch('delivery', () => _d.delivery = v),
@@ -1103,6 +1162,35 @@ class _ListingFlowState extends State<ListingFlow> {
         options: [for (final v in ListingDraft.views) (v, 'listing.v_$v'.tr())],
         onChanged: (v) => _touch('view', () => _d.view = v),
       ),
+      MultiChipPicker(
+        label: 'listing.f_extras'.tr(),
+        values: _d.extras,
+        options: [
+          for (final x in ListingDraft.extraFeatures) (x, 'listing.v_$x'.tr()),
+        ],
+        onChanged: (v) => setState(() {
+          _d.extras
+            ..clear()
+            ..addAll(v);
+        }),
+      ),
+      if (_d.hasGarden)
+        ListingInput(
+          fieldKey: const Key('f-garden'),
+          label: 'listing.f_garden'.tr(),
+          value: _d.garden,
+          suffix: 'm²',
+          numeric: true,
+          optional: true,
+          onChanged: (v) => setState(() => _d.garden = v),
+        ),
+      ListingInput(
+        fieldKey: const Key('f-maintenance'),
+        label: 'listing.f_maintenance'.tr(),
+        value: _d.maintenance,
+        optional: true,
+        onChanged: (v) => setState(() => _d.maintenance = v),
+      ),
     ]);
   }
 
@@ -1111,7 +1199,7 @@ class _ListingFlowState extends State<ListingFlow> {
     return _gap([
       ListingInput(
         fieldKey: const Key('f-price'),
-        label: 'listing.f_price'.tr(),
+        label: (_d.isRent ? 'listing.f_rent_price' : 'listing.f_price').tr(),
         value: _d.price,
         prefix: 'EGP',
         numeric: true,
@@ -1121,19 +1209,20 @@ class _ListingFlowState extends State<ListingFlow> {
           _d.ai.remove('price');
         }),
       ),
-      _bandCard(),
-      ChipPicker(
-        label: 'listing.f_payment'.tr(),
-        cols: 2,
-        ai: _d.ai.contains('payment'),
-        value: _d.payment,
-        options: [
-          ('cash', 'listing.cash'.tr()),
-          ('installments', 'listing.installments'.tr()),
-        ],
-        onChanged: (v) => _touch('payment', () => _d.payment = v ?? 'cash'),
-      ),
-      if (_d.payment == 'installments') ...[
+      if (!_d.isRent) _bandCard(),
+      if (!_d.isRent)
+        ChipPicker(
+          label: 'listing.f_payment'.tr(),
+          cols: 2,
+          ai: _d.ai.contains('payment'),
+          value: _d.payment,
+          options: [
+            ('cash', 'listing.cash'.tr()),
+            ('installments', 'listing.installments'.tr()),
+          ],
+          onChanged: (v) => _touch('payment', () => _d.payment = v ?? 'cash'),
+        ),
+      if (!_d.isRent && _d.payment == 'installments') ...[
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1868,8 +1957,18 @@ class _ListingFlowState extends State<ListingFlow> {
       ),
       _block('listing.s1'.tr(), 1, [
         (
+          'listing.f_sale_type'.tr(),
+          'prop.sale_${_d.effectiveListingType(admin: AppStorage.isAdmin)}'
+              .tr(),
+          'listing_type',
+        ),
+        (
           'listing.f_type'.tr(),
-          '${_d.type == null ? '' : 'listing.t_${_d.type}'.tr()} · ${_d.status == 'for_rent' ? 'listing.rent'.tr() : 'listing.sale'.tr()}',
+          '${_d.type == null ? '' : 'listing.t_${_d.type}'.tr()} · ${switch (_d.status) {
+            'for_rent' => 'listing.rent'.tr(),
+            'for_rent_furnished' => 'listing.rent_furnished'.tr(),
+            _ => 'listing.sale'.tr(),
+          }}',
           'type',
         ),
         (
@@ -1909,6 +2008,21 @@ class _ListingFlowState extends State<ListingFlow> {
           ),
         if (_d.view != null)
           ('listing.f_view'.tr(), 'listing.v_${_d.view}'.tr(), 'view'),
+        if (_d.extras.isNotEmpty)
+          (
+            'listing.f_extras'.tr(),
+            [
+              for (final x in ListingDraft.extraFeatures.where(
+                _d.extras.contains,
+              ))
+                'listing.v_$x'.tr(),
+            ].join(' · '),
+            'extras',
+          ),
+        if (_d.hasGarden && _d.gardenValue != null)
+          ('listing.f_garden'.tr(), '${_d.garden} m²', 'garden'),
+        if (_d.maintenance.trim().isNotEmpty)
+          ('listing.f_maintenance'.tr(), _d.maintenance.trim(), 'maintenance'),
       ]),
       _block('listing.s3'.tr(), 3, [
         (
@@ -1916,13 +2030,14 @@ class _ListingFlowState extends State<ListingFlow> {
           price == null ? '—' : 'EGP ${grouped(price)}',
           'price',
         ),
-        (
-          'listing.plan'.tr(),
-          _d.payment == 'cash'
-              ? 'listing.cash'.tr()
-              : 'listing.plan_text'.tr(args: [_d.down, _d.years]),
-          'down',
-        ),
+        if (!_d.isRent)
+          (
+            'listing.plan'.tr(),
+            _d.payment == 'cash'
+                ? 'listing.cash'.tr()
+                : 'listing.plan_text'.tr(args: [_d.down, _d.years]),
+            'down',
+          ),
       ]),
     ]);
   }

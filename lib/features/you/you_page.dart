@@ -11,8 +11,6 @@ import '../../core/storage/app_storage.dart';
 import '../../core/widgets/html_content_page.dart';
 import '../../core/widgets/jv2.dart';
 import '../admin/presentation/pages/admin_panel_page.dart';
-import '../ai_ads/presentation/pages/ai_ad_guide_page.dart';
-import '../ai_ads/presentation/pages/ai_ads_page.dart';
 import '../auth/presentation/pages/login_page.dart';
 import '../explore/presentation/widgets/explore_widgets.dart';
 import '../main/presentation/pages/main_page.dart';
@@ -385,22 +383,6 @@ class _YouPageState extends State<YouPage> {
                 badge: s.inReview > 0 ? '${s.inReview}' : null,
                 onTap: () => _go(const MyPropertiesPage()),
               ),
-              _Row(
-                icon: Icons.auto_awesome_rounded,
-                label: 'more.ai_ads'.tr(),
-                meta: 'you.ads_meta'.plural(s.adsCount),
-                onTap: () => _go(const AiAdsPage()),
-              ),
-              if ((AppSettingsService.instance.settings?.aiGuideVideoUrl ?? '')
-                  .isNotEmpty)
-                _Row(
-                  icon: Icons.play_circle_outline_rounded,
-                  label: 'more.ai_ads_guide'.tr(),
-                  onTap: () => AiAdGuidePage.push(
-                    context,
-                    AppSettingsService.instance.settings!.aiGuideVideoUrl!,
-                  ),
-                ),
               /* PACKAGES DISABLED
               _Row(
                 icon: Icons.credit_card_rounded,

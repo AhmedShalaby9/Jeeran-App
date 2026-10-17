@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/di/injection_container.dart';
 import '../../core/error/exceptions.dart';
 import '../../core/network/api_client.dart';
+import '../../core/storage/app_storage.dart';
 import '../../core/widgets/jv2.dart';
 import '../voice/voice_api.dart';
 import '../voice/voice_services.dart';
@@ -39,6 +40,10 @@ class ShortcutPage extends StatefulWidget {
   final VoidCallback onReview;
 
   final VoidCallback onOpenForm;
+
+  /// Started in a chat: show what it understood and ask what is missing, as if it had been said here.
+  final DraftReply? initialReply;
+  final String? initialSaid;
   const ShortcutPage({
     super.key,
     required this.draft,
@@ -48,6 +53,8 @@ class ShortcutPage extends StatefulWidget {
     required this.onOpenForm,
     this.recorder,
     this.voiceApi,
+    this.initialReply,
+    this.initialSaid,
   });
 
   @override
@@ -85,6 +92,25 @@ class _ShortcutPageState extends State<ShortcutPage> {
   String get _lang => context.locale.languageCode;
   ListingDraft get _d => widget.draft;
 
+  bool _seeded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // (the locale is read here, not in initState)
+    if (_seeded) return;
+    _seeded = true;
+    final r = widget.initialReply;
+    if (r == null) return;
+    final said = widget.initialSaid?.trim();
+    if (said != null && said.isNotEmpty) {
+      _d.said.add(said);
+      _msgs.add(_Msg(true, said));
+    }
+    _last = r;
+    _botFor(r);
+  }
+
   @override
   void dispose() {
     _tick?.cancel();
@@ -103,6 +129,21 @@ class _ShortcutPageState extends State<ShortcutPage> {
       );
     }
   });
+
+  /// What the assistant says about a reading of the draft: the compound is unknown, all done, or the next question.
+  void _botFor(DraftReply r) {
+    if (r.unknownCompound) {
+      _bot('listing.ai_unknown_compound'.tr());
+    } else if (r.complete) {
+      _bot('listing.ai_complete'.tr());
+    } else if (r.question != null) {
+      final n = _filledCount(), t = n + r.missing.length;
+      _bot(
+        'listing.ai_got'.tr(args: ['$n', '$t', r.question!]),
+        replies: r.replies,
+      );
+    }
+  }
 
   void _bot(String text, {List<String> replies = const []}) =>
       _msgs.add(_Msg(false, text, replies: replies));
@@ -123,17 +164,7 @@ class _ShortcutPageState extends State<ShortcutPage> {
       setState(() {
         _d.apply(r.draft, r.compound, r.filled);
         _last = r;
-        if (r.unknownCompound) {
-          _bot('listing.ai_unknown_compound'.tr());
-        } else if (r.complete) {
-          _bot('listing.ai_complete'.tr());
-        } else if (r.question != null) {
-          final n = _filledCount(), t = n + r.missing.length;
-          _bot(
-            'listing.ai_got'.tr(args: ['$n', '$t', r.question!]),
-            replies: r.replies,
-          );
-        }
+        _botFor(r);
         _busy = false;
       });
     } on ServerException catch (e) {
@@ -253,7 +284,11 @@ class _ShortcutPageState extends State<ShortcutPage> {
         'listing.f_type'.tr(),
         _d.type == null
             ? null
-            : '${'listing.t_${_d.type}'.tr()} · ${_d.status == 'for_rent' ? 'listing.rent'.tr() : 'listing.sale'.tr()}',
+            : '${'listing.t_${_d.type}'.tr()} · ${switch (_d.status) {
+                'for_rent' => 'listing.rent'.tr(),
+                'for_rent_furnished' => 'listing.rent_furnished'.tr(),
+                _ => 'listing.sale'.tr(),
+              }} · ${'prop.sale_${_d.effectiveListingType(admin: AppStorage.isAdmin)}'.tr()}',
         CardField.type,
       ),
       (

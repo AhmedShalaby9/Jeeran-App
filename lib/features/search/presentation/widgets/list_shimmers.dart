@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-Widget _box(double h, {double? w, double r = 14, Color color = Colors.white}) => Container(
-  height: h,
-  width: w,
-  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(r)),
-);
+Widget _box(double h, {double? w, double r = 14, Color color = Colors.white}) =>
+    Container(
+      height: h,
+      width: w,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(r),
+      ),
+    );
 
 Widget _shimmer(Widget child) => Shimmer.fromColors(
   baseColor: const Color(0xFFE9EEF4),
@@ -29,7 +33,10 @@ class CompoundRowShimmer extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 9),
               child: Container(
                 padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Row(
                   children: [
                     _box(60, w: 72, r: 11),
@@ -72,7 +79,10 @@ class LaunchCardShimmer extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: Container(
                 clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -122,7 +132,10 @@ class UnitCardShimmer extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 14),
               child: Container(
                 clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -177,7 +190,10 @@ class DevRailShimmer extends StatelessWidget {
         itemBuilder: (_, i) => Container(
           width: 132,
           clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+          ),
           child: Column(
             children: [
               Container(height: 62, color: const Color(0xFFE9EEF4)),
@@ -211,7 +227,10 @@ class PromoRailShimmer extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: 12),
         itemBuilder: (_, i) => Container(
           width: 195,
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+          ),
           padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,7 +264,10 @@ class UnitRowShimmer extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Row(
                 children: [
                   _box(104, w: 104, r: 12, color: const Color(0xFFE9EEF4)),

@@ -15,6 +15,7 @@ import '../compounds/presentation/pages/compound_page.dart';
 import '../explore/presentation/widgets/explore_widgets.dart' show chevronIcon;
 import '../properties/data/models/property_model.dart';
 import '../properties/presentation/pages/property_details_page.dart';
+import '../listing/listing_checklist.dart';
 import 'voice_api.dart';
 import 'voice_services.dart';
 
@@ -40,12 +41,7 @@ class VoicePage extends StatefulWidget {
   final VoiceApi? api; // tests inject fakes
   final VoiceRecorder? recorder;
   final AskApi? askApi;
-  const VoicePage({
-    super.key,
-    this.api,
-    this.recorder,
-    this.askApi,
-  });
+  const VoicePage({super.key, this.api, this.recorder, this.askApi});
 
   @override
   State<VoicePage> createState() => _VoicePageState();
@@ -506,6 +502,10 @@ class _VoicePageState extends State<VoicePage>
                 typing: !typed,
                 progress: full.isEmpty ? 1 : _revealed / full.length,
               ),
+              if (typed && refs.listing != null) ...[
+                const SizedBox(height: 16),
+                ListingChecklistCard(reply: refs.listing!, said: _heard),
+              ],
               if (typed && refs.properties.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 _SectionLabel('voice.behind'.tr()),

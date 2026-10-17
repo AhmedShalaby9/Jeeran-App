@@ -165,7 +165,11 @@ class _MainPageState extends State<MainPage> {
   }
 
   void _onItemTapped(int index) {
-    if (_selectedIndex == index) return;
+    if (_selectedIndex == index) {
+      // tapping Home while on Home brings the feed back to the top
+      if (_tabs[index] == MainTab.explore) ExplorePage.scrollToTop.value++;
+      return;
+    }
     setState(() => _selectedIndex = index);
     if (_tabs[index] == MainTab.saved)
       SavedPage.reload.value++; // always show fresh prices

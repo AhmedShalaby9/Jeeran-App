@@ -522,6 +522,7 @@ class _AskViewState extends State<AskView> {
       ),
       onAnswer: _send,
       canAnswer: i == _turns.length - 1 && !_thinking,
+      saidAbout: i > 0 && _turns[i - 1].user ? _turns[i - 1].text : null,
     );
   }
 }

@@ -653,7 +653,7 @@ void main() {
         await settle(400);
         expect(api4.updatedId, 9);
         final u = api4.updated!;
-        expect(u.containsKey('listing_type'), isFalse);
+        expect(u['listing_type'], 'resale'); // an edit keeps the sale type, and lets the seller change it
         expect(
           u.containsKey('payment_options'),
           isFalse,

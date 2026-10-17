@@ -489,3 +489,62 @@ class CompoundPickerState extends State<CompoundPicker> {
     );
   }
 }
+
+/// Several choices at once (a unit can be a corner unit with a roof and parking).
+class MultiChipPicker extends StatelessWidget {
+  final String label;
+  final List<(String value, String text)> options;
+  final Set<String> values;
+  final ValueChanged<Set<String>> onChanged;
+  const MultiChipPicker({
+    super.key,
+    required this.label,
+    required this.options,
+    required this.values,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Widget chip((String, String) o) {
+      final on = values.contains(o.$1);
+      return GestureDetector(
+        key: Key('extra-${o.$1}'),
+        onTap: () =>
+            onChanged(on ? ({...values}..remove(o.$1)) : {...values, o.$1}),
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: on ? JV2.navy : JV2.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: on ? JV2.navy : JV2.line),
+          ),
+          child: Text(
+            o.$2,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: on ? FontWeight.w600 : FontWeight.w500,
+              color: on ? Colors.white : JV2.ink,
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FieldLabel(label, optional: true),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [for (final o in options) chip(o)],
+        ),
+      ],
+    );
+  }
+}

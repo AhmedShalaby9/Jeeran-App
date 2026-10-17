@@ -1,4 +1,5 @@
 import '../../../core/network/api_client.dart';
+import '../../listing/listing_api.dart' show DraftReply;
 import '../../units/data/payment_plan.dart';
 
 String? _s(dynamic v) => v is String && v.trim().isNotEmpty ? v.trim() : null;
@@ -106,6 +107,9 @@ class AskRefs {
   final List<AskAction> actions;
   final List<AskQuestion> questions;
 
+  /// The listing checklist, when the person asked the assistant to create a listing.
+  final DraftReply? listing;
+
   const AskRefs({
     this.properties = const [],
     this.projects = const [],
@@ -114,6 +118,7 @@ class AskRefs {
     this.plans = const [],
     this.actions = const [],
     this.questions = const [],
+    this.listing,
   });
   static const none = AskRefs();
 
@@ -124,6 +129,9 @@ class AskRefs {
     List<Map<String, dynamic>> list(dynamic v) =>
         v is List ? v.whereType<Map<String, dynamic>>().toList() : const [];
     return AskRefs(
+      listing: j['listing'] is Map
+          ? DraftReply.fromJson(Map<String, dynamic>.from(j['listing'] as Map))
+          : null,
       properties: list(j['properties']),
       projects: list(j['projects']),
       news: list(j['news']),

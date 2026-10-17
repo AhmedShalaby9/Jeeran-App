@@ -949,7 +949,8 @@
     "delivery_tag_ready": "Ready",
     "search_hint": "Search",
     "s_promotion": "Launch or offer",
-    "dev_nothing_live": "Nothing live yet"
+    "dev_nothing_live": "Nothing live yet",
+    "s_sale_type": "Sale type"
   },
   "ask": {
     "open_property": "Ask about this unit",
@@ -1481,7 +1482,21 @@
     "add_photos_hint": "Add at least one photo to review and publish.",
     "media_note": "Add photos and I’ll generate the cover from them.",
     "done_field": "Done",
-    "writing_text": "Writing your title and description…"
+    "writing_text": "Writing your title and description…",
+    "f_sale_type": "Sale type",
+    "sale_type_primary": "Primary: a new unit bought from the developer. Buyers ask Jeeran to call them back.",
+    "sale_type_resale": "Resale: a unit you own and sell yourself. Buyers contact you by call or WhatsApp.",
+    "rent_furnished": "Rent furnished",
+    "f_extras": "Extras",
+    "v_roof": "Roof",
+    "v_beach_access": "Beach access",
+    "v_corner_unit": "Corner unit",
+    "v_parking": "Parking",
+    "f_garden": "Garden size",
+    "f_maintenance": "Maintenance fee",
+    "f_rent_price": "Rent per month",
+    "card_title": "Your listing",
+    "continue_listing": "Continue listing"
   },
   "follow": {
     "follow_short": "Follow",
@@ -1609,5 +1624,25 @@
     "phone_hint": "e.g. +20 10 1234 5678",
     "phone_save": "Save and continue",
     "phone_invalid": "Enter a valid phone number."
+  },
+  "promo": {
+    "runs": "Runs",
+    "ongoing": "Until further notice",
+    "ends_on": "Until {}",
+    "ends_in_days": {
+      "zero": "Ends today",
+      "one": "Ends in {} day",
+      "other": "Ends in {} days"
+    },
+    "view_compound": "View compound",
+    "units_launch": {
+      "one": "{} unit in this launch",
+      "other": "{} units in this launch"
+    },
+    "units_offer": {
+      "one": "{} unit in this offer",
+      "other": "{} units in this offer"
+    },
+    "whole_compound": "This covers all of {name}. Open the compound to see its units and prices."
   }
 }

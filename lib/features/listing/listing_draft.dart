@@ -44,7 +44,10 @@ class CompoundRef {
 /// Keys in [ai] are the fields the assistant filled and the seller has not touched yet.
 class ListingDraft {
   String? type; // apartment | villa | townhouse | chalet | duplex | studio …
-  String status = 'for_sale'; // for_sale | for_rent
+  String status = 'for_sale'; // for_sale | for_rent | for_rent_furnished
+
+  /// primary = bought from the developer · resale = from an owner. Null = the default for who is listing.
+  String? listingType;
   CompoundRef? compound;
   int bedrooms = 2;
   bool bedroomsSet = false;
@@ -55,6 +58,9 @@ class ListingDraft {
   String? finishing;
   String? delivery; // 'ready' or a year as text
   String? view;
+  final Set<String> extras = {}; // roof · beach access · corner unit · parking
+  String garden = ''; // m², for houses and chalets
+  String maintenance = ''; // as the seller words it
   String price = '';
   String payment = 'cash'; // cash | installments
   String down = '';
@@ -84,9 +90,38 @@ class ListingDraft {
     'apartment',
     'villa',
     'townhouse',
+    'twinhouse',
     'chalet',
     'duplex',
     'studio',
+    'penthouse',
+    'loft',
+    'cabin',
+    'family_house',
+    'marina_apartment',
+    'office',
+    'clinic',
+    'shop',
+    'land',
+  ];
+  static const listingTypes = ['resale', 'primary'];
+
+  /// Types that come with their own garden.
+  static const gardenTypes = [
+    'villa',
+    'townhouse',
+    'twinhouse',
+    'chalet',
+    'duplex',
+    'penthouse',
+    'family_house',
+    'cabin',
+  ];
+  static const extraFeatures = [
+    'roof',
+    'beach_access',
+    'corner_unit',
+    'parking',
   ];
   static const finishings = [
     'core_shell',
@@ -94,7 +129,13 @@ class ListingDraft {
     'fully_finished',
     'furnished',
   ];
-  static const deliveries = ['ready', '2027', '2028', '2029'];
+
+  /// Ready, then the next three years (the last reads "+"): it moves on with the calendar.
+  static List<String> get deliveries {
+    final y = DateTime.now().year;
+    return ['ready', '${y + 1}', '${y + 2}', '${y + 3}'];
+  }
+
   static const views = [
     'sea_view',
     'lagoon_view',
@@ -105,6 +146,11 @@ class ListingDraft {
 
   double? get priceValue => double.tryParse(price.replaceAll(',', '').trim());
   double? get sizeValue => double.tryParse(size.trim());
+  double? get gardenValue => double.tryParse(garden.trim());
+  bool get hasGarden => gardenTypes.contains(type);
+  bool get isRent => status != 'for_sale';
+  String effectiveListingType({required bool admin}) =>
+      listingType ?? (admin ? 'primary' : 'resale');
   bool get noRooms => const ['land', 'shop', 'office', 'clinic'].contains(type);
 
   bool get basicsValid => type != null && compound != null;
@@ -215,7 +261,7 @@ class ListingDraft {
       'compound_id': compound!.id,
       'property_type': type,
       'property_status': status,
-      if (!editing) 'listing_type': admin ? 'primary' : 'resale',
+      'listing_type': effectiveListingType(admin: admin),
       if (!editing) 'country': 'egypt',
       'price': priceValue,
       'size': sizeValue,
@@ -228,13 +274,17 @@ class ListingDraft {
       if (level.trim().isNotEmpty) 'level_en': level.trim(),
       'finishing': ?finishing,
       'delivery_date': ?deliveryDate,
-      // an edit leaves a plan we cannot show (e.g. mortgage) alone unless the seller changed it
-      if (!editing || origPayment != payment) 'payment_options': [payment],
-      if (payment == 'installments' && double.tryParse(down) != null)
+      // a rental has no payment plan; an edit leaves a plan we cannot show (e.g. mortgage) alone unless the seller changed it
+      if (!isRent && (!editing || origPayment != payment))
+        'payment_options': [payment],
+      if (!isRent && payment == 'installments' && double.tryParse(down) != null)
         'down_payment_percent': double.parse(down),
-      if (payment == 'installments' && int.tryParse(years) != null)
+      if (!isRent && payment == 'installments' && int.tryParse(years) != null)
         'installment_years': int.parse(years),
-      if (view != null) 'features': [view],
+      if (view != null || extras.isNotEmpty) 'features': [?view, ...extras],
+      if (hasGarden && gardenValue != null) 'garden_size': gardenValue,
+      if (maintenance.trim().isNotEmpty) 'maintenance_ar': maintenance.trim(),
+      if (maintenance.trim().isNotEmpty) 'maintenance_en': maintenance.trim(),
       // a generated cover goes first; the flag lets buyers see it is one
       'images': [?coverUrl, ...images],
       'cover_is_ai': coverIsAi,
@@ -260,6 +310,10 @@ class ListingDraft {
     'down': down,
     'years': years,
     'level': level,
+    'listingType': listingType,
+    'garden': garden,
+    'maintenance': maintenance,
+    'extras': extras.toList(),
     'delivery': delivery,
     'title': title,
     'description': description,
@@ -290,6 +344,11 @@ class ListingDraft {
     d.bathroomsSet = j['bathroomsSet'] == true;
     d.size = '${j['size'] ?? ''}';
     d.level = '${j['level'] ?? ''}';
+    d.listingType = j['listingType'] as String?;
+    d.garden = '${j['garden'] ?? ''}';
+    d.maintenance = '${j['maintenance'] ?? ''}';
+    if (j['extras'] is List)
+      d.extras.addAll((j['extras'] as List).whereType<String>());
     d.finishing = j['finishing'] as String?;
     d.delivery = j['delivery'] == null ? null : '${j['delivery']}';
     d.view = j['view'] as String?;
@@ -310,7 +369,11 @@ class ListingDraft {
     final d = ListingDraft();
     d.editingId = (j['id'] as num).toInt();
     d.type = s(j['property_type']);
-    d.status = s(j['property_status']) == 'for_sale' ? 'for_sale' : 'for_rent';
+    final st = s(j['property_status']);
+    d.status = const ['for_sale', 'for_rent', 'for_rent_furnished'].contains(st)
+        ? st!
+        : 'for_sale';
+    d.listingType = s(j['listing_type']);
     if (j['compound'] is Map) {
       d.compound = CompoundRef.fromJson(
         Map<String, dynamic>.from(j['compound'] as Map),
@@ -347,6 +410,14 @@ class ListingDraft {
         .where(feats.contains)
         .cast<String?>()
         .firstWhere((_) => true, orElse: () => null);
+    d.extras.addAll(extraFeatures.where(feats.contains));
+    final garden = n(j['garden_size']);
+    if (garden != null) d.garden = _trim(garden);
+    d.maintenance =
+        s(ar ? j['maintenance_ar'] : j['maintenance_en']) ??
+        s(j['maintenance_en']) ??
+        s(j['maintenance_ar']) ??
+        '';
     final price = n(j['price']);
     if (price != null) d.price = _trim(price);
     final pay = (j['payment_options'] is List)

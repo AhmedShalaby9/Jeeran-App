@@ -208,6 +208,20 @@ class PromotionItem {
       : (developerNameEn.isNotEmpty ? developerNameEn : developerNameAr);
 }
 
+/// What `/promotions/:id` adds to a [PromotionItem].
+class PromotionDetail {
+  final String? videoUrl;
+  final DateTime? startsAt;
+  final DateTime? endsAt;
+  final List<Map<String, dynamic>> units;
+  const PromotionDetail({
+    this.videoUrl,
+    this.startsAt,
+    this.endsAt,
+    this.units = const [],
+  });
+}
+
 class Suggestions {
   final List<Map<String, dynamic>> compounds;
   final List<Map<String, dynamic>> developers;
@@ -224,11 +238,23 @@ class PropertyFacets {
   final Map<String, int> finishings;
   final int launch;
   final int offer;
-  const PropertyFacets({this.types = const {}, this.finishings = const {}, this.launch = 0, this.offer = 0});
+  const PropertyFacets({
+    this.types = const {},
+    this.finishings = const {},
+    this.launch = 0,
+    this.offer = 0,
+  });
 
   factory PropertyFacets.fromJson(Map<String, dynamic> j) {
-    Map<String, int> counts(dynamic v) => v is Map ? {for (final e in v.entries) '${e.key}': _i(e.value)} : const {};
-    return PropertyFacets(types: counts(j['types']), finishings: counts(j['finishings']), launch: _i(j['launch']), offer: _i(j['offer']));
+    Map<String, int> counts(dynamic v) => v is Map
+        ? {for (final e in v.entries) '${e.key}': _i(e.value)}
+        : const {};
+    return PropertyFacets(
+      types: counts(j['types']),
+      finishings: counts(j['finishings']),
+      launch: _i(j['launch']),
+      offer: _i(j['offer']),
+    );
   }
 }
 
@@ -265,7 +291,11 @@ class SearchApi {
   /// Listing counts for the filter sheet: by type and finishing, and how many are launches / offers.
   Future<PropertyFacets> facets() async {
     final res = await client.get('/properties/facets');
-    return PropertyFacets.fromJson(res.data['data'] is Map<String, dynamic> ? res.data['data'] as Map<String, dynamic> : const {});
+    return PropertyFacets.fromJson(
+      res.data['data'] is Map<String, dynamic>
+          ? res.data['data'] as Map<String, dynamic>
+          : const {},
+    );
   }
 
   Future<int> count(SearchFilters f) async {
@@ -317,6 +347,25 @@ class SearchApi {
       headers: ApiClient.apiV2,
     );
     return _list(res.data['data']).map(PromotionItem.fromJson).toList();
+  }
+
+  /// One launch or offer with what the list leaves out: its video and the primary units it is about.
+  Future<PromotionDetail> promotion(int id) async {
+    final res = await client.get('/promotions/$id', headers: ApiClient.apiV2);
+    final d = (res.data['data'] ?? const {}) as Map<String, dynamic>;
+    final units = d['properties'] is List
+        ? (d['properties'] as List).whereType<Map<String, dynamic>>().toList()
+        : <Map<String, dynamic>>[];
+    return PromotionDetail(
+      videoUrl: _s(d['video_url']),
+      startsAt: d['starts_at'] is String
+          ? DateTime.tryParse(d['starts_at'] as String)
+          : null,
+      endsAt: d['ends_at'] is String
+          ? DateTime.tryParse(d['ends_at'] as String)
+          : null,
+      units: units,
+    );
   }
 
   Future<List<AreaItem>> areas() async {

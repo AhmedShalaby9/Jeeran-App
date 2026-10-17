@@ -19,6 +19,7 @@ import 'all_developers_page.dart';
 import 'filter_sheet.dart';
 import 'widgets/list_shimmers.dart';
 import 'launches_page.dart';
+import 'promotion_page.dart';
 import 'widgets/search_widgets.dart';
 
 enum _View { browse, entry, results }
@@ -258,13 +259,7 @@ class _SearchHomeState extends State<SearchHome> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (ctx) => LaunchesPage(
-          api: _api,
-          onOpen: (p) {
-            Navigator.pop(ctx);
-            _pickPromotion(p);
-          },
-        ),
+        builder: (ctx) => LaunchesPage(api: _api, onOpen: _openPromotion),
       ),
     );
   }
@@ -278,9 +273,18 @@ class _SearchHomeState extends State<SearchHome> {
     ),
   );
 
+  /// Tapping a launch in the Search rail narrows this screen to its units.
   void _pickPromotion(PromotionItem p) => _apply(
     SearchFilters.forPromotion(p, ar: isArabic(context)),
     toResults: true,
+  );
+
+  /// A launch or offer opens its own page (units, dates, compound) — not a search.
+  void _openPromotion(PromotionItem p) => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => PromotionPage(item: p, api: _api),
+    ),
   );
 
   // ── build ──
@@ -423,7 +427,9 @@ class _SearchHomeState extends State<SearchHome> {
         : f.types.map((t) => 'type.$t'.tr()).join(' · ');
     String bedsLabel(String b) =>
         b == '5+' ? 'find.beds_plus'.tr() : 'find.n_beds'.plural(int.parse(b));
-    final deliveryValue = f.delivery == null ? null : deliveryLabel(f.delivery!);
+    final deliveryValue = f.delivery == null
+        ? null
+        : deliveryLabel(f.delivery!);
 
     return SizedBox(
       height: 40,
@@ -477,8 +483,7 @@ class _SearchHomeState extends State<SearchHome> {
             selected: f.delivery,
             options: [
               (null, 'find.any'.tr()),
-              for (final d in SearchOptions.deliveries)
-                (d, deliveryLabel(d)),
+              for (final d in SearchOptions.deliveries) (d, deliveryLabel(d)),
             ],
             onPick: (v) => _apply(f.copyWith(delivery: v)),
           ),

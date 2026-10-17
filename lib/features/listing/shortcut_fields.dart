@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/storage/app_storage.dart';
 import '../../core/widgets/jv2.dart';
 import 'listing_api.dart';
 import 'listing_draft.dart';
@@ -146,13 +147,25 @@ class _FieldSheetState extends State<_FieldSheet> {
           const SizedBox(height: 16),
           ChipPicker(
             label: 'listing.f_purpose'.tr(),
-            cols: 2,
+            cols: 3,
             value: _d.status,
             options: [
               ('for_sale', 'listing.sale'.tr()),
               ('for_rent', 'listing.rent'.tr()),
+              ('for_rent_furnished', 'listing.rent_furnished'.tr()),
             ],
             onChanged: (v) => _set('status', () => _d.status = v ?? 'for_sale'),
+          ),
+          const SizedBox(height: 16),
+          ChipPicker(
+            label: 'listing.f_sale_type'.tr(),
+            cols: 2,
+            value: _d.effectiveListingType(admin: AppStorage.isAdmin),
+            options: [
+              for (final t in ListingDraft.listingTypes)
+                (t, 'prop.sale_$t'.tr()),
+            ],
+            onChanged: (v) => _set('sale_type', () => _d.listingType = v),
           ),
         ];
       case CardField.beds:
@@ -219,7 +232,7 @@ class _FieldSheetState extends State<_FieldSheet> {
                   x,
                   x == 'ready'
                       ? 'listing.d_ready'.tr()
-                      : (x == '2029' ? '2029+' : x),
+                      : (x == ListingDraft.deliveries.last ? '$x+' : x),
                 ),
             ],
             onChanged: (v) => _set('delivery', () => _d.delivery = v),

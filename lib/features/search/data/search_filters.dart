@@ -8,6 +8,8 @@ import 'search_api.dart' show PromotionItem;
 class SearchFilters extends Equatable {
   final String q;
   final String? status; // for_sale | for_rent | for_rent_furnished
+  final String?
+  saleType; // primary (from the developer) | resale (from an owner)
   final Set<String> types;
   final String? beds; // '3' | '5+'
   final String? baths;
@@ -31,13 +33,15 @@ class SearchFilters extends Equatable {
   final bool verifiedOnly;
   final bool launch; // developer launches only
   final bool offer; // units with an offer only
-  final String? maxDown; // the biggest down payment (%) the buyer accepts: 0 | 5 | 10 | 20
+  final String?
+  maxDown; // the biggest down payment (%) the buyer accepts: 0 | 5 | 10 | 20
   final String? minYears; // the shortest instalment length (years): 5 | 8 | 10
   final String sort; // newest | price_asc | price_desc | largest | discount
 
   const SearchFilters({
     this.q = '',
     this.status,
+    this.saleType,
     this.types = const {},
     this.beds,
     this.baths,
@@ -75,12 +79,19 @@ class SearchFilters extends Equatable {
           compoundName: p.compoundName(ar),
         );
 
-  static const sorts = ['newest', 'price_asc', 'price_desc', 'largest', 'discount'];
+  static const sorts = [
+    'newest',
+    'price_asc',
+    'price_desc',
+    'largest',
+    'discount',
+  ];
 
   /// Query parameters for `/properties`, `/properties/count` and `/properties/relax`.
   Map<String, dynamic> toQuery() => {
     if (q.trim().isNotEmpty) 'q': q.trim(),
     if (status != null) 'status': status,
+    if (saleType != null) 'listing_type': saleType,
     if (types.isNotEmpty) 'type': types.join(','),
     if (beds != null) 'bedrooms': beds,
     if (baths != null) 'bathrooms': baths,
@@ -121,6 +132,7 @@ class SearchFilters extends Equatable {
     var n = 0;
     if (q.trim().isNotEmpty) n++;
     if (status != null) n++;
+    if (saleType != null) n++;
     n += types.length;
     if (beds != null) n++;
     if (baths != null) n++;
@@ -148,6 +160,7 @@ class SearchFilters extends Equatable {
   SearchFilters copyWith({
     String? q,
     Object? status = _nil,
+    Object? saleType = _nil,
     Set<String>? types,
     Object? beds = _nil,
     Object? baths = _nil,
@@ -177,6 +190,7 @@ class SearchFilters extends Equatable {
   }) => SearchFilters(
     q: q ?? this.q,
     status: status == _nil ? this.status : status as String?,
+    saleType: saleType == _nil ? this.saleType : saleType as String?,
     types: types ?? this.types,
     beds: beds == _nil ? this.beds : beds as String?,
     baths: baths == _nil ? this.baths : baths as String?,
@@ -216,6 +230,7 @@ class SearchFilters extends Equatable {
     'q' => copyWith(q: ''),
     'type' => copyWith(types: const {}),
     'status' => copyWith(status: null),
+    'listing_type' => copyWith(saleType: null),
     'promotion' => copyWith(promotionId: null, promotionName: null),
     'compound' => copyWith(compoundId: null, compoundName: null),
     'developer' => copyWith(developerId: null, developerName: null),
@@ -242,6 +257,7 @@ class SearchFilters extends Equatable {
   Map<String, dynamic> toJson() => {
     'q': q,
     'status': status,
+    'saleType': saleType,
     'types': types.toList(),
     'beds': beds,
     'baths': baths,
@@ -278,6 +294,7 @@ class SearchFilters extends Equatable {
     return SearchFilters(
       q: s(j['q']) ?? '',
       status: s(j['status']),
+      saleType: s(j['saleType']),
       types: strings(j['types']),
       beds: s(j['beds']),
       baths: s(j['baths']),
@@ -313,6 +330,7 @@ class SearchFilters extends Equatable {
   List<Object?> get props => [
     q,
     status,
+    saleType,
     types,
     beds,
     baths,
@@ -343,6 +361,7 @@ class SearchOptions {
   SearchOptions._();
 
   static const statuses = ['for_sale', 'for_rent', 'for_rent_furnished'];
+  static const saleTypes = ['primary', 'resale'];
   static const types = [
     'chalet',
     'villa',
@@ -373,7 +392,15 @@ class SearchOptions {
     'land',
   ];
   static const counts = ['1', '2', '3', '4', '5+'];
-  static const deliveries = ['ready', '2026', '2027', '2028', '2029', '2030', '2031+'];
+  static const deliveries = [
+    'ready',
+    '2026',
+    '2027',
+    '2028',
+    '2029',
+    '2030',
+    '2031+',
+  ];
   static const downPayments = ['0', '5', '10', '20'];
   static const instalmentYears = ['5', '8', '10'];
   static const finishings = [

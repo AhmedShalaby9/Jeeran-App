@@ -247,7 +247,8 @@ void main() {
           find.text('you.my_properties_meta'.tr(args: ['18', '2'])),
           findsOneWidget,
         );
-        expect(find.text('you.ads_meta'.plural(3)), findsOneWidget);
+        expect(find.text('more.ai_ads'.tr()), findsNothing); // no AI-ad entry on the profile
+        expect(find.text('you.ads_meta'.plural(3)), findsNothing);
         expect(find.text('you.upsell_cta'.tr()), findsNothing);
 
         // plenty of room: the button reads Manage, no warning line

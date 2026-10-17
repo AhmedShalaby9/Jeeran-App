@@ -2,7 +2,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/jv2.dart';
-import '../../explore/presentation/widgets/explore_widgets.dart' show chevronIcon;
+import '../../explore/presentation/widgets/explore_widgets.dart'
+    show chevronIcon;
 import '../../compounds/presentation/widgets/page_widgets.dart';
 import '../data/search_api.dart';
 import 'offers_page.dart';
@@ -92,7 +93,12 @@ class _LaunchesPageState extends State<LaunchesPage> {
                   )
                 : _all == null
                 ? ListView(
-                    padding: const EdgeInsets.fromLTRB(kSearchPad, 16, kSearchPad, 30),
+                    padding: const EdgeInsets.fromLTRB(
+                      kSearchPad,
+                      16,
+                      kSearchPad,
+                      30,
+                    ),
                     physics: const NeverScrollableScrollPhysics(),
                     children: const [LaunchCardShimmer(count: 4)],
                   )

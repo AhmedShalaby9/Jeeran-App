@@ -289,7 +289,12 @@ class _OffersPageState extends State<OffersPage> {
                   )
                 : _items.isEmpty && _loading
                 ? ListView(
-                    padding: const EdgeInsets.fromLTRB(kSearchPad, 16, kSearchPad, 30),
+                    padding: const EdgeInsets.fromLTRB(
+                      kSearchPad,
+                      16,
+                      kSearchPad,
+                      30,
+                    ),
                     physics: const NeverScrollableScrollPhysics(),
                     children: const [UnitCardShimmer(count: 4)],
                   )

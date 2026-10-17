@@ -1243,6 +1243,8 @@ List<(String, SearchFilters)> activeChips(
     add('type.$t'.tr(), f.copyWith(types: {...f.types}..remove(t)));
   }
   if (f.status != null) add('find.st_${f.status}'.tr(), f.without('status'));
+  if (f.saleType != null)
+    add('prop.sale_${f.saleType}'.tr(), f.without('listing_type'));
   if (f.minPrice != null && f.maxPrice != null) {
     add(
       'find.c_price_range'.tr(

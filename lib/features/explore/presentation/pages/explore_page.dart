@@ -15,9 +15,8 @@ import '../../../search/presentation/widgets/search_widgets.dart'
     show DevRailCard;
 import '../../../search/presentation/all_developers_page.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../search/presentation/search_home.dart';
 import '../../../search/presentation/launches_page.dart';
-import '../../../search/data/search_filters.dart';
+import '../../../search/presentation/promotion_page.dart';
 import '../../../search/data/search_api.dart';
 import '../../../listing/shortcut_hub.dart';
 import '../../../../core/storage/app_storage.dart';
@@ -34,6 +33,9 @@ import '../widgets/explore_widgets.dart';
 class ExplorePage extends StatelessWidget {
   const ExplorePage({super.key});
 
+  /// Bumped when the Home tab is tapped while Home is already showing: the feed scrolls back to the top.
+  static final scrollToTop = ValueNotifier<int>(0);
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -43,8 +45,37 @@ class ExplorePage extends StatelessWidget {
   }
 }
 
-class _ExploreView extends StatelessWidget {
+class _ExploreView extends StatefulWidget {
   const _ExploreView();
+
+  @override
+  State<_ExploreView> createState() => _ExploreViewState();
+}
+
+class _ExploreViewState extends State<_ExploreView> {
+  final _scroll = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    ExplorePage.scrollToTop.addListener(_toTop);
+  }
+
+  @override
+  void dispose() {
+    ExplorePage.scrollToTop.removeListener(_toTop);
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _toTop() {
+    if (!_scroll.hasClients || _scroll.offset <= 0) return;
+    _scroll.animateTo(
+      0,
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.easeOutCubic,
+    );
+  }
 
   /// "See all" on New launches: every live launch and offer, with the All / Launches / Offers tabs.
   /// Tapping one shows its units in the Search tab.
@@ -81,14 +112,14 @@ class _ExploreView extends StatelessWidget {
         builder: (ctx) => LaunchesPage(
           initialTab: tab,
           api: SearchApi(sl<ApiClient>()),
-          onOpen: (p) {
-            Navigator.pop(ctx);
-            SearchHome.incoming.value = SearchFilters.forPromotion(
-              p,
-              ar: isArabic(context),
-            );
-            MainPage.switchTab(MainPage.tabSearch);
-          },
+          // a launch or offer opens its own page, over the list so Back returns to it
+          onOpen: (p) => Navigator.push(
+            ctx,
+            MaterialPageRoute(
+              builder: (_) =>
+                  PromotionPage(item: p, api: SearchApi(sl<ApiClient>())),
+            ),
+          ),
         ),
       ),
     );
@@ -287,6 +318,7 @@ class _ExploreView extends StatelessWidget {
     ];
 
     return ListView.separated(
+      controller: _scroll,
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.only(top: 20, bottom: 30),
       itemCount: blocks.length,
