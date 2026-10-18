@@ -25,7 +25,7 @@ void main() async {
   await EasyLocalization.ensureInitialized();
   await di.init();
   Bloc.observer = AppBlocObserver();
-  _registerFcmToken().catchError((e) => debugPrint('FCM registration failed: $e'));
+  _registerFcmToken().catchError((e) => debugPrint('FCM registration failed: $e') );
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ar')],
