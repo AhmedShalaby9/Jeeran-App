@@ -16,6 +16,7 @@ import '../../voice/voice_api.dart';
 import '../../voice/voice_services.dart';
 import '../ask/ask_api.dart';
 import '../ask/ask_view.dart';
+import '../ask/ask_no_match.dart';
 import '../ask/ask_widgets.dart';
 import 'ask_scope_api.dart';
 
@@ -1068,6 +1069,11 @@ class _AssistantBubble extends StatelessWidget {
                 enabled: canAnswer,
                 onSend: onAnswer,
               ),
+            ),
+          if (refs.noMatch != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: AskNoMatchCard(data: refs.noMatch!),
             ),
           if (refs.actions.isNotEmpty)
             Padding(

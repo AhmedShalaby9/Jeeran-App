@@ -3,6 +3,7 @@
   static const String appSettings = '/settings';
   static const String contact = '/contact';
   static const String callRequests = '/call-requests';
+  static const String savedRequests = '/saved-requests';
   static const String meProfile = '/me/profile';
   static const String meContactPhone = '/me/contact-phone';
 

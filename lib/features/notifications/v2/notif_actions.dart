@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/di/injection_container.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/jv2.dart';
+import '../../admin/presentation/pages/admin_call_requests_page.dart';
 import '../../ai_ads/presentation/pages/ai_ads_page.dart';
 import '../../compounds/presentation/pages/compound_page.dart';
 import '../../developers/presentation/pages/developer_page.dart';
@@ -66,6 +67,15 @@ NotifAction? actionFor(InboxItem n, {required bool ar}) {
       );
     case 'ad':
       return NotifAction('notif.a_open_ad', (c) => _push(c, const AiAdsPage()));
+    case 'general':
+      // sent to admins when a buyer asks for a call (stored in English whatever language they read)
+      if (n.titleEn == 'New call request') {
+        return NotifAction(
+          'notif.a_open_call_requests',
+          (c) => _push(c, const AdminCallRequestsPage()),
+        );
+      }
+      return null;
     default:
       return null;
   }

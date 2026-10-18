@@ -11,6 +11,7 @@ import 'package:jeeran_flutter/core/network/api_client.dart';
 import 'package:jeeran_flutter/features/listing/listing_api.dart';
 import 'package:jeeran_flutter/features/listing/listing_draft.dart';
 import 'package:jeeran_flutter/features/listing/alert_shortcut_page.dart';
+import 'package:jeeran_flutter/features/listing/listing_checklist.dart';
 import 'package:jeeran_flutter/features/listing/listing_flow.dart';
 import 'package:jeeran_flutter/features/listing/price_alert_api.dart';
 import 'package:jeeran_flutter/features/listing/price_shortcut_page.dart';
@@ -351,6 +352,70 @@ class _Gallery extends ImagePickerPlatform {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   ImagePickerPlatform.instance = _Gallery();
+
+  test('type-specific areas: garden for flats/chalets/duplexes, plot for villas, outdoor for shops', () {
+    Map<String, dynamic> body(ListingDraft d) {
+      d
+        ..compound = _marassi
+        ..size = '120'
+        ..price = '5,000,000'
+        ..title = 'T'
+        ..description = 'D';
+      return d.toBody(images: ['a'], ar: false, admin: false);
+    }
+
+    // an apartment says whether it is a ground-floor unit with a garden, then how big
+    var b = body(ListingDraft()..type = 'apartment'..groundGarden = true..garden = '45');
+    expect(b['has_garden'], true);
+    expect(b['garden_size'], 45);
+    b = body(ListingDraft()..type = 'duplex'..groundGarden = false..garden = '45');
+    expect(b['has_garden'], false);
+    expect(b.containsKey('garden_size'), isFalse); // "no garden" sends no size
+    b = body(ListingDraft()..type = 'chalet');
+    expect(b.containsKey('has_garden'), isFalse); // not answered: nothing sent
+
+    // every kind of villa: the plot next to the built-up area
+    for (final t in ListingDraft.villaTypes) {
+      b = body(ListingDraft()..type = t..land = '400');
+      expect(b['land_size'], 400, reason: t);
+      expect(b['size'], 120, reason: t);
+    }
+    expect(body(ListingDraft()..type = 'apartment'..land = '400').containsKey('land_size'), isFalse);
+
+    // a shop: an outdoor area or not, and its size
+    b = body(ListingDraft()..type = 'shop'..outdoor = true..outdoorSize = '30');
+    expect(b['has_outdoor'], true);
+    expect(b['outdoor_size'], 30);
+    b = body(ListingDraft()..type = 'shop'..outdoor = false..outdoorSize = '30');
+    expect(b['has_outdoor'], false);
+    expect(b.containsKey('outdoor_size'), isFalse);
+
+    // they survive a saved draft
+    final back = ListingDraft.fromStore((ListingDraft()..type = 'shop'..outdoor = true..outdoorSize = '30'..land = '9'..groundGarden = true).toStore());
+    expect((back.outdoor, back.outdoorSize, back.land, back.groundGarden), (true, '30', '9', true));
+  });
+
+  test('what the chat understood about areas fills the draft and shows in the checklist', () {
+    final villa = ListingDraft()..type = 'villa';
+    villa.apply({'land_size': 450, 'size': 300}, null, ['land_size', 'size']);
+    expect((villa.land, villa.size), ('450', '300'));
+    expect(villa.ai, contains('land'));
+    expect(checklistRows(villa, admin: false, ar: false, paymentSet: false).any((r) => r.key == 'land' && r.value == '450 m²'), isTrue);
+
+    final flat = ListingDraft()..type = 'apartment';
+    flat.apply({'garden_size': 40}, null, ['garden_size']); // a size alone means it has a garden
+    expect((flat.groundGarden, flat.garden), (true, '40'));
+    expect(checklistRows(flat, admin: false, ar: false, paymentSet: false).firstWhere((r) => r.key == 'garden').value, endsWith('40 m²'));
+    flat.apply({'has_garden': false}, null, ['has_garden']);
+    expect(flat.groundGarden, false);
+
+    final shop = ListingDraft()..type = 'shop';
+    shop.apply({'has_outdoor': true, 'outdoor_size': 25}, null, ['has_outdoor', 'outdoor_size']);
+    expect((shop.outdoor, shop.outdoorSize), (true, '25'));
+    expect(checklistRows(shop, admin: false, ar: false, paymentSet: false).firstWhere((r) => r.key == 'outdoor').value, endsWith('25 m²'));
+    // and the parser gets them back with the next sentence
+    expect(shop.toParserJson()['outdoor_size'], 25);
+  });
 
   test('a resale gives its down payment as an amount and its price is the total contract value', () {
     final d = ListingDraft()

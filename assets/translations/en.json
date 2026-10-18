@@ -597,6 +597,22 @@
     "section_title": "Administration",
     "title": "Admin Side",
     "manage_news": "Manage News",
+    "call_requests": "Call Requests",
+    "call_requests_subtitle": "Buyers who asked Jeeran to call them",
+    "cr_new": "New",
+    "cr_contacted": "Contacted",
+    "cr_closed": "Closed",
+    "cr_all": "All",
+    "cr_empty": "No requests here.",
+    "cr_call": "Call",
+    "cr_note": "Note",
+    "cr_note_hint": "Visible to admins only",
+    "cr_mark_contacted": "Mark contacted",
+    "cr_mark_closed": "Close",
+    "cr_reopen": "Reopen",
+    "cr_save": "Save",
+    "cr_unverified": "Not verified",
+    "cr_unit": "Unit #{}",
     "manage_news_subtitle": "Create, edit, or delete news articles",
     "seller_requests": "Seller Requests",
     "seller_requests_subtitle": "Review and approve seller applications",
@@ -649,7 +665,10 @@
     "files": "files",
     "add_media": "Add Photos / Video",
     "pick_images": "Choose Images from Gallery",
-    "pick_video": "Choose Video from Gallery"
+    "pick_video": "Choose Video from Gallery",
+    "unpublish": "Unpublish",
+    "action_failed": "That didn't work. Try again.",
+    "load_failed": "Couldn't load the list."
   },
   "profile": {
     "title": "My Profile",
@@ -1040,7 +1059,11 @@
     "contact_call": "Call",
     "contact_whatsapp": "WhatsApp",
     "down_amount_years": "EGP {} down · {} years",
-    "down_amount_only": "EGP {} down"
+    "down_amount_only": "EGP {} down",
+    "f_ground_garden": "Ground floor with garden",
+    "f_land": "Land area",
+    "f_outdoor": "Outdoor area",
+    "f_outdoor_size": "Outdoor area size"
   },
   "notif": {
     "title": "Notifications",
@@ -1072,6 +1095,7 @@
     "a_upgrade": "View plans",
     "a_read_reason": "Read reason",
     "a_open_news": "Open news",
+    "a_open_call_requests": "Open call requests",
     "a_open_ad": "Open ad",
     "reason_title": "Why it wasn’t approved",
     "ago_now": "now",
@@ -1163,7 +1187,21 @@
     "send_failed": "Couldn’t get an answer. Try again.",
     "load_failed": "Couldn’t load your questions.",
     "retry": "Try again",
-    "limit": "You’ve used all your questions for this hour. Try again in {} min."
+    "limit": "You’ve used all your questions for this hour. Try again in {} min.",
+    "nm_title": "Nothing matches yet",
+    "nm_body": "Want us to tell you when a unit like this becomes available?",
+    "nm_notify": "Notify me",
+    "nm_skip": "Not now",
+    "nm_saved_title": "We'll let you know",
+    "nm_saved_body": "As soon as a matching unit is listed, you'll get a notification. You can turn this off in your notification settings.",
+    "nm_failed": "Couldn't save that. Please try again.",
+    "nm_sign_in": "Sign in to get notified when it's available.",
+    "nm_primary": "Developer",
+    "nm_resale": "Resale",
+    "nm_beds": "{n} bedrooms",
+    "nm_baths": "{n} bathrooms",
+    "nm_up_to": "Up to {v}",
+    "nm_from": "From {v}"
   },
   "you": {
     "role_buyer": "Buyer",
@@ -1210,7 +1248,8 @@
     "footer": "Jeeran {} · Egypt",
     "load_failed": "Couldn’t load your account.",
     "retry": "Try again",
-    "role_customer": "Customer"
+    "role_customer": "Customer",
+    "alerts_meta": "Searches we'll tell you about"
   },
   "voice": {
     "title": "Talk to Jeeran",
@@ -1512,7 +1551,13 @@
     "f_contact_email": "Email",
     "f_contract_total": "Total contract value",
     "f_down_amount": "Down payment amount",
-    "plan_text_amount": "EGP {} down · {} years"
+    "plan_text_amount": "EGP {} down · {} years",
+    "yes": "Yes",
+    "no": "No",
+    "f_ground_garden": "Ground floor with a garden?",
+    "f_land": "Land area",
+    "f_outdoor": "Does the shop have an outdoor area?",
+    "f_outdoor_size": "Outdoor area"
   },
   "follow": {
     "follow_short": "Follow",
@@ -1660,5 +1705,13 @@
       "other": "{} units in this offer"
     },
     "whole_compound": "This covers all of {name}. Open the compound to see its units and prices."
+  },
+  "alerts": {
+    "title": "My alerts",
+    "empty": "No alerts yet. When the assistant can't find what you asked for, tap “Notify me” and we'll tell you when it's available.",
+    "since": "Since {}",
+    "stop": "Stop",
+    "stop_failed": "Couldn't stop that alert. Try again.",
+    "load_failed": "Couldn't load your alerts."
   }
 }

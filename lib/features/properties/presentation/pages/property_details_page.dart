@@ -360,7 +360,8 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                   const SizedBox(height: 4),
                   Text(
                     [
-                      if (d.pricePerM2 != null)
+                      // a resale price is the seller's total: no price per m²
+                      if (d.pricePerM2 != null && d.listingType != 'resale')
                         'prop.per_m2'.tr(
                           args: [nf.format(d.pricePerM2!.round())],
                         ),
@@ -809,7 +810,11 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
         ('unit.d_building'.tr(), d.building.pick(_ar)),
       ('prop.f_purpose'.tr(), 'find.st_${d.status}'.tr()),
       ('prop.f_sale_type'.tr(), 'prop.sale_${d.listingType}'.tr()),
+      if (d.land != null) ('prop.f_land'.tr(), m2(d.land!)),
       if (d.size != null) ('prop.f_built'.tr(), m2(d.size!)),
+      if (d.hasOutdoor != null) ('prop.f_outdoor'.tr(), (d.hasOutdoor! ? 'listing.yes' : 'listing.no').tr()),
+      if (d.outdoor != null) ('prop.f_outdoor_size'.tr(), m2(d.outdoor!)),
+      if (d.hasGarden != null) ('prop.f_ground_garden'.tr(), (d.hasGarden! ? 'listing.yes' : 'listing.no').tr()),
       if (d.garden != null) ('prop.f_garden'.tr(), m2(d.garden!)),
       if (d.beds != null) ('prop.f_beds'.tr(), '${d.beds}'),
       if (d.baths != null) ('prop.f_baths'.tr(), '${d.baths}'),

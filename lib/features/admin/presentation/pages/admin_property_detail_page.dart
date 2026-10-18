@@ -329,8 +329,7 @@ class _AdminPropertyDetailPageState extends State<AdminPropertyDetailPage> {
               ),
             ),
 
-            // Bottom action bar (only for pending)
-            if (!_property.isApproved)
+            // Bottom action bar: decide a pending unit, or pull an approved one back
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                 decoration: const BoxDecoration(
@@ -350,10 +349,11 @@ class _AdminPropertyDetailPageState extends State<AdminPropertyDetailPage> {
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: Text('admin.reject'.tr()),
+                        child: Text((_property.isApproved ? 'admin.unpublish' : 'admin.reject').tr()),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    if (!_property.isApproved) const SizedBox(width: 12),
+                    if (!_property.isApproved)
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () => _showApproveDialog(context),

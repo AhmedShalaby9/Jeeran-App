@@ -97,6 +97,22 @@ class AskPlanRef {
   }
 }
 
+/// A search that found nothing: what was asked, so the person can ask to be told when something fits.
+class AskNoMatch {
+  final Map<String, dynamic> filters;
+  final Map<String, String> names; // compound_en / compound_ar / developer_en / developer_ar
+  final String text; // what the person typed
+  const AskNoMatch(this.filters, this.names, this.text);
+
+  static AskNoMatch? fromJson(dynamic j) {
+    if (j is! Map || j['filters'] is! Map) return null;
+    final f = Map<String, dynamic>.from(j['filters'] as Map);
+    if (f.isEmpty) return null;
+    final n = j['names'] is Map ? Map<String, dynamic>.from(j['names'] as Map) : const <String, dynamic>{};
+    return AskNoMatch(f, {for (final e in n.entries) if (_s(e.value) != null) e.key: _s(e.value)!}, _s(j['text']) ?? '');
+  }
+}
+
 /// What an answer was built on: listings, compounds and news the assistant read.
 class AskRefs {
   final List<Map<String, dynamic>> properties;
@@ -110,6 +126,9 @@ class AskRefs {
   /// The listing checklist, when the person asked the assistant to create a listing.
   final DraftReply? listing;
 
+  /// Set when the search found nothing: the "tell me when it's available" card.
+  final AskNoMatch? noMatch;
+
   const AskRefs({
     this.properties = const [],
     this.projects = const [],
@@ -119,6 +138,7 @@ class AskRefs {
     this.actions = const [],
     this.questions = const [],
     this.listing,
+    this.noMatch,
   });
   static const none = AskRefs();
 
@@ -129,6 +149,7 @@ class AskRefs {
     List<Map<String, dynamic>> list(dynamic v) =>
         v is List ? v.whereType<Map<String, dynamic>>().toList() : const [];
     return AskRefs(
+      noMatch: AskNoMatch.fromJson(j['no_match']),
       listing: j['listing'] is Map
           ? DraftReply.fromJson(Map<String, dynamic>.from(j['listing'] as Map))
           : null,

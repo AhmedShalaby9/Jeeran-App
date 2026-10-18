@@ -18,6 +18,7 @@ import '../more/presentation/pages/contact_us_page.dart';
 import '../notifications/presentation/pages/notification_settings_page.dart';
 // PACKAGES DISABLED: import '../packages/presentation/pages/packages_destination.dart';
 import '../profile/profile_page.dart';
+import '../saved_requests/my_alerts_page.dart';
 import '../properties/presentation/pages/add_property_page.dart';
 import '../properties/presentation/pages/my_properties_page.dart';
 import 'you_api.dart';
@@ -375,6 +376,12 @@ class _YouPageState extends State<YouPage> {
               ),
               badge: s.unread > 0 ? '${s.unread}' : null,
               onTap: () => _go(const NotificationSettingsPage()),
+            ),
+            _Row(
+              icon: Icons.notifications_active_outlined,
+              label: 'alerts.title'.tr(),
+              meta: 'you.alerts_meta'.tr(),
+              onTap: () => _go(const MyAlertsPage()),
             ),
           ],
         ),

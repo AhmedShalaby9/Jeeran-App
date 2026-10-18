@@ -54,6 +54,10 @@ class PropertyPageData {
   final double? pricePerM2;
   final double? size;
   final double? garden;
+  final double? land; // villas: the plot
+  final bool? hasOutdoor; // shops
+  final double? outdoor;
+  final bool? hasGarden; // ground floor with a garden (apartments, chalets, duplexes)
   final int? beds;
   final int? baths;
   final String propertyType;
@@ -115,6 +119,10 @@ class PropertyPageData {
     required this.pricePerM2,
     required this.size,
     required this.garden,
+    this.hasGarden,
+    this.land,
+    this.hasOutdoor,
+    this.outdoor,
     required this.beds,
     required this.baths,
     required this.propertyType,
@@ -203,6 +211,10 @@ class PropertyPageData {
       pricePerM2: _d(j['price_per_m2']),
       size: _d(j['size']),
       garden: _d(j['garden_size']),
+      hasGarden: j['has_garden'] is bool ? j['has_garden'] as bool : null,
+      land: _d(j['land_size']),
+      hasOutdoor: j['has_outdoor'] is bool ? j['has_outdoor'] as bool : null,
+      outdoor: _d(j['outdoor_size']),
       beds: _i(j['bedrooms']),
       baths: _i(j['bathrooms']),
       propertyType: _s(j['property_type']) ?? '',

@@ -40,7 +40,7 @@ class _AdminPropertiesViewState extends State<_AdminPropertiesView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         _fetchForTab(_tabController.index);
@@ -55,7 +55,7 @@ class _AdminPropertiesViewState extends State<_AdminPropertiesView>
   }
 
   void _fetchForTab(int index) {
-    final isApproved = index == 1; // tab 0 = pending, tab 1 = approved
+    final isApproved = index == 1; // tab 0 = pending, tab 1 = approved, tab 2 = rejected (both not approved)
     context.read<PropertiesBloc>().add(
           FetchPropertiesEvent(
             PropertyFilterParams(
@@ -81,6 +81,7 @@ class _AdminPropertiesViewState extends State<_AdminPropertiesView>
           tabs: [
             Tab(text: 'admin.tab_pending'.tr()),
             Tab(text: 'admin.tab_approved'.tr()),
+            Tab(text: 'admin.tab_rejected'.tr()),
           ],
         ),
       ),
@@ -118,15 +119,20 @@ class _AdminPropertiesViewState extends State<_AdminPropertiesView>
             );
           }
           if (state is PropertiesLoaded) {
-            if (state.properties.isEmpty) {
+            // not-approved units are either waiting for a decision or were turned down (they carry a reason)
+            final tab = _tabController.index;
+            final shown = tab == 1
+                ? state.properties
+                : state.properties.where((p) => (p.rejectionReason != null && p.rejectionReason!.isNotEmpty) == (tab == 2)).toList();
+            if (shown.isEmpty) {
               return Center(child: Text('admin.no_properties'.tr()));
             }
             return ListView.separated(
               padding: const EdgeInsets.all(16),
-              itemCount: state.properties.length,
+              itemCount: shown.length,
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
-                final property = state.properties[index];
+                final property = shown[index];
                 final bloc = context.read<PropertiesBloc>();
                 return GestureDetector(
                   onTap: () async {

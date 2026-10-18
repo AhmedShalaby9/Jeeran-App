@@ -8,6 +8,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../core/widgets/jv2.dart';
 import '../../explore/presentation/widgets/explore_widgets.dart';
 import '../../listing/listing_checklist.dart';
+import 'ask_no_match.dart';
 import '../../units/data/unit_format.dart';
 import '../../units/presentation/unit_widgets.dart';
 import '../../../core/di/injection_container.dart';
@@ -647,6 +648,11 @@ class AskAssistantMsg extends StatelessWidget {
                 if (done && refs.listing != null) ...[
                   const SizedBox(height: 14),
                   ListingChecklistCard(reply: refs.listing!, said: saidAbout),
+                ],
+                // nothing matched: offer to tell them when something fits
+                if (done && refs.noMatch != null) ...[
+                  const SizedBox(height: 14),
+                  AskNoMatchCard(data: refs.noMatch!),
                 ],
                 // what the assistant did for the person, each with an Undo
                 if (done && refs.actions.isNotEmpty) ...[

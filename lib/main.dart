@@ -21,23 +21,17 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.setEnvironment(AppEnvironment.staging);
   await AppStorage.init();
-  NotificationService.instance.init().catchError(
-    (e) => debugPrint('[FCM] NotificationService init failed: $e'),
-  );
+  NotificationService.instance.init().catchError((e) => debugPrint('[FCM] NotificationService init failed: $e'));
   await EasyLocalization.ensureInitialized();
   await di.init();
   Bloc.observer = AppBlocObserver();
-  _registerFcmToken().catchError(
-    (e) => debugPrint('FCM registration failed: $e'),
-  );
+  _registerFcmToken().catchError((e) => debugPrint('FCM registration failed: $e'));
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en'), Locale('ar')],
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),
-      startLocale: AppStorage.language != null
-          ? Locale(AppStorage.language!)
-          : const Locale('en'),
+      startLocale: AppStorage.language != null ? Locale(AppStorage.language!) : const Locale('en'),
       child: const JeeranApp(),
     ),
   );
@@ -110,9 +104,7 @@ class JeeranApp extends StatelessWidget {
 
   ThemeData _buildTheme(BuildContext context) {
     final isArabic = context.locale.languageCode == 'ar';
-    final textTheme = isArabic
-        ? GoogleFonts.cairoTextTheme()
-        : GoogleFonts.ubuntuTextTheme();
+    final textTheme = isArabic ? GoogleFonts.cairoTextTheme() : GoogleFonts.ubuntuTextTheme();
 
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
@@ -135,10 +127,7 @@ class JeeranApp extends StatelessWidget {
         filled: true,
         fillColor: JV2.surface,
         hintStyle: const TextStyle(color: JV2.inkMute, fontSize: 15),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 15,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: JV2.line),

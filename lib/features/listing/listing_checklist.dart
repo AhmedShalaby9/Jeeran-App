@@ -59,6 +59,30 @@ List<ChecklistRow> checklistRows(
       'listing.f_size'.tr(),
       d.sizeValue == null ? null : '${d.size} m²',
     ),
+    if (d.asksLand && d.landValue != null)
+      ChecklistRow('land', 'listing.f_land'.tr(), '${d.land} m²'),
+    if (d.asksGarden && d.groundGarden != null)
+      ChecklistRow(
+        'garden',
+        'listing.f_ground_garden'.tr(),
+        d.groundGarden!
+            ? [
+                'listing.yes'.tr(),
+                if (d.gardenValue != null) '${d.garden} m²',
+              ].join(' · ')
+            : 'listing.no'.tr(),
+      ),
+    if (d.asksOutdoor && d.outdoor != null)
+      ChecklistRow(
+        'outdoor',
+        'listing.f_outdoor'.tr(),
+        d.outdoor!
+            ? [
+                'listing.yes'.tr(),
+                if (d.outdoorValue != null) '${d.outdoorSize} m²',
+              ].join(' · ')
+            : 'listing.no'.tr(),
+      ),
     if (d.level.trim().isNotEmpty)
       ChecklistRow('floor', 'listing.f_floor'.tr(), d.level),
     if (d.view != null)

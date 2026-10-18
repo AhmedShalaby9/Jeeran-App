@@ -1255,6 +1255,49 @@ class _ListingFlowState extends State<ListingFlow> {
             ..addAll(v);
         }),
       ),
+      if (_d.asksLand)
+        ListingInput(
+          fieldKey: const Key('f-land'),
+          label: 'listing.f_land'.tr(),
+          value: _d.land,
+          suffix: 'm²',
+          numeric: true,
+          optional: true,
+          onChanged: (v) => setState(() => _d.land = v),
+        ),
+      if (_d.asksOutdoor) ...[
+        ChipPicker(
+          label: 'listing.f_outdoor'.tr(),
+          clearable: true,
+          value: _d.outdoor == null ? null : (_d.outdoor! ? 'yes' : 'no'),
+          options: [('yes', 'listing.yes'.tr()), ('no', 'listing.no'.tr())],
+          onChanged: (v) => setState(() {
+            _d.outdoor = v == null ? null : v == 'yes';
+            if (v == 'no') _d.outdoorSize = '';
+          }),
+        ),
+        if (_d.outdoor == true)
+          ListingInput(
+            fieldKey: const Key('f-outdoor-size'),
+            label: 'listing.f_outdoor_size'.tr(),
+            value: _d.outdoorSize,
+            suffix: 'm²',
+            numeric: true,
+            optional: true,
+            onChanged: (v) => setState(() => _d.outdoorSize = v),
+          ),
+      ],
+      if (_d.asksGarden)
+        ChipPicker(
+          label: 'listing.f_ground_garden'.tr(),
+          clearable: true,
+          value: _d.groundGarden == null ? null : (_d.groundGarden! ? 'yes' : 'no'),
+          options: [('yes', 'listing.yes'.tr()), ('no', 'listing.no'.tr())],
+          onChanged: (v) => setState(() {
+            _d.groundGarden = v == null ? null : v == 'yes';
+            if (v == 'no') _d.garden = '';
+          }),
+        ),
       if (_d.hasGarden)
         ListingInput(
           fieldKey: const Key('f-garden'),

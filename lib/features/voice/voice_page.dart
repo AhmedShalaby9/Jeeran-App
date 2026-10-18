@@ -10,6 +10,7 @@ import '../../core/network/api_client.dart';
 import '../../core/widgets/jv2.dart';
 import '../ai_chat/ask/ask_api.dart';
 import '../ai_chat/ask/ask_view.dart';
+import '../ai_chat/ask/ask_no_match.dart';
 import '../ai_chat/ask/ask_widgets.dart';
 import '../compounds/presentation/pages/compound_page.dart';
 import '../explore/presentation/widgets/explore_widgets.dart' show chevronIcon;
@@ -505,6 +506,10 @@ class _VoicePageState extends State<VoicePage>
               if (typed && refs.listing != null) ...[
                 const SizedBox(height: 16),
                 ListingChecklistCard(reply: refs.listing!, said: _heard),
+              ],
+              if (typed && refs.noMatch != null) ...[
+                const SizedBox(height: 16),
+                AskNoMatchCard(data: refs.noMatch!),
               ],
               if (typed && refs.properties.isNotEmpty) ...[
                 const SizedBox(height: 16),

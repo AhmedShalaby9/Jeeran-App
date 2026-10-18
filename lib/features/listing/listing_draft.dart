@@ -61,7 +61,11 @@ class ListingDraft {
   String? delivery; // 'ready' or a year as text
   String? view;
   final Set<String> extras = {}; // roof · beach access · corner unit · parking
-  String garden = ''; // m², for houses and chalets
+  String garden = ''; // m²
+  String land = ''; // m², villas: the plot (size is the built-up area)
+  bool? outdoor; // shops: has an outdoor area (null = not answered)
+  String outdoorSize = ''; // m²
+  bool? groundGarden; // apartments, chalets, duplexes: a ground-floor unit with a garden? (null = not answered)
   String maintenance = ''; // as the seller words it
   String price = '';
   String payment = 'cash'; // cash | installments
@@ -125,12 +129,14 @@ class ListingDraft {
     'villa',
     'townhouse',
     'twinhouse',
-    'chalet',
-    'duplex',
     'penthouse',
     'family_house',
     'cabin',
   ];
+  /// Types where the seller says whether it is a ground-floor unit with a garden, then how big.
+  static const gardenChoiceTypes = ['apartment', 'chalet', 'duplex'];
+  /// Every kind of villa: the plot and the built-up area are both asked.
+  static const villaTypes = ['villa', 'townhouse', 'twinhouse', 'family_house'];
   static const extraFeatures = [
     'roof',
     'beach_access',
@@ -161,7 +167,12 @@ class ListingDraft {
   double? get priceValue => double.tryParse(price.replaceAll(',', '').trim());
   double? get sizeValue => double.tryParse(size.trim());
   double? get gardenValue => double.tryParse(garden.trim());
-  bool get hasGarden => gardenTypes.contains(type);
+  bool get hasGarden => gardenTypes.contains(type) || (gardenChoiceTypes.contains(type) && groundGarden == true);
+  bool get asksLand => villaTypes.contains(type);
+  bool get asksOutdoor => type == 'shop';
+  double? get landValue => double.tryParse(land.trim());
+  double? get outdoorValue => double.tryParse(outdoorSize.trim());
+  bool get asksGarden => gardenChoiceTypes.contains(type);
   bool get isRent => status != 'for_sale';
 
   /// A resale (what the lister is selling is their own contract): the price is the total contract value and the down
@@ -228,6 +239,19 @@ class ListingDraft {
     }
     if (d['size'] is num) size = _trim(d['size'] as num);
     if (d['level'] != null) level = s(d['level'])!;
+    if (d['land_size'] is num) land = _trim(d['land_size'] as num);
+    if (d['garden_size'] is num) garden = _trim(d['garden_size'] as num);
+    if (d['has_garden'] is bool) {
+      groundGarden = d['has_garden'] as bool;
+    } else if (d['garden_size'] is num) {
+      groundGarden = true;
+    }
+    if (d['outdoor_size'] is num) outdoorSize = _trim(d['outdoor_size'] as num);
+    if (d['has_outdoor'] is bool) {
+      outdoor = d['has_outdoor'] as bool;
+    } else if (d['outdoor_size'] is num) {
+      outdoor = true;
+    }
     if (d['finishing'] != null) finishing = s(d['finishing']);
     if (d['delivery'] != null) delivery = s(d['delivery']);
     if (d['view'] != null) view = s(d['view']);
@@ -242,6 +266,9 @@ class ListingDraft {
         'compound_id' => 'compound',
         'bedrooms' => 'bedrooms',
         'down_payment_percent' => 'down',
+        'land_size' => 'land',
+        'garden_size' || 'has_garden' => 'garden',
+        'outdoor_size' || 'has_outdoor' => 'outdoor',
         'installment_years' => 'years',
         final other => other,
       });
@@ -257,6 +284,11 @@ class ListingDraft {
     if (bathroomsSet) 'bathrooms': bathrooms,
     if (sizeValue != null) 'size': sizeValue,
     if (level.trim().isNotEmpty) 'level': level.trim(),
+    if (landValue != null) 'land_size': landValue,
+    if (groundGarden != null) 'has_garden': groundGarden,
+    if (gardenValue != null) 'garden_size': gardenValue,
+    if (outdoor != null) 'has_outdoor': outdoor,
+    if (outdoorValue != null) 'outdoor_size': outdoorValue,
     'finishing': ?finishing,
     if (delivery != null)
       'delivery': delivery == 'ready' ? 'ready' : int.tryParse(delivery!),
@@ -333,6 +365,10 @@ class ListingDraft {
       if (!isRent && payment == 'installments' && int.tryParse(years) != null)
         'installment_years': int.parse(years),
       if (view != null || extras.isNotEmpty) 'features': [?view, ...extras],
+      if (asksLand && landValue != null) 'land_size': landValue,
+      if (asksOutdoor && outdoor != null) 'has_outdoor': outdoor,
+      if (asksOutdoor && outdoor == true && outdoorValue != null) 'outdoor_size': outdoorValue,
+      if (asksGarden && groundGarden != null) 'has_garden': groundGarden,
       if (hasGarden && gardenValue != null) 'garden_size': gardenValue,
       if (maintenance.trim().isNotEmpty) 'maintenance_ar': maintenance.trim(),
       if (maintenance.trim().isNotEmpty) 'maintenance_en': maintenance.trim(),
@@ -369,6 +405,10 @@ class ListingDraft {
     'level': level,
     'listingType': listingType,
     'garden': garden,
+    'groundGarden': groundGarden,
+    'land': land,
+    'outdoor': outdoor,
+    'outdoorSize': outdoorSize,
     'maintenance': maintenance,
     'extras': extras.toList(),
     'delivery': delivery,
@@ -405,6 +445,10 @@ class ListingDraft {
     d.level = '${j['level'] ?? ''}';
     d.listingType = j['listingType'] as String?;
     d.garden = '${j['garden'] ?? ''}';
+    d.groundGarden = j['groundGarden'] as bool?;
+    d.land = '${j['land'] ?? ''}';
+    d.outdoor = j['outdoor'] as bool?;
+    d.outdoorSize = '${j['outdoorSize'] ?? ''}';
     d.maintenance = '${j['maintenance'] ?? ''}';
     if (j['extras'] is List)
       d.extras.addAll((j['extras'] as List).whereType<String>());
@@ -475,6 +519,20 @@ class ListingDraft {
     d.extras.addAll(extraFeatures.where(feats.contains));
     final garden = n(j['garden_size']);
     if (garden != null) d.garden = _trim(garden);
+    final land = n(j['land_size']);
+    if (land != null) d.land = _trim(land);
+    final outdoorSize = n(j['outdoor_size']);
+    if (outdoorSize != null) d.outdoorSize = _trim(outdoorSize);
+    if (j['has_outdoor'] is bool) {
+      d.outdoor = j['has_outdoor'] as bool;
+    } else if (outdoorSize != null && outdoorSize > 0) {
+      d.outdoor = true;
+    }
+    if (j['has_garden'] is bool) {
+      d.groundGarden = j['has_garden'] as bool;
+    } else if (garden != null && garden > 0) {
+      d.groundGarden = true; // a size was given: it has a garden
+    }
     d.maintenance =
         s(ar ? j['maintenance_ar'] : j['maintenance_en']) ??
         s(j['maintenance_en']) ??

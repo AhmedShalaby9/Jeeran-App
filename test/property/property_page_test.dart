@@ -261,7 +261,7 @@ void main() {
         expect(tester.takeException(), isNull);
         expect(api.calls.first, 'GET /properties/10');
         expect(find.text(lang == 'ar' ? 'شالية بحر' : 'Sea view chalet'), findsWidgets);
-        expect(find.textContaining('67,391'), findsOneWidget); // per m²
+        expect(find.textContaining('67,391'), findsNothing); // a resale price carries no price per m²
         expect(find.textContaining('MAR-00010'), findsWidgets); // facts row + footer
         expect(find.text('prop.f_garden'.tr()), findsOneWidget);
         expect(find.text('prop.f_maintenance'.tr()), findsOneWidget);
