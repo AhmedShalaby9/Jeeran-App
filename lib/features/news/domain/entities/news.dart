@@ -8,6 +8,8 @@ class News extends Equatable {
   final bool isActive;
   final String publishedAt;
   final String publishedBy;
+  // both languages, for the admin editor (title/content are already localized by the API)
+  final String titleAr, titleEn, contentAr, contentEn;
 
   const News({
     required this.id,
@@ -17,11 +19,15 @@ class News extends Equatable {
     required this.isActive,
     required this.publishedAt,
     required this.publishedBy,
+    this.titleAr = '',
+    this.titleEn = '',
+    this.contentAr = '',
+    this.contentEn = '',
   });
 
   String? get coverMedia => media.isNotEmpty ? media.first : null;
 
   @override
   List<Object?> get props =>
-      [id, title, content, media, isActive, publishedAt, publishedBy];
+      [id, title, content, media, isActive, publishedAt, publishedBy, titleAr, titleEn, contentAr, contentEn];
 }

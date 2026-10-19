@@ -1,3 +1,4 @@
+import '../../../../core/services/app_settings_service.dart';
 import '../widgets/property_shimmer.dart';
 import '../../../units/data/payment_plan.dart';
 import '../../../units/data/unit_format.dart';
@@ -208,13 +209,24 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
     if (cleaned.isNotEmpty) await launchUrl(Uri(scheme: 'tel', path: cleaned));
   }
 
-  Future<void> _whatsapp(String number) async {
+  /// The first WhatsApp message, naming the unit: "Hello, I'm interested in Villa (MAR-00010). Could you give me more details?"
+  String _waText(PropertyPageData d) => 'prop.wa_primary'.tr(
+    args: [
+      d.title.pick(_ar),
+      if (d.referenceCode != null) ' (${d.referenceCode})' else '',
+    ],
+  );
+
+  Future<void> _whatsapp(String number, String text) async {
     final digits = number.replaceAll(RegExp(r'\D'), '');
-    if (digits.isNotEmpty)
+    if (digits.isNotEmpty) {
       await launchUrl(
-        Uri.parse('https://wa.me/$digits'),
+        Uri.parse(
+          'https://wa.me/$digits${text.isEmpty ? '' : '?text=${Uri.encodeComponent(text)}'}',
+        ),
         mode: LaunchMode.externalApplication,
       );
+    }
   }
 
   @override
@@ -284,6 +296,11 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
               RequestCallBar(
                 propertyId: d.id,
                 price: d.price,
+                // WhatsApp the unit's own contact, else Jeeran's number
+                whatsapp: (d.agentWhatsapp ?? '').isNotEmpty
+                    ? d.agentWhatsapp
+                    : AppSettingsService.instance.contactPhone,
+                whatsappText: _waText(d),
                 fromPer: fromPerPeriod(
                   defaultPlan(
                     d.plans,
@@ -297,7 +314,7 @@ class _PropertyDetailsPageState extends State<PropertyDetailsPage> {
                 sellerName: d.agentName,
                 onWhatsapp: (d.agentWhatsapp ?? '').isEmpty
                     ? null
-                    : () => _whatsapp(d.agentWhatsapp!),
+                    : () => _whatsapp(d.agentWhatsapp!, _waText(d)),
                 onCall: (d.agentMobile ?? '').isEmpty
                     ? null
                     : () => _call(d.agentMobile!),

@@ -96,9 +96,9 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
     emit(NewsLoading());
     final result = await repository.updateNews(event.id, {
       'title_ar': event.titleAr,
-      if (event.titleEn != null) 'title_en': event.titleEn,
+      'title_en': event.titleEn, // null clears it
       'content_ar': event.contentAr,
-      if (event.contentEn != null) 'content_en': event.contentEn,
+      'content_en': event.contentEn,
       'is_active': event.isActive,
       'media': allMediaUrls,
     });

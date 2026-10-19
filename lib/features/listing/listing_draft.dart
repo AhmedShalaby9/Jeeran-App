@@ -186,8 +186,9 @@ class ListingDraft {
   }
   double? get downAmountValue =>
       double.tryParse(downAmount.replaceAll(',', '').trim());
+  /// Only Jeeran admins list primary (developer) units: everyone else lists resale, whatever the draft says.
   String effectiveListingType({required bool admin}) =>
-      listingType ?? (admin ? 'primary' : 'resale');
+      admin ? (listingType ?? 'primary') : 'resale';
   bool get noRooms => const ['land', 'shop', 'office', 'clinic'].contains(type);
 
   bool get basicsValid => type != null && compound != null;

@@ -47,10 +47,10 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
   @override
   void initState() {
     super.initState();
-    _titleArCtrl = TextEditingController(text: widget.news?.title ?? '');
-    _titleEnCtrl = TextEditingController();
-    _contentArCtrl = TextEditingController(text: widget.news?.content ?? '');
-    _contentEnCtrl = TextEditingController();
+    _titleArCtrl = TextEditingController(text: widget.news?.titleAr ?? '');
+    _titleEnCtrl = TextEditingController(text: widget.news?.titleEn ?? '');
+    _contentArCtrl = TextEditingController(text: widget.news?.contentAr ?? '');
+    _contentEnCtrl = TextEditingController(text: widget.news?.contentEn ?? '');
     _isActive = widget.news?.isActive ?? true;
     _existingMediaUrls = List<String>.from(widget.news?.media ?? []);
   }

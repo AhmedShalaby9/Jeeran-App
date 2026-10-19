@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/di/injection_container.dart';
 import '../../../core/network/api_client.dart';
@@ -22,6 +23,12 @@ class RequestCallBar extends StatefulWidget {
   final Future<CallerPhone> Function()? loadPhone; // tests inject a fake
   final Future<void> Function(String number)? savePhone; // tests inject a fake
 
+  /// Who to message on WhatsApp: the unit's own contact when it has one, else Jeeran's number from settings.
+  /// Null hides the button.
+  final String? whatsapp;
+  final String? whatsappText; // the first message, naming the unit
+  final Future<void> Function(String number, String text)? openWhatsapp; // tests inject a fake
+
   const RequestCallBar({
     super.key,
     required this.propertyId,
@@ -30,6 +37,9 @@ class RequestCallBar extends StatefulWidget {
     this.send,
     this.loadPhone,
     this.savePhone,
+    this.whatsapp,
+    this.whatsappText,
+    this.openWhatsapp,
   });
 
   @override
@@ -77,6 +87,19 @@ class _RequestCallBarState extends State<RequestCallBar> {
     }
   }
 
+  Future<void> _whatsapp() async {
+    final number = widget.whatsapp;
+    if (number == null) return;
+    final text = widget.whatsappText ?? '';
+    if (widget.openWhatsapp != null) return widget.openWhatsapp!(number, text);
+    final digits = number.replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) return;
+    await launchUrl(
+      Uri.parse('https://wa.me/$digits${text.isEmpty ? '' : '?text=${Uri.encodeComponent(text)}'}'),
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
   Future<CallerPhone> _loadPhone() async {
     final res = await sl<ApiClient>().get(ApiEndpoints.meProfile);
     final d = (res.data['data'] ?? const {}) as Map<String, dynamic>;
@@ -106,6 +129,24 @@ class _RequestCallBarState extends State<RequestCallBar> {
             ),
           ),
           const SizedBox(width: 12),
+          // message the seller on WhatsApp instead of waiting for the call back
+          if (widget.whatsapp != null) ...[
+            GestureDetector(
+              key: const Key('request-whatsapp'),
+              onTap: _whatsapp,
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: JV2.line),
+                ),
+                child: const Icon(Icons.chat_rounded, color: Color(0xFF1FA855), size: 22),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
           JV2PrimaryButton(
             key: const Key('request-call'),
             height: 48,

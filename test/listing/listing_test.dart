@@ -469,7 +469,9 @@ void main() {
       ..title = 'T'
       ..description = 'D'
       ..listingType = 'primary';
-    final b = d.toBody(images: ['a'], ar: false, admin: false);
+    // only an admin lists a primary unit: anyone else's draft goes out as a resale, whatever it says
+    expect(d.toBody(images: ['a'], ar: false, admin: false)['listing_type'], 'resale');
+    final b = d.toBody(images: ['a'], ar: false, admin: true);
     expect(b['compound_id'], 4);
     expect(b['listing_type'], 'primary');
     expect(b['title_en'], 'T');
@@ -490,7 +492,7 @@ void main() {
     expect(d.toBody(images: [], ar: true, admin: true)['title_ar'], 'T');
     d.delivery = '2028';
     expect(
-      d.toBody(images: [], ar: false, admin: false)['delivery_date'],
+      d.toBody(images: [], ar: false, admin: true)['delivery_date'],
       '2028-12-31',
     );
 

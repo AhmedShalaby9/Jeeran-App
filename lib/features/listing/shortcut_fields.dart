@@ -156,17 +156,20 @@ class _FieldSheetState extends State<_FieldSheet> {
             ],
             onChanged: (v) => _set('status', () => _d.status = v ?? 'for_sale'),
           ),
-          const SizedBox(height: 16),
-          ChipPicker(
-            label: 'listing.f_sale_type'.tr(),
-            cols: 2,
-            value: _d.effectiveListingType(admin: AppStorage.isAdmin),
-            options: [
-              for (final t in ListingDraft.listingTypes)
-                (t, 'prop.sale_$t'.tr()),
-            ],
-            onChanged: (v) => _set('sale_type', () => _d.listingType = v),
-          ),
+          // only admins choose between primary and resale; everyone else lists a resale unit
+          if (AppStorage.isAdmin) ...[
+            const SizedBox(height: 16),
+            ChipPicker(
+              label: 'listing.f_sale_type'.tr(),
+              cols: 2,
+              value: _d.effectiveListingType(admin: true),
+              options: [
+                for (final t in ListingDraft.listingTypes)
+                  (t, 'prop.sale_$t'.tr()),
+              ],
+              onChanged: (v) => _set('sale_type', () => _d.listingType = v),
+            ),
+          ],
         ];
       case CardField.beds:
         return [

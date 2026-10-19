@@ -13,6 +13,7 @@ News _n(int id, String title, bool active) =>
     NewsModel(id: id, title: title, content: '', media: const [], isActive: active, publishedAt: '', publishedBy: '');
 
 void main() {
+  _bothLanguages();
   TestWidgetsFlutterBinding.ensureInitialized();
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
@@ -85,5 +86,28 @@ void main() {
     expect(find.text('Live article'), findsNothing);
     expect(find.text('Hidden article'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+}
+
+void _bothLanguages() {
+  test('NewsModel keeps both languages so the editor does not overwrite one with the other', () {
+    final n = NewsModel.fromJson({
+      'id': 6,
+      'title': 'Egypt allocates',
+      'title_ar': 'مصر تخصص',
+      'title_en': 'Egypt allocates',
+      'content': 'en body',
+      'content_ar': 'نص',
+      'content_en': 'en body',
+      'media': ['a.jpg'],
+      'is_active': true,
+      'published_at': '2026-10-14T15:59:00.000Z',
+      'published_by': null,
+    });
+    expect(n.titleAr, 'مصر تخصص');
+    expect(n.titleEn, 'Egypt allocates');
+    expect(n.contentAr, 'نص');
+    expect(n.contentEn, 'en body');
+    expect(n.publishedBy, '');
   });
 }

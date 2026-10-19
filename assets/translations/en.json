@@ -1008,6 +1008,7 @@
   "prop": {
     "per_m2": "{} EGP per m²",
     "sale_primary": "Primary",
+    "wa_primary": "Hello, I'm interested in {}{}. Could you give me more details?",
     "sale_resale": "Resale",
     "m2_built": "m² built",
     "m2_garden": "m² garden",

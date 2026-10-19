@@ -9,6 +9,10 @@ class NewsModel extends News {
     required super.isActive,
     required super.publishedAt,
     required super.publishedBy,
+    super.titleAr,
+    super.titleEn,
+    super.contentAr,
+    super.contentEn,
   });
 
   factory NewsModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +29,10 @@ class NewsModel extends News {
       isActive: json['is_active'] as bool? ?? true,
       publishedAt: json['published_at'] as String? ?? '',
       publishedBy: json['published_by'] as String? ?? '',
+      titleAr: json['title_ar'] as String? ?? '',
+      titleEn: json['title_en'] as String? ?? '',
+      contentAr: json['content_ar'] as String? ?? '',
+      contentEn: json['content_en'] as String? ?? '',
     );
   }
 }

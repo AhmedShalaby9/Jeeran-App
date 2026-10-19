@@ -75,7 +75,7 @@ class _AdminNewsListPageState extends State<AdminNewsListPage> {
         _items = [
           for (final x in _items!)
             if (x.id == n.id)
-              NewsModel(id: x.id, title: x.title, content: x.content, media: x.media, isActive: value, publishedAt: x.publishedAt, publishedBy: x.publishedBy)
+              NewsModel(id: x.id, title: x.title, content: x.content, media: x.media, isActive: value, publishedAt: x.publishedAt, publishedBy: x.publishedBy, titleAr: x.titleAr, titleEn: x.titleEn, contentAr: x.contentAr, contentEn: x.contentEn)
             else
               x,
         ];

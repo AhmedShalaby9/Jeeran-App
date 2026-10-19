@@ -1019,6 +1019,8 @@ class _ListingFlowState extends State<ListingFlow> {
     final c = _d.compound;
     final sale = _d.effectiveListingType(admin: AppStorage.isAdmin);
     return _gap([
+      // only admins choose between primary and resale; everyone else lists a resale unit
+      if (AppStorage.isAdmin)
       Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
