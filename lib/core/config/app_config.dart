@@ -12,7 +12,9 @@ class AppConfig {
         AppEnvironment.production => 'http://api.jeeran-realestate.com/api',
       };
 
-  /// Public Mapbox token (pk.…): safe to ship, it only reads map tiles.
+  /// Public Mapbox token (pk.…). Not kept in the source (GitHub's push protection blocks it): pass it at build time,
+  ///   flutter run --dart-define-from-file=env/dart_defines.json
+  /// (copy env/dart_defines.example.json and fill it in; the real file is git-ignored).
   static const mapboxToken = String.fromEnvironment('MAPBOX_TOKEN');
 
   static bool get isProduction => _env == AppEnvironment.production;

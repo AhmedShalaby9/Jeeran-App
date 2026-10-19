@@ -21,6 +21,7 @@ import 'features/splash/presentation/pages/splash_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.setEnvironment(AppEnvironment.staging);
+  assert(AppConfig.mapboxToken.isNotEmpty, 'MAPBOX_TOKEN missing: run with --dart-define-from-file=env/dart_defines.json');
   await AppStorage.init();
   NotificationService.instance.init().catchError((e) => debugPrint('[FCM] NotificationService init failed: $e'));
   await EasyLocalization.ensureInitialized();
