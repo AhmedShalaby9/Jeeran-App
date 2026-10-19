@@ -5,7 +5,7 @@ description: "A new Flutter project."
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number  for your application.
-# A version number is three numbers separated by dots, like 1.2.43
+# A version number is three numb12ers separated by dots, like 1.2.43
 # followed by an optional build number separated by a +.
 # Both the version and the builder number may be overridden in  flutter
 # build by specifying --build-name and --build-number, respectively.
@@ -67,6 +67,10 @@ dependencies:
   sign_in_with_apple: ^6.1.4
   crypto: ^3.0.6
   app_settings: ^5.2.0
+  alice: ^1.0.0
+  alice_dio: ^1.0.7
+  flutter_map: ^8.3.2
+  latlong2: ^0.10.1
 
 dependency_overrides:
   connectivity_plus: ">=5.0.0 <7.0.0"

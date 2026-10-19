@@ -1714,5 +1714,10 @@
     "stop": "Stop",
     "stop_failed": "Couldn't stop that alert. Try again.",
     "load_failed": "Couldn't load your alerts."
+  },
+  "map": {
+    "call_us": "Call Us",
+    "whatsapp": "Whatsapp",
+    "wa_text": "Hello, I'm interested in {}. Could you give me more details?"
   }
 }

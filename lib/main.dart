@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'core/config/app_config.dart';
 import 'core/di/injection_container.dart' as di;
+import 'core/debug/network_inspector.dart';
 import 'core/di/injection_container.dart';
 import 'core/navigation/app_navigator.dart';
 import 'core/observers/app_bloc_observer.dart';
@@ -98,6 +99,7 @@ class JeeranApp extends StatelessWidget {
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       theme: _buildTheme(context),
+      builder: (context, child) => NetworkInspector.wrap(child),
       home: const SplashScreen(),
     );
   }

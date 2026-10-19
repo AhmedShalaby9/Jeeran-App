@@ -12,6 +12,9 @@ class AppConfig {
         AppEnvironment.production => 'http://api.jeeran-realestate.com/api',
       };
 
+  /// Public Mapbox token (pk.…): safe to ship, it only reads map tiles.
+  static const mapboxToken = String.fromEnvironment('MAPBOX_TOKEN');
+
   static bool get isProduction => _env == AppEnvironment.production;
 
   static bool get isStaging => _env == AppEnvironment.staging;

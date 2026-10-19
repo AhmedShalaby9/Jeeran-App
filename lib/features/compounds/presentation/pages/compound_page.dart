@@ -18,6 +18,7 @@ import '../../../../core/widgets/shared_photo.dart';
 import '../../data/compound_page_data.dart';
 import '../widgets/compound_media.dart';
 import '../widgets/compound_units.dart';
+import 'compound_map_page.dart';
 import 'compound_media_pages.dart';
 import '../widgets/facility_icon.dart';
 import '../widgets/page_widgets.dart';
@@ -200,8 +201,11 @@ class _CompoundPageState extends State<CompoundPage> {
               ),
               if (d.hasPin) ...[
                 const SizedBox(height: 12),
-                // the location card; tapping it does nothing yet (no map screen)
-                MapCard(area: d.area.pick(_ar).isNotEmpty ? d.area.pick(_ar) : d.name.pick(_ar)),
+                // the location card opens the full satellite map
+                MapCard(
+                  area: d.area.pick(_ar).isNotEmpty ? d.area.pick(_ar) : d.name.pick(_ar),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CompoundMapPage(compound: d))),
+                ),
               ],
               const SizedBox(height: 16),
               if (_follow != null) ...[

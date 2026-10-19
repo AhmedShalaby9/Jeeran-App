@@ -10,6 +10,27 @@ List<String> _strings(dynamic v) => v is List
     : const [];
 
 /// A bilingual pair — `pick` returns the reader's language, falling back to the other.
+/// GeoJSON Polygon / MultiPolygon → the outer rings as [lng, lat] points.
+List<List<List<double>>> _rings(dynamic g) {
+  if (g is! Map) return const [];
+  final c = g['coordinates'];
+  if (c is! List) return const [];
+  List<List<double>> ring(dynamic r) => [
+    for (final p in (r is List ? r : const []))
+      if (p is List && p.length >= 2 && p[0] is num && p[1] is num) [(p[0] as num).toDouble(), (p[1] as num).toDouble()],
+  ];
+  final polys = g['type'] == 'MultiPolygon' ? c : [c];
+  return [
+    for (final poly in polys)
+      if (poly is List && poly.isNotEmpty) ring(poly.first),
+  ].where((r) => r.length >= 3).toList();
+}
+
+List<double>? _bounds(dynamic v) {
+  if (v is! List || v.length != 4 || v.any((x) => x is! num)) return null;
+  return [for (final x in v) (x as num).toDouble()];
+}
+
 class Bi {
   final String ar;
   final String en;
@@ -143,6 +164,13 @@ class CompoundPageData {
   final double? latitude;
   final double? longitude;
 
+  /// The compound's outline: rings of [lng, lat] from the GeoJSON polygon (empty when it has none).
+  final List<List<List<double>>> boundary;
+
+  /// The georeferenced plan drawn on the map, with where it sits: [west, south, east, north].
+  final String? planUrl;
+  final List<double>? planBounds;
+
   /// The map card shows when the compound has a pin.
   bool get hasPin => latitude != null && longitude != null;
 
@@ -181,6 +209,9 @@ class CompoundPageData {
     this.masterPlan,
     this.latitude,
     this.longitude,
+    this.boundary = const [],
+    this.planUrl,
+    this.planBounds,
   });
 
   factory CompoundPageData.fromJson(Map<String, dynamic> j) {
@@ -261,6 +292,9 @@ class CompoundPageData {
           : _s(j['master_plan']).trim(),
       latitude: _d(j['latitude']),
       longitude: _d(j['longitude']),
+      boundary: _rings(j['boundary']),
+      planUrl: _s(j['plan_overlay_url']).trim().isEmpty ? null : _s(j['plan_overlay_url']).trim(),
+      planBounds: _bounds(j['plan_bounds']),
     );
   }
 

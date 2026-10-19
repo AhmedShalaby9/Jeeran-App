@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../config/app_config.dart';
+import '../debug/network_inspector.dart';
 import '../error/exceptions.dart';
 import 'interceptors/auth_interceptor.dart';
 import 'interceptors/logging_interceptor.dart';
@@ -24,6 +25,7 @@ class ApiClient {
       AuthInterceptor(),
       LoggingInterceptor(),
     ]);
+    NetworkInspector.attach(_dio); // staging only
   }
 
   /// Sent by the v2 screens (compound / developer pages): the API answers in

@@ -149,13 +149,16 @@ class _GlyphPainter extends CustomPainter {
 }
 
 /// The location card (design D3): a map, the area, and a "Directions" cue.
-/// Tapping it does nothing yet; the full map screen is not built.
+/// Tapping it opens the full map screen.
 class MapCard extends StatelessWidget {
   final String area;
-  const MapCard({super.key, required this.area});
+  final VoidCallback? onTap;
+  const MapCard({super.key, required this.area, this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => GestureDetector(behavior: HitTestBehavior.opaque, onTap: onTap, child: _card());
+
+  Widget _card() {
     return Container(
       key: const Key('map-card'),
       clipBehavior: Clip.antiAlias,
