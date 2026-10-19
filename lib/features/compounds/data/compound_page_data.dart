@@ -11,7 +11,7 @@ List<String> _strings(dynamic v) => v is List
 
 /// A bilingual pair — `pick` returns the reader's language, falling back to the other.
 /// GeoJSON Polygon / MultiPolygon → the outer rings as [lng, lat] points.
-List<List<List<double>>> _rings(dynamic g) {
+List<List<List<double>>> ringsOf(dynamic g) {
   if (g is! Map) return const [];
   final c = g['coordinates'];
   if (c is! List) return const [];
@@ -26,7 +26,7 @@ List<List<List<double>>> _rings(dynamic g) {
   ].where((r) => r.length >= 3).toList();
 }
 
-List<double>? _bounds(dynamic v) {
+List<double>? boundsOf(dynamic v) {
   if (v is! List || v.length != 4 || v.any((x) => x is! num)) return null;
   return [for (final x in v) (x as num).toDouble()];
 }
@@ -292,9 +292,9 @@ class CompoundPageData {
           : _s(j['master_plan']).trim(),
       latitude: _d(j['latitude']),
       longitude: _d(j['longitude']),
-      boundary: _rings(j['boundary']),
+      boundary: ringsOf(j['boundary']),
       planUrl: _s(j['plan_overlay_url']).trim().isEmpty ? null : _s(j['plan_overlay_url']).trim(),
-      planBounds: _bounds(j['plan_bounds']),
+      planBounds: boundsOf(j['plan_bounds']),
     );
   }
 

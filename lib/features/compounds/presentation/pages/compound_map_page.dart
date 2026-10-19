@@ -21,18 +21,38 @@ class MapPin {
   final int id;
   final Bi name;
   final LatLng at;
-  const MapPin(this.id, this.name, this.at);
+
+  /// Set when the compound's plan overlaps the screen: a small copy of the plan, where it sits, and the outline.
+  final String? planThumb;
+  final List<double>? planBounds;
+  final List<List<double>> ring;
+  const MapPin(this.id, this.name, this.at, {this.planThumb, this.planBounds, this.ring = const []});
+
+  bool get hasPlan => planThumb != null && planBounds != null;
 
   static MapPin? fromJson(Map<String, dynamic> j) {
     final lat = double.tryParse('${j['latitude']}'), lng = double.tryParse('${j['longitude']}');
     final id = j['id'];
     if (lat == null || lng == null || id is! int) return null;
-    return MapPin(id, Bi('${j['name_ar'] ?? ''}', '${j['name_en'] ?? ''}'), LatLng(lat, lng));
+    final thumb = j['plan_thumb_url'];
+    final rings = ringsOf(j['boundary']);
+    return MapPin(
+      id,
+      Bi('${j['name_ar'] ?? ''}', '${j['name_en'] ?? ''}'),
+      LatLng(lat, lng),
+      planThumb: thumb is String && thumb.isNotEmpty ? thumb : null,
+      planBounds: boundsOf(j['plan_bounds']),
+      ring: rings.isEmpty ? const [] : rings.first,
+    );
   }
 }
 
 typedef LoadPins = Future<List<MapPin>> Function(LatLngBounds box);
 typedef LoadCompound = Future<CompoundPageData> Function(int id);
+
+/// Plans of neighbouring compounds are drawn only from this zoom (below it they are specks), at most [kMaxPlans] at once.
+const kPlanMinZoom = 13.0;
+const kMaxPlans = 8;
 
 const _orange = Color(0xFFF0451E);
 const _pill = Color(0xFF0B4F8A);
@@ -66,6 +86,7 @@ class _CompoundMapPageState extends State<CompoundMapPage> {
   bool _satellite = true;
   Timer? _debounce;
   int _token = 0; // drops answers for a compound the user has already left
+  double _zoom = 15;
 
   bool get _ar => context.locale.languageCode == 'ar';
 
@@ -98,6 +119,15 @@ class _CompoundMapPageState extends State<CompoundMapPage> {
 
   // ── neighbours ───────────────────────────────────────────
 
+  /// Neighbouring compounds whose plan is drawn: only when zoomed in enough, never the selected one.
+  List<MapPin> get _neighbourPlans {
+    if (_zoom < kPlanMinZoom) return const [];
+    return [
+      for (final p in _pins)
+        if (p.hasPlan && p.id != _c.id) p,
+    ].take(kMaxPlans).toList();
+  }
+
   void _onMove() {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 450), _loadPins);
@@ -106,6 +136,7 @@ class _CompoundMapPageState extends State<CompoundMapPage> {
   Future<void> _loadPins() async {
     if (!mounted) return;
     final cam = _map.camera;
+    if (cam.zoom != _zoom) setState(() => _zoom = cam.zoom);
     if (cam.zoom < 11) {
       if (_pins.isNotEmpty) setState(() => _pins = const []);
       return;
@@ -119,7 +150,7 @@ class _CompoundMapPageState extends State<CompoundMapPage> {
   Future<List<MapPin>> _fetchPins(LatLngBounds b) async {
     final res = await sl<ApiClient>().get(
       '/compounds/map',
-      queryParams: {'bbox': '${b.west},${b.south},${b.east},${b.north}', 'limit': 60},
+      queryParams: {'bbox': '${b.west},${b.south},${b.east},${b.north}', 'limit': 60, 'plans': kMaxPlans},
     );
     final raw = res.data['data'];
     return [
@@ -201,6 +232,30 @@ class _CompoundMapPageState extends State<CompoundMapPage> {
                   userAgentPackageName: 'com.jeeran.realestate',
                   maxNativeZoom: 19,
                 ),
+              if (_neighbourPlans.isNotEmpty) ...[
+                OverlayImageLayer(
+                  key: const Key('neighbour-plans'),
+                  overlayImages: [
+                    for (final p in _neighbourPlans)
+                      OverlayImage(
+                        bounds: LatLngBounds(LatLng(p.planBounds![1], p.planBounds![0]), LatLng(p.planBounds![3], p.planBounds![2])),
+                        imageProvider: CachedNetworkImageProvider(p.planThumb!),
+                      ),
+                  ],
+                ),
+                PolygonLayer(
+                  polygons: [
+                    for (final p in _neighbourPlans)
+                      if (p.ring.length >= 3)
+                        Polygon(
+                          points: [for (final q in p.ring) LatLng(q[1], q[0])],
+                          color: const Color(0x00000000),
+                          borderColor: const Color(0xB3E0401C),
+                          borderStrokeWidth: 1.2,
+                        ),
+                  ],
+                ),
+              ],
               if (_c.planUrl != null && pb != null)
                 OverlayImageLayer(
                   key: const Key('plan-overlay'),

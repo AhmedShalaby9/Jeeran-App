@@ -64,6 +64,26 @@ void main() {
     expect(multi.boundary.length, 2);
   });
 
+  test('a map pin reads its small plan image, position and outline', () {
+    final p = MapPin.fromJson({
+      'id': 373,
+      'name_en': 'La Vista City',
+      'latitude': '30.0',
+      'longitude': '31.58',
+      'plan_thumb_url': 'https://x/t.png',
+      'plan_bounds': [31.57, 29.99, 31.61, 30.01],
+      'boundary': {
+        'type': 'Polygon',
+        'coordinates': [[[31.57, 29.99], [31.61, 29.99], [31.61, 30.01], [31.57, 29.99]]],
+      },
+    })!;
+    expect(p.hasPlan, isTrue);
+    expect(p.ring.length, 4);
+    final plain = MapPin.fromJson({'id': 1, 'latitude': '30', 'longitude': '31'})!;
+    expect(plain.hasPlan, isFalse);
+    expect(plain.ring, isEmpty);
+  });
+
   testWidgets('the map shows the outline, the plan, neighbours; tapping a neighbour switches; contact buttons', (tester) async {
     tester.view.physicalSize = const Size(390 * 3, 844 * 3);
     tester.view.devicePixelRatio = 3;
@@ -89,8 +109,15 @@ void main() {
               compound: CompoundPageData.fromJson(_json(644, 'City Gate', plan: true)),
               showTiles: false,
               loadPins: (_) async => [
-                MapPin(644, const Bi('', 'City Gate'), const LatLng(30.0096, 31.5724)),
-                MapPin(7, const Bi('', 'La Vista City'), const LatLng(30.012, 31.585)),
+                MapPin(644, const Bi('', 'City Gate'), const LatLng(30.0096, 31.5724), planThumb: 'https://x/own-thumb.png', planBounds: [31.5508, 29.9943, 31.5953, 30.0273]),
+                MapPin(
+                  7,
+                  const Bi('', 'La Vista City'),
+                  const LatLng(30.012, 31.585),
+                  planThumb: 'https://x/lv-thumb.png',
+                  planBounds: [31.5732, 29.9958, 31.6090, 30.0150],
+                  ring: [[31.58, 30.0], [31.60, 30.0], [31.60, 30.01], [31.58, 30.0]],
+                ),
               ],
               loadCompound: (id) async {
                 asked.add(id);
@@ -108,6 +135,8 @@ void main() {
 
     expect(find.byKey(const Key('plan-overlay')), findsOneWidget);
     expect(find.byKey(const Key('outline')), findsOneWidget);
+    // the neighbour's plan is drawn too (its small copy); the selected compound keeps its own full plan
+    expect(find.byKey(const Key('neighbour-plans')), findsOneWidget);
     expect(find.byKey(const Key('pin-selected')), findsOneWidget);
     expect(find.byKey(const Key('pin-7')), findsOneWidget);
     expect(find.byKey(const Key('pin-644')), findsNothing); // the selected one is not drawn twice
