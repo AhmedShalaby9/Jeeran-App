@@ -1949,6 +1949,13 @@
     "kind_hint_app": "A general ad for the Jeeran app itself — no compound, unit or price is used.",
     "images_none_app": "Add your logo, a screenshot, or a photo — the AI needs at least one image to build the ad from.",
     "images_note_app": "Used as the brand material for the ad. **Bad** photos are skipped; tap a warning to use it anyway.",
-    "need_app_image": "Add an image (your logo, a screenshot, or a photo) to continue."
+    "need_app_image": "Add an image (your logo, a screenshot, or a photo) to continue.",
+    "where_runs": "Where will this run?",
+    "fmt_banner": "Banner",
+    "fmt_news": "News",
+    "fmt_social": "Social post",
+    "plat_instagram": "Instagram",
+    "plat_whatsapp": "WhatsApp",
+    "plat_facebook": "Facebook"
   }
 }

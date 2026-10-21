@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/di/injection_container.dart';
+import '../../../core/error/exceptions.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/jv2.dart';
 
@@ -71,6 +72,7 @@ class _PromoPickerSheetState extends State<PromoPickerSheet> {
   late String _kind = widget.initialKind;
   List<PromoPick>? _items;
   bool _failed = false;
+  String? _errorMessage; // the server's own reason, when it has one — else a generic retry message
   String _q = '';
   int _token = 0;
 
@@ -82,12 +84,14 @@ class _PromoPickerSheetState extends State<PromoPickerSheet> {
 
   Future<void> _fetch() async {
     final mine = ++_token;
-    setState(() { _items = null; _failed = false; });
+    setState(() { _items = null; _failed = false; _errorMessage = null; });
     try {
       final r = await widget.load(_kind, _q.trim());
       if (mounted && mine == _token) setState(() => _items = r);
-    } catch (_) {
-      if (mounted && mine == _token) setState(() => _failed = true);
+    } catch (e) {
+      if (!mounted || mine != _token) return;
+      final msg = e is ServerException ? e.message : null;
+      setState(() { _failed = true; _errorMessage = (msg != null && msg.trim().isNotEmpty) ? msg : null; });
     }
   }
 
@@ -136,7 +140,13 @@ class _PromoPickerSheetState extends State<PromoPickerSheet> {
             ),
             Expanded(
               child: _failed
-                  ? Center(child: Text('adstudio.load_failed'.tr()))
+                  ? Center(
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        Text(_errorMessage ?? 'adstudio.load_failed'.tr(), textAlign: TextAlign.center, key: const Key('promo-load-failed')),
+                        const SizedBox(height: 10),
+                        FilledButton(key: const Key('promo-load-retry'), onPressed: _fetch, child: Text('adstudio.retry'.tr())),
+                      ]),
+                    )
                   : _items == null
                       ? const Center(child: CircularProgressIndicator())
                       : list.isEmpty

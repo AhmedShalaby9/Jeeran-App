@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/di/injection_container.dart';
+import '../../../core/error/exceptions.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/widgets/jv2.dart';
 
@@ -52,12 +53,22 @@ class DevPickerSheet extends StatefulWidget {
 class _DevPickerSheetState extends State<DevPickerSheet> {
   List<DevRef>? _all;
   bool _failed = false;
+  String? _errorMessage; // the server's own reason, when it has one — else a generic retry message
   String _q = '';
 
   @override
   void initState() {
     super.initState();
-    widget.load().then((l) { if (mounted) setState(() => _all = l); }).catchError((_) { if (mounted) setState(() => _failed = true); });
+    _load();
+  }
+
+  void _load() {
+    setState(() { _all = null; _failed = false; _errorMessage = null; });
+    widget.load().then((l) { if (mounted) setState(() => _all = l); }).catchError((e) {
+      if (!mounted) return;
+      final msg = e is ServerException ? e.message : null;
+      setState(() { _failed = true; _errorMessage = (msg != null && msg.trim().isNotEmpty) ? msg : null; });
+    });
   }
 
   @override
@@ -78,7 +89,13 @@ class _DevPickerSheetState extends State<DevPickerSheet> {
             ),
             Expanded(
               child: _failed
-                  ? Center(child: Text('adstudio.load_failed'.tr()))
+                  ? Center(
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        Text(_errorMessage ?? 'adstudio.load_failed'.tr(), textAlign: TextAlign.center, key: const Key('dev-load-failed')),
+                        const SizedBox(height: 10),
+                        FilledButton(key: const Key('dev-load-retry'), onPressed: _load, child: Text('adstudio.retry'.tr())),
+                      ]),
+                    )
                   : _all == null
                       ? const Center(child: CircularProgressIndicator())
                       : ListView.builder(

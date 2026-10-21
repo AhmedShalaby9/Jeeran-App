@@ -43,6 +43,11 @@ class _AdBriefPageState extends State<AdBriefPage> {
   final AdBrief _brief = AdBrief();
   DevRef? _dev;
   String _promoKind = 'compound';
+  // An app ad picks where it runs by name instead of raw pixels — each choice just sets _brief.size
+  // underneath, so the backend and everything downstream (sizing, scoring) is unchanged.
+  String _appFormat = 'news'; // banner | news | social — 'news' matches AdBrief's default size ('top')
+  String _appPlatform = 'instagram'; // instagram | whatsapp | facebook — only used when _appFormat == 'social'
+  static const _appSizeFor = {'banner': 'feed', 'news': 'top', 'instagram': 'post', 'whatsapp': 'story', 'facebook': 'profile'};
   bool _busy = false, _uploading = false;
   String? _error;
   final List<String> _uploaded = [];
@@ -183,9 +188,30 @@ class _AdBriefPageState extends State<AdBriefPage> {
         _promo = null;
         _brief.compoundId = _brief.propertyId = null;
         _brief.compoundName = _brief.propertyName = null;
+        // the place-mode size grid may have set something the format picker doesn't show (e.g. custom);
+        // snap back to whatever format/platform chip is selected so the two stay in sync
+        _brief.size = _appSizeFor[_appFormat == 'social' ? _appPlatform : _appFormat]!;
       }
     });
     if (_uploaded.isNotEmpty) { _scores.clear(); _kept.clear(); _score(List.of(_uploaded)); }
+  }
+
+  void _pickAppFormat(String fmt) {
+    if (_appFormat == fmt) return;
+    setState(() {
+      _appFormat = fmt;
+      _brief.size = fmt == 'social' ? _appSizeFor[_appPlatform]! : _appSizeFor[fmt]!;
+    });
+    if (_uploaded.isNotEmpty) _rescoreAll(); // the pixels an image needs depend on the size
+  }
+
+  void _pickAppPlatform(String p) {
+    if (_appPlatform == p) return;
+    setState(() {
+      _appPlatform = p;
+      _brief.size = _appSizeFor[p]!;
+    });
+    if (_uploaded.isNotEmpty) _rescoreAll();
   }
 
   Future<void> _addImages() async {
@@ -606,17 +632,34 @@ class _AdBriefPageState extends State<AdBriefPage> {
           const SizedBox(height: 8),
           _modeCard('generate', 'adstudio.use_generate'.tr(), 'adstudio.use_generate_sub'.tr()),
         ]),
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          AdLabel('adstudio.image_size'.tr(), sub: 'adstudio.image_size_sub'.tr()),
-          GridView(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 8, crossAxisSpacing: 8, mainAxisExtent: 132),
-            children: [for (final s in adSizes) _sizeTile(s)],
-          ),
-          if (_brief.size == 'custom') Padding(padding: const EdgeInsets.only(top: 10), child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [_sizeField('adstudio.width'.tr(), _cw, const Key('ad-width')), const Padding(padding: EdgeInsets.fromLTRB(8, 0, 8, 15), child: Text('×', style: TextStyle(fontSize: 14, color: JV2.inkMute))), _sizeField('adstudio.height'.tr(), _ch, const Key('ad-height'))])),
-          AdHint(_sizeHint()),
-        ]),
+        if (_brief.isApp)
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            AdLabel('adstudio.where_runs'.tr()),
+            Wrap(spacing: 8, runSpacing: 8, children: [
+              for (final f in const ['banner', 'news', 'social'])
+                AdChoice(key: Key('ad-fmt-$f'), on: _appFormat == f, label: 'adstudio.fmt_$f'.tr(), onTap: () => _pickAppFormat(f)),
+            ]),
+            if (_appFormat == 'social') ...[
+              const SizedBox(height: 8),
+              Wrap(spacing: 8, runSpacing: 8, children: [
+                for (final p in const ['instagram', 'whatsapp', 'facebook'])
+                  AdChoice(key: Key('ad-plat-$p'), on: _appPlatform == p, label: 'adstudio.plat_$p'.tr(), onTap: () => _pickAppPlatform(p)),
+              ]),
+            ],
+            AdHint(_sizeHint()),
+          ])
+        else
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            AdLabel('adstudio.image_size'.tr(), sub: 'adstudio.image_size_sub'.tr()),
+            GridView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 8, crossAxisSpacing: 8, mainAxisExtent: 132),
+              children: [for (final s in adSizes) _sizeTile(s)],
+            ),
+            if (_brief.size == 'custom') Padding(padding: const EdgeInsets.only(top: 10), child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [_sizeField('adstudio.width'.tr(), _cw, const Key('ad-width')), const Padding(padding: EdgeInsets.fromLTRB(8, 0, 8, 15), child: Text('×', style: TextStyle(fontSize: 14, color: JV2.inkMute))), _sizeField('adstudio.height'.tr(), _ch, const Key('ad-height'))])),
+            AdHint(_sizeHint()),
+          ]),
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           AdLabel('adstudio.tone'.tr()),
           Wrap(spacing: 8, runSpacing: 8, children: [for (final v in const ['Premium', 'Offer-led', 'Family', 'Launch hype']) AdChoice(key: Key('ad-tone-$v'), on: _brief.tone == v, label: 'adstudio.tone_${_id(v)}'.tr(), onTap: () => setState(() => _brief.tone = v))]),
