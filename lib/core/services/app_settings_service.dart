@@ -23,6 +23,9 @@ class AppSettings {
   final bool aiGuideVideoVisible;
   final String? contactPhone;
 
+  /// The Mapbox public token, kept on the server and served by the settings API.
+  final String? mapboxToken;
+
   /// True on environments with a static login code: the app skips the reCAPTCHA step.
   final bool otpTestMode;
 
@@ -47,6 +50,7 @@ class AppSettings {
     this.aiGuideVideoUrl,
     this.aiGuideVideoVisible = false,
     this.contactPhone,
+    this.mapboxToken,
     this.otpTestMode = false,
   });
 
@@ -71,6 +75,7 @@ class AppSettings {
         aiGuideVideoUrl: json['ai_guide_video_url'] as String?,
         aiGuideVideoVisible: (json['ai_guide_video_visible'] as bool?) ?? false,
         contactPhone: json['contact_phone'] as String?,
+        mapboxToken: json['mapbox_token'] as String?,
         otpTestMode: json['otp_test_mode'] == true,
       );
 }
@@ -97,6 +102,10 @@ class AppSettingsService {
   bool get inReview => settings?.inReview ?? false;
 
   bool get otpTestMode => settings?.otpTestMode ?? false;
+
+  /// The token the map screens use: only what the server sends (empty until the settings have loaded).
+  /// It is never kept in the app's code, its files or its build settings.
+  String get mapboxToken => settings?.mapboxToken?.trim() ?? '';
 
   /// The number every "Call us" button dials; null/empty hides those buttons.
   String? get contactPhone {

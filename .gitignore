@@ -47,5 +47,3 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Build-time values (Mapbox token): copy env/dart_defines.example.json to env/dart_defines.json
-/env/dart_defines.json
