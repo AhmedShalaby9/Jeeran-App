@@ -8,7 +8,7 @@ class AppConfig {
   static AppEnvironment get environment => _env;
 
   static String get baseUrl => switch (_env) {
-        AppEnvironment.staging => 'http://api-stg.jeeran-realestate.com/api',
+        AppEnvironment.staging => 'https://api-stg.jeeran-realestate.com/api',
         AppEnvironment.production => 'http://api.jeeran-realestate.com/api',
       };
 
