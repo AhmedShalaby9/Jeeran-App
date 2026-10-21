@@ -64,6 +64,10 @@ class _AdBriefPageState extends State<AdBriefPage> {
     return s == null || s.ok || (!s.bad && _kept.contains(url));
   }
 
+  // An app ad has no compound/property to fall back on for a photo, so — unlike a place ad, where
+  // images are optional — it needs at least one usable one before it can go any further.
+  bool get _hasUsableImage => _uploaded.any(_used);
+
   @override
   void dispose() {
     _voiceTick?.cancel();
@@ -164,6 +168,25 @@ class _AdBriefPageState extends State<AdBriefPage> {
     _brief.compoundId = _brief.propertyId = null;
     _brief.compoundName = _brief.propertyName = null;
   });
+
+  /// "A place" ↔ "The app": switching to the app clears whatever was linked, since an app ad is never
+  /// about a specific compound, developer or unit — see CLAUDE.md's "AI ads" section.
+  /// Any image already uploaded is rescored too: "fits the brief" depends on the kind (a logo is off-brief
+  /// for a place, exactly right for the app), so a score from before the switch can no longer be trusted.
+  void _setKind(String kind) {
+    if (_brief.kind == kind) return;
+    setState(() {
+      _brief.kind = kind;
+      if (kind == 'app') {
+        _dev = null;
+        _brief.developerId = _brief.developerName = null;
+        _promo = null;
+        _brief.compoundId = _brief.propertyId = null;
+        _brief.compoundName = _brief.propertyName = null;
+      }
+    });
+    if (_uploaded.isNotEmpty) { _scores.clear(); _kept.clear(); _score(List.of(_uploaded)); }
+  }
 
   Future<void> _addImages() async {
     final paths = await (widget.pickImages ?? () async => [for (final x in await ImagePicker().pickMultiImage(maxWidth: 2400, imageQuality: 88)) x.path])();
@@ -508,12 +531,13 @@ class _AdBriefPageState extends State<AdBriefPage> {
   String _imagesHint() {
     final bad = _uploaded.where((u) => _scores[u]?.bad == true).length;
     final head = bad > 0 ? '${'adstudio.images_bad'.tr(args: ['$bad'])} ' : '';
-    return '$head${'adstudio.images_note'.tr()}';
+    return '$head${(_brief.isApp ? 'adstudio.images_note_app' : 'adstudio.images_note').tr()}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final can = _summary.text.trim().isNotEmpty && !_busy;
+    final needsImage = _brief.isApp && !_hasUsableImage;
+    final can = _summary.text.trim().isNotEmpty && !needsImage && !_busy;
     final dev = _dev?.name(_ar);
     return AdFlowScaffold(
       title: 'adstudio.new_ad'.tr(),
@@ -524,6 +548,7 @@ class _AdBriefPageState extends State<AdBriefPage> {
       bottom: Column(mainAxisSize: MainAxisSize.min, children: [
         if (_error != null) Padding(padding: const EdgeInsets.only(bottom: 10), child: Text(_error!.tr(), key: const Key('ad-error'), style: const TextStyle(fontSize: 12, color: JV2.danger))),
         if (_summary.text.trim().isEmpty) Padding(padding: const EdgeInsets.only(bottom: 10), child: Text('adstudio.write_summary'.tr(), style: const TextStyle(fontSize: 11.5, color: JV2.inkSub))),
+        if (_summary.text.trim().isNotEmpty && needsImage) Padding(padding: const EdgeInsets.only(bottom: 10), child: Text('adstudio.need_app_image'.tr(), key: const Key('ad-need-image'), style: const TextStyle(fontSize: 11.5, color: JV2.inkSub))),
         AdPrimary(key: const Key('ad-continue'), label: 'adstudio.continue'.tr(), spark: true, onPressed: can ? _continue : null, busy: _busy),
       ]),
       children: [
@@ -533,15 +558,26 @@ class _AdBriefPageState extends State<AdBriefPage> {
           AdHint('adstudio.summary_note'.tr()),
         ]),
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          AdLabel('adstudio.developer'.tr(), sub: 'adstudio.optional'.tr()),
-          _developer(),
-          AdHint(dev != null ? 'adstudio.dev_hint'.tr(args: [dev]) : 'adstudio.dev_hint_none'.tr()),
+          AdLabel('adstudio.what_for'.tr()),
+          Row(children: [
+            Expanded(child: AdChoice(key: const Key('ad-kind-inventory'), on: !_brief.isApp, label: 'adstudio.kind_place'.tr(), onTap: () => _setKind('inventory'))),
+            const SizedBox(width: 8),
+            Expanded(child: AdChoice(key: const Key('ad-kind-app'), on: _brief.isApp, label: 'adstudio.kind_app'.tr(), onTap: () => _setKind('app'))),
+          ]),
+          AdHint((_brief.isApp ? 'adstudio.kind_hint_app' : 'adstudio.kind_hint_place').tr()),
         ]),
-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          AdLabel('adstudio.promoting'.tr(), sub: 'adstudio.optional'.tr()),
-          _promoField(),
-          AdHint(_promo != null ? 'adstudio.promo_hint'.tr() : 'adstudio.promo_hint_none'.tr()),
-        ]),
+        if (!_brief.isApp) ...[
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            AdLabel('adstudio.developer'.tr(), sub: 'adstudio.optional'.tr()),
+            _developer(),
+            AdHint(dev != null ? 'adstudio.dev_hint'.tr(args: [dev]) : 'adstudio.dev_hint_none'.tr()),
+          ]),
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            AdLabel('adstudio.promoting'.tr(), sub: 'adstudio.optional'.tr()),
+            _promoField(),
+            AdHint(_promo != null ? 'adstudio.promo_hint'.tr() : 'adstudio.promo_hint_none'.tr()),
+          ]),
+        ],
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           AdLabel('adstudio.your_images'.tr(), sub: 'adstudio.images_count'.tr(args: ['${_uploaded.length}'])),
           if (_uploaded.isNotEmpty || _uploading)
@@ -554,7 +590,7 @@ class _AdBriefPageState extends State<AdBriefPage> {
               children: [for (var i = 0; i < _uploaded.length; i++) _thumb(i), if (_uploading) const Center(child: CircularProgressIndicator(strokeWidth: 2))],
             ),
           if (_uploaded.isNotEmpty) AdHint.markup(_imagesHint()),
-          if (_uploaded.isEmpty) AdHint('adstudio.images_none'.tr()),
+          if (_uploaded.isEmpty) AdHint((_brief.isApp ? 'adstudio.images_none_app' : 'adstudio.images_none').tr()),
           const SizedBox(height: 8),
           AdDashed(
             key: const Key('ad-add-images'),

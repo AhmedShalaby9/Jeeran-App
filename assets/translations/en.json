@@ -1941,6 +1941,14 @@
     "px_size": "{} × {} px",
     "preview_sub2": "what you'll download",
     "download_all": "Download all {}",
-    "downloaded_all": "Saved {} ads to your photos."
+    "downloaded_all": "Saved {} ads to your photos.",
+    "what_for": "What's this ad for?",
+    "kind_place": "A place",
+    "kind_app": "The Jeeran app",
+    "kind_hint_place": "Pick a compound, unit or developer below so the AI can use real photos and live numbers.",
+    "kind_hint_app": "A general ad for the Jeeran app itself — no compound, unit or price is used.",
+    "images_none_app": "Add your logo, a screenshot, or a photo — the AI needs at least one image to build the ad from.",
+    "images_note_app": "Used as the brand material for the ad. **Bad** photos are skipped; tap a warning to use it anyway.",
+    "need_app_image": "Add an image (your logo, a screenshot, or a photo) to continue."
   }
 }

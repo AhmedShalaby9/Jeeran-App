@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/error/exceptions.dart';
 import '../../../core/widgets/jv2.dart';
 import 'ad_flow_widgets.dart';
 import 'ad_results_page.dart';
@@ -25,6 +26,7 @@ class _AdGeneratingPageState extends State<AdGeneratingPage> with SingleTickerPr
   int _stage = 0;
   Timer? _tick;
   bool _failed = false;
+  String? _failMessage; // the server's own reason, when it has one (e.g. "add a real photo") — else a generic retry message
   late final AnimationController _sweep = AnimationController(vsync: this, duration: const Duration(milliseconds: 1600))..repeat();
 
   @override
@@ -44,14 +46,16 @@ class _AdGeneratingPageState extends State<AdGeneratingPage> with SingleTickerPr
   }
 
   Future<void> _run() async {
-    setState(() { _failed = false; _stage = 0; });
+    setState(() { _failed = false; _failMessage = null; _stage = 0; });
     try {
       final draft = await widget.api.generate(widget.brief, understood: widget.understood, approved: widget.approved);
       if (!mounted) return;
       _tick?.cancel();
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AdResultsPage(api: widget.api, draft: draft)));
-    } catch (_) {
-      if (mounted) setState(() => _failed = true);
+    } catch (e) {
+      // A 4xx from the server (e.g. "no usable photo") carries a specific, actionable message; anything else gets the generic retry copy.
+      final msg = e is ServerException ? e.message : null;
+      if (mounted) setState(() { _failed = true; _failMessage = (msg != null && msg.trim().isNotEmpty) ? msg : null; });
     }
   }
 
@@ -105,7 +109,7 @@ class _AdGeneratingPageState extends State<AdGeneratingPage> with SingleTickerPr
       children: _failed
           ? [
               const SizedBox(height: 30),
-              Center(child: Text('adstudio.gen_failed'.tr(), key: const Key('ad-gen-failed'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: JV2.inkSub))),
+              Center(child: Text(_failMessage ?? 'adstudio.gen_failed'.tr(), key: const Key('ad-gen-failed'), textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: JV2.inkSub))),
               Center(child: FilledButton(key: const Key('ad-gen-retry'), onPressed: _run, child: Text('adstudio.retry'.tr()))),
             ]
           : [

@@ -116,8 +116,11 @@ class AdDraft {
   final DateTime? createdAt;
   final String subjectEn, subjectAr;
   final String imageMode;
+  final String kind; // inventory | app
   final int width, height; // the pixels the ad was made at
-  const AdDraft({this.width = 1200, this.height = 825, this.imageMode = 'generate', required this.id, required this.title, required this.variations, this.subjectEn = '', this.subjectAr = '', this.developerId, this.compoundId, this.sponsorName, this.slot = 'explore_top', this.targetType = 'none', this.targetId, this.facts = const [], this.createdAt});
+  const AdDraft({this.width = 1200, this.height = 825, this.imageMode = 'generate', this.kind = 'inventory', required this.id, required this.title, required this.variations, this.subjectEn = '', this.subjectAr = '', this.developerId, this.compoundId, this.sponsorName, this.slot = 'explore_top', this.targetType = 'none', this.targetId, this.facts = const [], this.createdAt});
+
+  bool get isApp => kind == 'app';
 
   factory AdDraft.fromJson(Map<String, dynamic> j) {
     final brief = j['brief'] is Map ? Map<String, dynamic>.from(j['brief'] as Map) : const <String, dynamic>{};
@@ -129,6 +132,7 @@ class AdDraft {
       subjectEn: _s(subject['en']),
       subjectAr: _s(subject['ar']),
       imageMode: _s(brief['image_mode']).isEmpty ? 'generate' : _s(brief['image_mode']),
+      kind: _s(brief['kind']).isEmpty ? 'inventory' : _s(brief['kind']),
       width: i(brief['width']) ?? 1200,
       height: i(brief['height']) ?? 825,
       id: i(j['id']) ?? 0,
@@ -159,6 +163,7 @@ const adSizes = <(String, String, int, int)>[
 /// What the admin typed and picked on the brief screen.
 class AdBrief {
   String summary;
+  String kind; // inventory (a place) | app (the Jeeran app itself — never linked to a compound/developer/unit)
   int? developerId, compoundId, propertyId;
   String? developerName, compoundName, propertyName;
   String slot, tone, language;
@@ -166,7 +171,9 @@ class AdBrief {
   String size; // top | feed | profile | story | post | custom
   int customWidth, customHeight;
   List<String> images; // uploaded by the admin (public URLs)
-  AdBrief({this.summary = '', this.developerId, this.compoundId, this.propertyId, this.developerName, this.compoundName, this.propertyName, this.slot = 'explore_top', this.tone = 'Premium', this.language = 'English + Arabic', this.imageMode = 'generate', this.size = 'top', this.customWidth = 1080, this.customHeight = 1350, List<String>? images}) : images = images ?? [];
+  AdBrief({this.summary = '', this.kind = 'inventory', this.developerId, this.compoundId, this.propertyId, this.developerName, this.compoundName, this.propertyName, this.slot = 'explore_top', this.tone = 'Premium', this.language = 'English + Arabic', this.imageMode = 'generate', this.size = 'top', this.customWidth = 1080, this.customHeight = 1350, List<String>? images}) : images = images ?? [];
+
+  bool get isApp => kind == 'app';
 
   /// The pixels the ad is made at.
   (int, int) get pixels {
@@ -177,9 +184,10 @@ class AdBrief {
 
   Map<String, dynamic> toJson() => {
     'summary': summary.trim(),
-    'developer_id': developerId,
-    'compound_id': compoundId,
-    'property_id': propertyId,
+    'kind': kind,
+    'developer_id': isApp ? null : developerId,
+    'compound_id': isApp ? null : compoundId,
+    'property_id': isApp ? null : propertyId,
     'slot': slot,
     'tone': tone,
     'language': language,
