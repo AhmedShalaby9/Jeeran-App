@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Jeeran accesses your photo library so you can select photos for your business profile and ads.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Jeeran saves the ads you create to your photos.</string>
 	<key>NSMicrophoneUsageDescription</key>
