@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../ad_studio/ad_studio_page.dart';
 import 'admin_call_requests_page.dart';
 import 'admin_news_list_page.dart';
 import 'admin_properties_page.dart';
@@ -47,6 +48,14 @@ class AdminPanelPage extends StatelessWidget {
               context,
               MaterialPageRoute(builder: (_) => const AdminCallRequestsPage()),
             ),
+          ),
+          const SizedBox(height: 12),
+          _AdminCard(
+            icon: Icons.campaign_outlined,
+            title: 'admin.ad_studio'.tr(),
+            subtitle: 'admin.ad_studio_subtitle'.tr(),
+            color: AppColors.primary,
+            onTap: () => Navigator.push(context, AdStudioPage.route()),
           ),
         ],
       ),

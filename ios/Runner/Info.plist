@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Jeeran saves the ads you create to your photos.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Jeeran uses the microphone so you can ask questions out loud. Your voice messages are saved so we can improve the service.</string>
 	<key>CFBundleURLTypes</key>
