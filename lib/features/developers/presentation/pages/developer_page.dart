@@ -16,6 +16,10 @@ import '../../../compounds/presentation/widgets/page_widgets.dart';
 import '../../../explore/presentation/widgets/explore_widgets.dart';
 import '../../../follow/data/follow_service.dart';
 import '../../../follow/presentation/follow_alerts.dart';
+import '../../../news/v2/news_api.dart';
+import '../../../news/v2/news_article_page.dart';
+import '../../../news/v2/news_widgets.dart';
+import '../../../units/presentation/unit_widgets.dart' show UnitSecHead;
 import '../../data/developer_page_data.dart';
 import '../widgets/developer_shimmer.dart';
 
@@ -36,6 +40,8 @@ class _DeveloperPageState extends State<DeveloperPage> {
   bool _failed = false;
   int _tab = 0;
   FollowController? _follow; // created once the developer has loaded
+  late final _newsApi = NewsApi(sl<ApiClient>());
+  List<NewsItem> _news = []; // loaded after the developer itself; empty just means none yet (or none linked)
 
   @override
   void initState() {
@@ -66,6 +72,11 @@ class _DeveloperPageState extends State<DeveloperPage> {
             events: data.alertEvents,
           );
         });
+        // a supplementary section: never blocks or fails the page itself. The server rolls a developer's
+        // own compounds' news into this too, so a story tagged to one compound still shows up here.
+        _newsApi.list(developerId: data.id).then((n) {
+          if (mounted) setState(() => _news = n);
+        }).catchError((_) {});
       }
     } catch (_) {
       if (mounted) setState(() => _failed = true);
@@ -351,7 +362,7 @@ class _DeveloperPageState extends State<DeveloperPage> {
       if (d.foundedYear != null) ('developer.founded'.tr(), '${d.foundedYear}'),
       if (d.stockListing != null) ('developer.listed_on'.tr(), d.stockListing!),
     ];
-    if (desc.isEmpty && rows.isEmpty && d.trustItems.isEmpty) {
+    if (desc.isEmpty && rows.isEmpty && d.trustItems.isEmpty && _news.isEmpty) {
       return EmptyBlock(
         icon: Icons.info_outline_rounded,
         title: 'developer.no_about'.tr(),
@@ -369,9 +380,23 @@ class _DeveloperPageState extends State<DeveloperPage> {
           const SizedBox(height: 22),
         ],
         for (final r in rows) InfoRow(r.$1, r.$2),
+        if (_news.isNotEmpty) ...[
+          if (desc.isNotEmpty || rows.isNotEmpty || d.trustItems.isNotEmpty) const SizedBox(height: 24),
+          UnitSecHead('developer.related_news'.tr()),
+          const SizedBox(height: 12),
+          for (var i = 0; i < _news.length; i++) ...[
+            if (i > 0) const SizedBox(height: 10),
+            NewsRow(item: _news[i], onTap: () => _openNews(_news[i])),
+          ],
+        ],
       ],
     );
   }
+
+  void _openNews(NewsItem item) => Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => NewsArticlePage(item: item, api: _newsApi)),
+  );
 
   /// "Why we list them" — only ever built for verified developers.
   Widget _trust(List<TrustItem> items) {

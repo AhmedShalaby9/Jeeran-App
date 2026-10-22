@@ -99,8 +99,9 @@ class _FakeApi extends ApiClient {
   final Map<String, dynamic> compound;
   final Map<String, dynamic> developer;
   final List<Map<String, dynamic>> units;
+  final List<Map<String, dynamic>> news;
   final List<String> calls = [];
-  _FakeApi({required this.compound, required this.developer, this.units = const []});
+  _FakeApi({required this.compound, required this.developer, this.units = const [], this.news = const []});
 
   @override
   Future<Response> get(String path, {Map<String, dynamic>? queryParams, Map<String, dynamic>? headers}) async {
@@ -109,6 +110,7 @@ class _FakeApi extends ApiClient {
     if (path.startsWith('/compounds/')) return ok({'success': true, 'data': compound});
     if (path.startsWith('/developers/')) return ok({'success': true, 'data': developer});
     if (path == '/properties') return ok({'success': true, 'data': units});
+    if (path == '/news') return ok({'success': true, 'data': news});
     return ok({'success': true, 'data': {'is_following': false}});
   }
 }
@@ -203,9 +205,9 @@ void main() {
     });
 
     late _FakeApi api;
-    Future<void> setUpApi({Map<String, dynamic>? compound, Map<String, dynamic>? developer, String? phone, List<Map<String, dynamic>> units = const []}) async {
+    Future<void> setUpApi({Map<String, dynamic>? compound, Map<String, dynamic>? developer, String? phone, List<Map<String, dynamic>> units = const [], List<Map<String, dynamic>> news = const []}) async {
       await sl.reset();
-      api = _FakeApi(compound: compound ?? _compound(images: false), developer: developer ?? _developer(), units: units);
+      api = _FakeApi(compound: compound ?? _compound(images: false), developer: developer ?? _developer(), units: units, news: news);
       sl.registerSingleton<ApiClient>(api);
       sl.registerSingleton<FollowService>(FollowService(apiClient: api));
       AppSettingsService.instance.settings = AppSettings(contactPhone: phone);
@@ -290,6 +292,24 @@ void main() {
         await setUpApi();
         await _show(tester, host, const CompoundPage(compoundId: 3));
         expect(find.byIcon(Icons.call_rounded), findsNothing);
+
+        // ── related news: shown and scoped once linked (none linked above, so this is new material)
+        final newsItem = {'id': 9, 'title': 'Marassi phase 4 released', 'excerpt': 'New units now open', 'media': [], 'published_at': '2026-10-01T00:00:00Z'};
+        await setUpApi(phone: '+201000000000', news: [newsItem]);
+        await _show(tester, host, const CompoundPage(compoundId: 3));
+        await tester.tap(find.text('compound.tab_about'.tr()));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text('compound.related_news'.tr()), findsOneWidget);
+        expect(find.text('Marassi phase 4 released'), findsOneWidget);
+        expect(api.calls.any((c) => c.startsWith('/news') && c.contains('compound_id: 3')), isTrue);
+
+        await setUpApi(phone: '+201000000000', news: [newsItem]);
+        await _show(tester, host, const DeveloperPage(developerId: 1));
+        await tester.tap(find.text('developer.tab_about'.tr()));
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(find.text('developer.related_news'.tr()), findsOneWidget);
+        expect(find.text('Marassi phase 4 released'), findsOneWidget);
+        expect(api.calls.any((c) => c.startsWith('/news') && c.contains('developer_id: 1')), isTrue);
       });
     }
   });

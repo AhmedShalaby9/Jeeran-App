@@ -13,6 +13,9 @@ import '../../../developers/presentation/pages/developer_page.dart';
 import '../../../explore/presentation/widgets/explore_widgets.dart';
 import '../../../follow/data/follow_service.dart';
 import '../../../follow/presentation/follow_alerts.dart';
+import '../../../news/v2/news_api.dart';
+import '../../../news/v2/news_article_page.dart';
+import '../../../news/v2/news_widgets.dart';
 import '../../../units/presentation/unit_widgets.dart';
 import '../../../../core/widgets/shared_photo.dart';
 import '../../data/compound_page_data.dart';
@@ -43,6 +46,8 @@ class _CompoundPageState extends State<CompoundPage> {
   int _tab = 0;
   int _photo = 0;
   FollowController? _follow; // created once the compound has loaded
+  late final _newsApi = NewsApi(sl<ApiClient>());
+  List<NewsItem> _news = []; // loaded after the compound itself; empty just means none yet (or none linked)
 
   @override
   void initState() {
@@ -73,6 +78,10 @@ class _CompoundPageState extends State<CompoundPage> {
             events: data.alertEvents,
           );
         });
+        // a supplementary section: never blocks or fails the page itself
+        _newsApi.list(compoundId: data.id).then((n) {
+          if (mounted) setState(() => _news = n);
+        }).catchError((_) {});
       }
     } catch (_) {
       if (mounted) setState(() => _failed = true);
@@ -526,9 +535,23 @@ class _CompoundPageState extends State<CompoundPage> {
             ),
           ),
         ],
+        if (_news.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          UnitSecHead('compound.related_news'.tr()),
+          const SizedBox(height: 12),
+          for (var i = 0; i < _news.length; i++) ...[
+            if (i > 0) const SizedBox(height: 10),
+            NewsRow(item: _news[i], onTap: () => _openNews(_news[i])),
+          ],
+        ],
       ],
     );
   }
+
+  void _openNews(NewsItem item) => Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => NewsArticlePage(item: item, api: _newsApi)),
+  );
 
   /// The computed rows first (so they are always right), then whatever was typed in the dashboard.
   List<(String, String)> _factRows(CompoundPageData d) {

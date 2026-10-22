@@ -64,10 +64,16 @@ class NewsApi {
   final ApiClient client;
   NewsApi(this.client);
 
-  Future<List<NewsItem>> list({int page = 1}) async {
+  Future<List<NewsItem>> list({int page = 1, int? compoundId, int? developerId}) async {
     final res = await client.get(
       '/news',
-      queryParams: {'summary': 'true', 'limit': pageSize, 'page': page},
+      queryParams: {
+        'summary': 'true',
+        'limit': pageSize,
+        'page': page,
+        if (compoundId != null) 'compound_id': compoundId,
+        if (developerId != null) 'developer_id': developerId,
+      },
     );
     final rows = (res.data['data'] as List?) ?? const [];
     return rows

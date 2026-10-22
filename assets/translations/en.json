@@ -360,7 +360,8 @@
     "n_units": {
       "one": "{} unit",
       "other": "{} units"
-    }
+    },
+    "related_news": "Related news"
   },
   "done": {
     "title": "You’re all set, {}.",
@@ -780,7 +781,8 @@
       "other": "{} photos"
     },
     "location": "Location",
-    "directions": "Directions"
+    "directions": "Directions",
+    "related_news": "Related news"
   },
   "find": {
     "placeholder": "Compound, area or developer",
