@@ -1378,6 +1378,8 @@
     "v_pool_view": "Pool",
     "v_private_garden": "Garden",
     "v_golf_view": "Golf",
+    "v_parking_view": "Parking",
+    "v_street_view": "Street",
     "f_price": "Asking price",
     "f_payment": "Payment",
     "cash": "Cash",

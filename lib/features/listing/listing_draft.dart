@@ -162,6 +162,8 @@ class ListingDraft {
     'pool_view',
     'private_garden',
     'golf_view',
+    'parking_view',
+    'street_view',
   ];
 
   double? get priceValue => double.tryParse(price.replaceAll(',', '').trim());
@@ -176,7 +178,7 @@ class ListingDraft {
   bool get isRent => status != 'for_sale';
 
   /// A resale (what the lister is selling is their own contract): the price is the total contract value and the down
-  /// payment is an amount. Sellers default to resale, admins to primary, unless the lister chose.
+  /// payment is an amount. Everyone defaults to resale — the far more common case — unless the lister chose primary.
   bool get isResale {
     var admin = false;
     try {
@@ -186,9 +188,10 @@ class ListingDraft {
   }
   double? get downAmountValue =>
       double.tryParse(downAmount.replaceAll(',', '').trim());
-  /// Only Jeeran admins list primary (developer) units: everyone else lists resale, whatever the draft says.
+  /// Only Jeeran admins can list a primary (developer) unit; everyone else always lists resale.
+  /// Admins default to resale too — most of what they list is a resale unit — unless they pick primary.
   String effectiveListingType({required bool admin}) =>
-      admin ? (listingType ?? 'primary') : 'resale';
+      admin ? (listingType ?? 'resale') : 'resale';
   bool get noRooms => const ['land', 'shop', 'office', 'clinic'].contains(type);
 
   bool get basicsValid => type != null && compound != null;

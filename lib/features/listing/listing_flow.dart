@@ -1056,6 +1056,18 @@ class _ListingFlowState extends State<ListingFlow> {
         options: [for (final t in ListingDraft.types) (t, 'listing.t_$t'.tr())],
         onChanged: (v) => _touch('type', () => _d.type = v),
       ),
+      if (_d.asksGarden)
+        ChipPicker(
+          key: const Key('f-ground-garden-basics'),
+          label: 'listing.f_ground_garden'.tr(),
+          clearable: true,
+          value: _d.groundGarden == null ? null : (_d.groundGarden! ? 'yes' : 'no'),
+          options: [('yes', 'listing.yes'.tr()), ('no', 'listing.no'.tr())],
+          onChanged: (v) => setState(() {
+            _d.groundGarden = v == null ? null : v == 'yes';
+            if (v == 'no') _d.garden = '';
+          }),
+        ),
       ChipPicker(
         label: 'listing.f_purpose'.tr(),
         cols: 3,
@@ -1209,6 +1221,27 @@ class _ListingFlowState extends State<ListingFlow> {
         ai: _d.ai.contains('level'),
         onChanged: (v) => _touch('level', () => _d.level = v),
       ),
+      if (_d.asksGarden)
+        ChipPicker(
+          label: 'listing.f_ground_garden'.tr(),
+          clearable: true,
+          value: _d.groundGarden == null ? null : (_d.groundGarden! ? 'yes' : 'no'),
+          options: [('yes', 'listing.yes'.tr()), ('no', 'listing.no'.tr())],
+          onChanged: (v) => setState(() {
+            _d.groundGarden = v == null ? null : v == 'yes';
+            if (v == 'no') _d.garden = '';
+          }),
+        ),
+      if (_d.hasGarden)
+        ListingInput(
+          fieldKey: const Key('f-garden'),
+          label: 'listing.f_garden'.tr(),
+          value: _d.garden,
+          suffix: 'm²',
+          numeric: true,
+          optional: true,
+          onChanged: (v) => setState(() => _d.garden = v),
+        ),
       ChipPicker(
         label: 'listing.f_finishing'.tr(),
         cols: 2,
@@ -1289,27 +1322,6 @@ class _ListingFlowState extends State<ListingFlow> {
             onChanged: (v) => setState(() => _d.outdoorSize = v),
           ),
       ],
-      if (_d.asksGarden)
-        ChipPicker(
-          label: 'listing.f_ground_garden'.tr(),
-          clearable: true,
-          value: _d.groundGarden == null ? null : (_d.groundGarden! ? 'yes' : 'no'),
-          options: [('yes', 'listing.yes'.tr()), ('no', 'listing.no'.tr())],
-          onChanged: (v) => setState(() {
-            _d.groundGarden = v == null ? null : v == 'yes';
-            if (v == 'no') _d.garden = '';
-          }),
-        ),
-      if (_d.hasGarden)
-        ListingInput(
-          fieldKey: const Key('f-garden'),
-          label: 'listing.f_garden'.tr(),
-          value: _d.garden,
-          suffix: 'm²',
-          numeric: true,
-          optional: true,
-          onChanged: (v) => setState(() => _d.garden = v),
-        ),
       ListingInput(
         fieldKey: const Key('f-maintenance'),
         label: 'listing.f_maintenance'.tr(),
