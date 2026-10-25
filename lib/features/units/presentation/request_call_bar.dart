@@ -16,11 +16,13 @@ import 'phone_confirm_sheet.dart';
 /// The bottom bar of developer inventory: the price, the instalment, and "Request a call" —
 /// there is no individual seller to call, so Jeeran calls the buyer back. The request reaches
 /// the team in the dashboard's Call Requests (`POST /call-requests`). Used for primary units only;
-/// a resale unit shows [ContactSellerBar] instead. Also used on a compound's page (no unit picked
-/// yet): exactly one of [propertyId]/[compoundId] is set, and that is what the request is about.
+/// a resale unit shows [ContactSellerBar] instead. Also used on a compound's or a developer's page
+/// (no unit/compound picked yet): exactly one of [propertyId]/[compoundId]/[developerId] is set,
+/// and that is what the request is about.
 class RequestCallBar extends StatefulWidget {
   final int? propertyId;
   final int? compoundId;
+  final int? developerId;
   final double? price;
   final String? fromPer; // "From 347K / quarter"
   final Future<void> Function(int id)? send; // tests inject a fake
@@ -30,13 +32,14 @@ class RequestCallBar extends StatefulWidget {
   /// Who to message on WhatsApp: the unit's own contact when it has one, else Jeeran's number from settings.
   /// Null hides the button.
   final String? whatsapp;
-  final String? whatsappText; // the first message, naming the unit/compound
+  final String? whatsappText; // the first message, naming the unit/compound/developer
   final Future<void> Function(String number, String text)? openWhatsapp; // tests inject a fake
 
   const RequestCallBar({
     super.key,
     this.propertyId,
     this.compoundId,
+    this.developerId,
     this.price,
     this.fromPer,
     this.send,
@@ -45,7 +48,10 @@ class RequestCallBar extends StatefulWidget {
     this.whatsapp,
     this.whatsappText,
     this.openWhatsapp,
-  }) : assert((propertyId == null) != (compoundId == null), 'exactly one of propertyId/compoundId');
+  }) : assert(
+         (propertyId == null ? 0 : 1) + (compoundId == null ? 0 : 1) + (developerId == null ? 0 : 1) == 1,
+         'exactly one of propertyId/compoundId/developerId',
+       );
 
   @override
   State<RequestCallBar> createState() => _RequestCallBarState();
@@ -75,11 +81,15 @@ class _RequestCallBarState extends State<RequestCallBar> {
         }
       }
       if (widget.send != null) {
-        await widget.send!(widget.propertyId ?? widget.compoundId!);
+        await widget.send!(widget.propertyId ?? widget.compoundId ?? widget.developerId!);
       } else {
         await sl<ApiClient>().post(
           ApiEndpoints.callRequests,
-          data: widget.propertyId != null ? {'property_id': widget.propertyId} : {'compound_id': widget.compoundId},
+          data: widget.propertyId != null
+              ? {'property_id': widget.propertyId}
+              : widget.compoundId != null
+              ? {'compound_id': widget.compoundId}
+              : {'developer_id': widget.developerId},
         );
       }
       if (!mounted) return;

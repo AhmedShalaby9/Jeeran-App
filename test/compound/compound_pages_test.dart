@@ -274,7 +274,9 @@ void main() {
         await tester.pump(const Duration(milliseconds: 300));
         expect(tester.takeException(), isNull);
         expect(find.text('developer.why_title'.tr()), findsOneWidget);
-        expect(find.text('developer.call_us'.tr()), findsOneWidget);
+        expect(find.byType(RequestCallBar), findsOneWidget);
+        expect(find.byKey(const Key('request-call')), findsOneWidget);
+        expect(find.byKey(const Key('request-whatsapp')), findsOneWidget);
 
         // the bell sits on the cover, beside Follow, and opens the alerts sheet
         expect(find.byKey(const Key('follow-button')), findsOneWidget);
@@ -290,8 +292,9 @@ void main() {
         await tester.tap(find.text('developer.tab_about'.tr()));
         await tester.pump(const Duration(milliseconds: 300));
         expect(find.text('developer.why_title'.tr()), findsNothing);
-        // ── no contact phone saved: no call buttons
-        expect(find.byIcon(Icons.call_rounded), findsNothing);
+        // ── no contact phone saved: "Request a call" still works, WhatsApp doesn't need a number to hide
+        expect(find.byKey(const Key('request-call')), findsOneWidget);
+        expect(find.byKey(const Key('request-whatsapp')), findsNothing);
         await setUpApi();
         await _show(tester, host, const CompoundPage(compoundId: 3));
         // "Request a call" doesn't need Jeeran's own number — only WhatsApp does

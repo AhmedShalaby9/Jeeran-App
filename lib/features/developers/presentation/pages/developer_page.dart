@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
+import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/utils/format_utils.dart';
 import '../../../../core/widgets/jv2.dart';
 import '../../../ai_chat/scoped/ask_context.dart';
@@ -19,12 +20,14 @@ import '../../../follow/presentation/follow_alerts.dart';
 import '../../../news/v2/news_api.dart';
 import '../../../news/v2/news_article_page.dart';
 import '../../../news/v2/news_widgets.dart';
+import '../../../units/presentation/request_call_bar.dart';
 import '../../../units/presentation/unit_widgets.dart' show UnitSecHead;
 import '../../data/developer_page_data.dart';
 import '../widgets/developer_shimmer.dart';
 
 /// A developer's page: cover + logo + Follow, key figures, then Compounds / Listings / About.
-/// "Call us" dials the number saved in the dashboard settings — there is no messaging.
+/// The bottom bar is [RequestCallBar] scoped to the developer (no compound/unit picked yet) — same
+/// "team calls the buyer back" flow as a primary unit's page, plus WhatsApp to Jeeran's number.
 class DeveloperPage extends StatefulWidget {
   final int developerId;
   final String? name; // shown while loading
@@ -132,7 +135,12 @@ class _DeveloperPageState extends State<DeveloperPage> {
             : Column(
                 children: [
                   Expanded(child: _content(d)),
-                  if (d != null) CallBar(label: 'developer.call_us'.tr()),
+                  if (d != null)
+                    RequestCallBar(
+                      developerId: d.id,
+                      whatsapp: AppSettingsService.instance.contactPhone,
+                      whatsappText: 'developer.wa_text'.tr(args: [d.name.pick(_ar)]),
+                    ),
                 ],
               ),
       ),

@@ -353,7 +353,7 @@
     "head_office": "Head office",
     "founded": "Founded",
     "listed_on": "Listed on",
-    "call_us": "Call us",
+    "wa_text": "Hello, I'm interested in {}. Could you give me more details?",
     "compounds_empty": "No compounds yet.",
     "listings_empty": "No live listings right now.",
     "no_about": "More about this developer is coming soon.",
