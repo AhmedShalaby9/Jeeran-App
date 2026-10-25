@@ -4,15 +4,17 @@ import 'package:alice_dio/alice_dio_adapter.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import '../config/app_config.dart';
 import '../navigation/app_navigator.dart';
+import '../services/app_settings_service.dart';
 import '../utils/app_colors.dart';
 
-/// Staging-only HTTP inspector (Alice). Production builds never create it, log a call or show the button.
+/// HTTP inspector (Alice), switched on remotely by `settings.network_inspector_enabled`
+/// (dashboard → App & Versions) rather than the build environment — off until the
+/// server settings say otherwise, on any environment, no rebuild needed either way.
 class NetworkInspector {
   NetworkInspector._();
 
-  static bool get enabled => AppConfig.isStaging;
+  static bool get enabled => AppSettingsService.instance.networkInspectorEnabled;
 
   static Alice? _alice;
   static AliceDioAdapter? _adapter;
@@ -28,7 +30,7 @@ class NetworkInspector {
     );
   }
 
-  /// Hooks the inspector into [dio]. Does nothing outside staging.
+  /// Hooks the inspector into [dio]. Does nothing while the setting is off.
   static void attach(Dio dio) {
     final alice = _inst;
     if (alice == null) return;
@@ -41,7 +43,7 @@ class NetworkInspector {
 
   static void open() => _inst?.showInspector();
 
-  /// For MaterialApp.builder: puts the floating button over every screen (staging only).
+  /// For MaterialApp.builder: puts the floating button over every screen while enabled.
   static Widget wrap(Widget? child) {
     final page = child ?? const SizedBox.shrink();
     if (!enabled) return page;

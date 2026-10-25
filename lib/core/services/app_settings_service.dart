@@ -29,6 +29,9 @@ class AppSettings {
   /// True on environments with a static login code: the app skips the reCAPTCHA step.
   final bool otpTestMode;
 
+  /// Remote kill switch for the HTTP inspector (Alice) — set in the dashboard, not the build.
+  final bool networkInspectorEnabled;
+
   const AppSettings({
     this.minVersionIos,
     this.minVersionAndroid,
@@ -52,6 +55,7 @@ class AppSettings {
     this.contactPhone,
     this.mapboxToken,
     this.otpTestMode = false,
+    this.networkInspectorEnabled = false,
   });
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -77,6 +81,7 @@ class AppSettings {
         contactPhone: json['contact_phone'] as String?,
         mapboxToken: json['mapbox_token'] as String?,
         otpTestMode: json['otp_test_mode'] == true,
+        networkInspectorEnabled: json['network_inspector_enabled'] == true,
       );
 }
 
@@ -102,6 +107,8 @@ class AppSettingsService {
   bool get inReview => settings?.inReview ?? false;
 
   bool get otpTestMode => settings?.otpTestMode ?? false;
+
+  bool get networkInspectorEnabled => settings?.networkInspectorEnabled ?? false;
 
   /// The token the map screens use: only what the server sends (empty until the settings have loaded).
   /// It is never kept in the app's code, its files or its build settings.

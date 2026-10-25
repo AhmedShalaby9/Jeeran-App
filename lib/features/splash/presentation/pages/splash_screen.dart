@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/debug/network_inspector.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/app_settings_service.dart';
@@ -95,7 +96,10 @@ class _SplashScreenState extends State<SplashScreen>
     if (AppStorage.isLoggedIn) {
       _profileRefresh = _refreshProfile();
     }
-    _settingsFetch = AppSettingsService.instance.fetch(sl<ApiClient>());
+    // The inspector's flag arrives with settings, not before — (re-)attach once it's known.
+    _settingsFetch = AppSettingsService.instance
+        .fetch(sl<ApiClient>())
+        .then((_) => NetworkInspector.attach(sl<ApiClient>().dio));
 
     _introController.forward();
     await Future.delayed(const Duration(milliseconds: 2400));

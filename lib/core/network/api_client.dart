@@ -25,8 +25,12 @@ class ApiClient {
       AuthInterceptor(),
       LoggingInterceptor(),
     ]);
-    NetworkInspector.attach(_dio); // staging only
+    NetworkInspector.attach(_dio); // no-op until settings say to turn it on
   }
+
+  /// Exposed so [NetworkInspector] can be (re-)attached once settings arrive — the
+  /// flag that controls it isn't known yet when this client is first constructed.
+  Dio get dio => _dio;
 
   /// Sent by the v2 screens (compound / developer pages): the API answers in
   /// the new vocabulary — `compound` instead of `project`.

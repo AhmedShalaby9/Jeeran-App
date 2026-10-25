@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:jeeran_flutter/core/config/app_config.dart';
 import 'package:jeeran_flutter/core/debug/network_inspector.dart';
+import 'package:jeeran_flutter/core/services/app_settings_service.dart';
 
 void main() {
   Widget host() => MaterialApp(
@@ -9,17 +9,25 @@ void main() {
         home: const Scaffold(body: Text('page')),
       );
 
-  testWidgets('staging shows the inspector button over the app', (t) async {
-    AppConfig.setEnvironment(AppEnvironment.staging);
+  tearDown(() => AppSettingsService.instance.settings = null);
+
+  testWidgets('hidden until settings load (default off)', (t) async {
     await t.pumpWidget(host());
-    expect(find.byKey(const Key('network-inspector-fab')), findsOneWidget);
+    expect(find.byKey(const Key('network-inspector-fab')), findsNothing);
     expect(find.text('page'), findsOneWidget);
   });
 
-  testWidgets('production never shows it', (t) async {
-    AppConfig.setEnvironment(AppEnvironment.production);
+  testWidgets('shown once the dashboard flag is on, on any environment', (t) async {
+    AppSettingsService.instance.settings =
+        const AppSettings(networkInspectorEnabled: true);
+    await t.pumpWidget(host());
+    expect(find.byKey(const Key('network-inspector-fab')), findsOneWidget);
+  });
+
+  testWidgets('hidden again once the dashboard flag is off', (t) async {
+    AppSettingsService.instance.settings =
+        const AppSettings(networkInspectorEnabled: false);
     await t.pumpWidget(host());
     expect(find.byKey(const Key('network-inspector-fab')), findsNothing);
-    AppConfig.setEnvironment(AppEnvironment.staging);
   });
 }
