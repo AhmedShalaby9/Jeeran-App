@@ -12,10 +12,10 @@ import 'package:jeeran_flutter/core/services/contact_call.dart';
 import 'package:jeeran_flutter/features/compounds/data/compound_page_data.dart';
 import 'package:jeeran_flutter/features/compounds/presentation/pages/compound_page.dart';
 import 'package:jeeran_flutter/features/compounds/presentation/widgets/facility_icon.dart';
-import 'package:jeeran_flutter/features/compounds/presentation/widgets/page_widgets.dart';
 import 'package:jeeran_flutter/features/developers/data/developer_page_data.dart';
 import 'package:jeeran_flutter/features/developers/presentation/pages/developer_page.dart';
 import 'package:jeeran_flutter/features/follow/data/follow_service.dart';
+import 'package:jeeran_flutter/features/units/presentation/request_call_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Shapes captured from `GET /compounds/:id` and `GET /developers/:id` (X-Api-Version: 2).
@@ -225,8 +225,9 @@ void main() {
         expect(tester.takeException(), isNull);
         expect(api.calls.first, contains('X-Api-Version'));
         expect(find.text(lang == 'ar' ? 'مراسي' : 'Marassi'), findsWidgets);
-        expect(find.byType(CallBar), findsOneWidget);
-        expect(find.byIcon(Icons.call_rounded), findsOneWidget);
+        expect(find.byType(RequestCallBar), findsOneWidget);
+        expect(find.byKey(const Key('request-call')), findsOneWidget);
+        expect(find.byKey(const Key('request-whatsapp')), findsOneWidget);
         // master plan + gallery tiles and the location card (a pin exists)
         expect(find.byKey(const Key('tile-plan')), findsOneWidget);
         expect(find.byKey(const Key('tile-gallery')), findsOneWidget);
@@ -255,6 +256,8 @@ void main() {
         expect(find.text('unit.questions'.tr()), findsOneWidget);
         expect(find.byKey(const Key('faq-answer-0')), findsOneWidget);
         expect(find.byKey(const Key('faq-answer-1')), findsNothing);
+        await tester.ensureVisible(find.byKey(const Key('faq-1')));
+        await tester.pump(const Duration(milliseconds: 300));
         await tester.tap(find.byKey(const Key('faq-1')));
         await tester.pump(const Duration(milliseconds: 300));
         expect(find.byKey(const Key('faq-answer-1')), findsOneWidget);
@@ -291,7 +294,9 @@ void main() {
         expect(find.byIcon(Icons.call_rounded), findsNothing);
         await setUpApi();
         await _show(tester, host, const CompoundPage(compoundId: 3));
-        expect(find.byIcon(Icons.call_rounded), findsNothing);
+        // "Request a call" doesn't need Jeeran's own number — only WhatsApp does
+        expect(find.byKey(const Key('request-call')), findsOneWidget);
+        expect(find.byKey(const Key('request-whatsapp')), findsNothing);
 
         // ── related news: shown and scoped once linked (none linked above, so this is new material)
         final newsItem = {'id': 9, 'title': 'Marassi phase 4 released', 'excerpt': 'New units now open', 'media': [], 'published_at': '2026-10-01T00:00:00Z'};

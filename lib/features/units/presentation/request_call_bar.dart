@@ -1,11 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/di/injection_container.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_endpoints.dart';
 import '../../../core/storage/app_storage.dart';
+import '../../../core/utils/app_colors.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/jv2.dart';
 import '../data/unit_format.dart';
@@ -14,24 +16,27 @@ import 'phone_confirm_sheet.dart';
 /// The bottom bar of developer inventory: the price, the instalment, and "Request a call" —
 /// there is no individual seller to call, so Jeeran calls the buyer back. The request reaches
 /// the team in the dashboard's Call Requests (`POST /call-requests`). Used for primary units only;
-/// a resale unit shows [ContactSellerBar] instead.
+/// a resale unit shows [ContactSellerBar] instead. Also used on a compound's page (no unit picked
+/// yet): exactly one of [propertyId]/[compoundId] is set, and that is what the request is about.
 class RequestCallBar extends StatefulWidget {
-  final int propertyId;
+  final int? propertyId;
+  final int? compoundId;
   final double? price;
   final String? fromPer; // "From 347K / quarter"
-  final Future<void> Function(int propertyId)? send; // tests inject a fake
+  final Future<void> Function(int id)? send; // tests inject a fake
   final Future<CallerPhone> Function()? loadPhone; // tests inject a fake
   final Future<void> Function(String number)? savePhone; // tests inject a fake
 
   /// Who to message on WhatsApp: the unit's own contact when it has one, else Jeeran's number from settings.
   /// Null hides the button.
   final String? whatsapp;
-  final String? whatsappText; // the first message, naming the unit
+  final String? whatsappText; // the first message, naming the unit/compound
   final Future<void> Function(String number, String text)? openWhatsapp; // tests inject a fake
 
   const RequestCallBar({
     super.key,
-    required this.propertyId,
+    this.propertyId,
+    this.compoundId,
     this.price,
     this.fromPer,
     this.send,
@@ -40,7 +45,7 @@ class RequestCallBar extends StatefulWidget {
     this.whatsapp,
     this.whatsappText,
     this.openWhatsapp,
-  });
+  }) : assert((propertyId == null) != (compoundId == null), 'exactly one of propertyId/compoundId');
 
   @override
   State<RequestCallBar> createState() => _RequestCallBarState();
@@ -70,9 +75,12 @@ class _RequestCallBarState extends State<RequestCallBar> {
         }
       }
       if (widget.send != null) {
-        await widget.send!(widget.propertyId);
+        await widget.send!(widget.propertyId ?? widget.compoundId!);
       } else {
-        await sl<ApiClient>().post(ApiEndpoints.callRequests, data: {'property_id': widget.propertyId});
+        await sl<ApiClient>().post(
+          ApiEndpoints.callRequests,
+          data: widget.propertyId != null ? {'property_id': widget.propertyId} : {'compound_id': widget.compoundId},
+        );
       }
       if (!mounted) return;
       setState(() {
@@ -118,44 +126,66 @@ class _RequestCallBarState extends State<RequestCallBar> {
       decoration: const BoxDecoration(color: Color(0xF5FAFBFD), border: Border(top: BorderSide(color: JV2.line))),
       child: Row(
         children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (widget.price != null) Text('${'unit.egp'.tr()} ${fmtShort(widget.price!)}', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: JV2.ink)),
-                if (widget.fromPer != null) Text(widget.fromPer!, style: const TextStyle(fontSize: 11.5, color: JV2.inkSub)),
-              ],
+          if (widget.price != null || widget.fromPer != null) ...[
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.price != null)
+                    Text(
+                      '${'unit.egp'.tr()} ${fmtShort(widget.price!)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: JV2.ink),
+                    ),
+                  if (widget.fromPer != null)
+                    Text(widget.fromPer!, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11.5, color: JV2.inkSub)),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          // message the seller on WhatsApp instead of waiting for the call back
+            const SizedBox(width: 8),
+          ],
+          // message the seller on WhatsApp instead of waiting for the call back — sized to its
+          // own text (never Expanded/capped), so "WhatsApp" is never clipped; the price column
+          // is what gives way on a narrow screen.
           if (widget.whatsapp != null) ...[
             GestureDetector(
               key: const Key('request-whatsapp'),
               onTap: _whatsapp,
               child: Container(
-                width: 48,
                 height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: JV2.line),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(color: AppColors.whatsapp, borderRadius: BorderRadius.circular(14)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const FaIcon(FontAwesomeIcons.whatsapp, color: Colors.white, size: 24),
+                    const SizedBox(width: 6),
+                    Text('unit.whatsapp'.tr(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+                  ],
                 ),
-                child: const Icon(Icons.chat_rounded, color: Color(0xFF1FA855), size: 22),
               ),
             ),
             const SizedBox(width: 8),
           ],
-          JV2PrimaryButton(
-            key: const Key('request-call'),
-            height: 48,
-            onPressed: _sent ? null : _request,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _busy
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(_sent ? 'unit.call_sent_short'.tr() : 'unit.request_call'.tr(), style: const TextStyle(fontSize: 15)),
+          // flexible, unlike the WhatsApp button above: this one may ellipsize before WhatsApp ever does
+          Expanded(
+            child: JV2PrimaryButton(
+              key: const Key('request-call'),
+              height: 48,
+              onPressed: _sent ? null : _request,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: _busy
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Text(
+                        _sent ? 'unit.call_sent_short'.tr() : 'unit.request_call'.tr(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 15),
+                      ),
+              ),
             ),
           ),
         ],

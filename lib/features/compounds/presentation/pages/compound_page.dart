@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
+import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/utils/format_utils.dart';
 import '../../../../core/widgets/jv2.dart';
 import '../../../ai_chat/scoped/ask_context.dart';
@@ -16,6 +17,7 @@ import '../../../follow/presentation/follow_alerts.dart';
 import '../../../news/v2/news_api.dart';
 import '../../../news/v2/news_article_page.dart';
 import '../../../news/v2/news_widgets.dart';
+import '../../../units/presentation/request_call_bar.dart';
 import '../../../units/presentation/unit_widgets.dart';
 import '../../../../core/widgets/shared_photo.dart';
 import '../../data/compound_page_data.dart';
@@ -27,8 +29,9 @@ import '../widgets/facility_icon.dart';
 import '../widgets/page_widgets.dart';
 
 /// A compound's page: gallery, key figures, then Units / Phases / About.
-/// Following turns on every notification for it (the bell mutes them without unfollowing). "Call to book a viewing"
-/// dials the number saved in the dashboard settings.
+/// Following turns on every notification for it (the bell mutes them without unfollowing).
+/// The bottom bar is [RequestCallBar] scoped to the compound (no unit picked yet) — same
+/// "team calls the buyer back" flow as a primary unit's page, plus WhatsApp to Jeeran's number.
 class CompoundPage extends StatefulWidget {
   final int compoundId;
   final String? name; // shown while loading
@@ -106,14 +109,12 @@ class _CompoundPageState extends State<CompoundPage> {
             : Column(
                 children: [
                   Expanded(child: _content(d)),
-                  CallBar(
-                    label: 'compound.call_to_book'.tr(),
-                    caption: d.minPrice == null
-                        ? null
-                        : 'compound.starting_from'.tr(),
-                    captionValue: d.minPrice == null
-                        ? null
-                        : '${compactPrice(d.minPrice!)} ${'explore.egp'.tr()}',
+                  RequestCallBar(
+                    compoundId: d.id,
+                    price: d.minPrice,
+                    fromPer: d.minPrice == null ? null : 'compound.starting_from'.tr(),
+                    whatsapp: AppSettingsService.instance.contactPhone,
+                    whatsappText: 'compound.wa_text'.tr(args: [d.name.pick(_ar)]),
                   ),
                 ],
               ),

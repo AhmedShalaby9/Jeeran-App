@@ -10,6 +10,7 @@ class ProfileData {
   final String? email, phone, picture, city, language, company, bio;
   final String userType; // buyer | seller | admin | super_admin
   final bool sellerVerified;
+  final bool isSocialLogin;
   final DateTime? since;
   final int? liveListings;
 
@@ -24,6 +25,7 @@ class ProfileData {
     this.company,
     this.bio,
     this.sellerVerified = false,
+    this.isSocialLogin = false,
     this.since,
     this.liveListings,
   });
@@ -42,6 +44,7 @@ class ProfileData {
     company: _s(j['company_name']),
     bio: _s(j['bio']),
     sellerVerified: j['seller_verified'] == true,
+    isSocialLogin: j['is_social_login'] == true,
     since: DateTime.tryParse(_s(j['member_since']) ?? '')?.toLocal(),
     liveListings: (j['live_listings'] as num?)?.toInt(),
   );

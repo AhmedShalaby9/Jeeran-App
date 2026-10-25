@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/error/exceptions.dart';
 import '../../core/storage/app_storage.dart';
 import '../../core/widgets/jv2.dart';
 import '../auth/presentation/pages/login_page.dart';
@@ -12,8 +13,8 @@ import '../main/presentation/pages/main_page.dart';
 import 'profile_api.dart';
 import 'profile_page.dart';
 
-/// The fields behind the profile. Phone and email are how people reach you and how you sign in, so they are
-/// shown but not changed here. Pops with the saved [ProfileData].
+/// The fields behind the profile. Phone is how you sign in, so it is shown but not changed here. Email can
+/// be changed unless the account signed in with Google/Apple, which owns it. Pops with the saved [ProfileData].
 class EditProfilePage extends StatefulWidget {
   final ProfileData profile;
   final ProfileApi api;
@@ -25,6 +26,7 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   late final _name = TextEditingController(text: widget.profile.name);
+  late final _email = TextEditingController(text: widget.profile.email ?? '');
   late final _city = TextEditingController(text: widget.profile.city ?? '');
   late final _company = TextEditingController(
     text: widget.profile.company ?? '',
@@ -33,6 +35,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late String _lang;
   String? _picture;
   bool _busy = false, _dirty = false, _uploading = false;
+  String? _errorMessage;
+
+  static final _emailRe = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$');
 
   ProfileData get _p => widget.profile;
 
@@ -47,20 +52,26 @@ class _EditProfilePageState extends State<EditProfilePage> {
         if (mounted) _lang = context.locale.languageCode;
       });
     }
-    for (final c in [_name, _city, _company, _bio]) {
+    for (final c in [_name, _email, _city, _company, _bio]) {
       c.addListener(() => setState(() => _dirty = true));
     }
   }
 
   @override
   void dispose() {
-    for (final c in [_name, _city, _company, _bio]) {
+    for (final c in [_name, _email, _city, _company, _bio]) {
       c.dispose();
     }
     super.dispose();
   }
 
-  bool get _canSave => _dirty && !_busy && _name.text.trim().length >= 2;
+  bool get _emailOk =>
+      _p.isSocialLogin ||
+      _email.text.trim().isEmpty ||
+      _emailRe.hasMatch(_email.text.trim());
+
+  bool get _canSave =>
+      _dirty && !_busy && _name.text.trim().length >= 2 && _emailOk;
 
   void _toast(String key) => ScaffoldMessenger.of(
     context,
@@ -90,13 +101,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
   }
 
   Future<void> _save() async {
-    setState(() => _busy = true);
+    setState(() {
+      _busy = true;
+      _errorMessage = null;
+    });
     try {
       final saved = await widget.api.save({
         'name': _name.text.trim(),
         'city': _city.text.trim(),
         'profile_picture': _picture ?? '',
         'preferred_language': _lang,
+        if (!_p.isSocialLogin) 'email': _email.text.trim(),
         if (_p.isCustomer) ...{
           'company_name': _company.text.trim(),
           'bio': _bio.text.trim(),
@@ -121,10 +136,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
         return;
       }
       Navigator.pop(context, saved);
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        setState(() => _busy = false);
-        _toast('profile.save_failed');
+        final msg = e is ServerException ? e.message : null;
+        setState(() {
+          _busy = false;
+          _errorMessage = msg;
+        });
+        if (msg == null) _toast('profile.save_failed');
       }
     }
   }
@@ -220,10 +239,30 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 const SizedBox(height: 16),
                 _field(
                   'profile.email'.tr(),
-                  TextEditingController(text: _p.email ?? ''),
-                  readOnly: true,
-                  hint: 'profile.email_hint'.tr(),
+                  _email,
+                  key: 'f-email',
+                  readOnly: _p.isSocialLogin,
+                  ltr: true,
+                  hint: _p.isSocialLogin
+                      ? 'profile.email_hint_social'.tr()
+                      : 'profile.email_hint'.tr(),
                 ),
+                if (!_emailOk) ...[
+                  const SizedBox(height: 7),
+                  Text(
+                    'profile.email_invalid'.tr(),
+                    key: const Key('email-invalid'),
+                    style: const TextStyle(fontSize: 11.5, color: JV2.danger),
+                  ),
+                ],
+                if (_errorMessage != null) ...[
+                  const SizedBox(height: 7),
+                  Text(
+                    _errorMessage!,
+                    key: const Key('profile-error'),
+                    style: const TextStyle(fontSize: 11.5, color: JV2.danger),
+                  ),
+                ],
                 if (seller) ...[
                   const SizedBox(height: 26),
                   _section('profile.seller_profile'.tr()),
@@ -414,6 +453,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     TextEditingController c, {
     String? key,
     bool readOnly = false,
+    bool ltr = false,
     int lines = 1,
     int? maxLength,
     String? hint,
@@ -448,7 +488,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
             minLines: lines,
             maxLines: lines,
             maxLength: maxLength,
-            textDirection: readOnly ? ui.TextDirection.ltr : null,
+            textDirection: readOnly || ltr ? ui.TextDirection.ltr : null,
             style: TextStyle(
               fontSize: lines > 1 ? 14 : 15,
               height: lines > 1 ? 1.5 : null,

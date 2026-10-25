@@ -5,15 +5,18 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:jeeran_flutter/core/error/exceptions.dart';
 import 'package:jeeran_flutter/core/network/api_client.dart';
+import 'package:jeeran_flutter/core/widgets/jv2.dart';
 import 'package:jeeran_flutter/features/profile/profile_api.dart';
 import 'package:jeeran_flutter/features/profile/profile_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Map<String, dynamic> _json(String type) => {
+Map<String, dynamic> _json(String type, {bool social = false}) => {
   'id': 4,
   'name': 'Karim Al-Amin',
   'email': 'karim@jeeran.eg',
+  'is_social_login': social,
   'phone': '+201004821937',
   'user_type': type,
   'profile_picture': null,
@@ -29,6 +32,7 @@ Map<String, dynamic> _json(String type) => {
 class _Client extends ApiClient {
   final Map<String, dynamic> profile;
   final puts = <Map<String, dynamic>>[];
+  String? failWith;
   _Client(this.profile);
 
   Response _ok(String p, Map<String, dynamic> d) => Response(
@@ -51,7 +55,12 @@ class _Client extends ApiClient {
     Map<String, dynamic>? headers,
   }) async {
     puts.add(Map<String, dynamic>.from(data as Map));
-    profile.addAll({'name': data['name'], 'city': data['city']});
+    if (failWith != null) throw ServerException(failWith);
+    profile.addAll({
+      'name': data['name'],
+      'city': data['city'],
+      if (data.containsKey('email')) 'email': data['email'],
+    });
     return _ok(path, profile);
   }
 }
@@ -113,8 +122,8 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 300));
 
-      Future<_Client> show(String type) async {
-        final c = _Client(_json(type));
+      Future<_Client> show(String type, {bool social = false}) async {
+        final c = _Client(_json(type, social: social));
         host.value = ProfilePage(api: ProfileApi(c));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
@@ -150,6 +159,64 @@ void main() {
       expect(c.puts.single['company_name'], 'Al-Amin Properties');
       // back on the profile, with the new name
       expect(find.text('Karim Amin'), findsOneWidget);
+
+      // ── a phone sign-in can change their email: typing something invalid blocks Save,
+      // and a valid address goes out in the body
+      await tester.tap(find.byKey(const Key('profile-edit')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.enterText(find.byKey(const Key('f-email')), 'not-an-email');
+      await tester.pump();
+      expect(find.byKey(const Key('email-invalid')), findsOneWidget);
+      expect(
+        tester
+            .widget<JV2PrimaryButton>(find.byKey(const Key('save-profile')))
+            .onPressed,
+        isNull,
+      );
+      await tester.enterText(
+        find.byKey(const Key('f-email')),
+        'karim.new@jeeran.eg',
+      );
+      await tester.pump();
+      expect(find.byKey(const Key('email-invalid')), findsNothing);
+      await tester.tap(find.byKey(const Key('save-profile')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(c.puts.last['email'], 'karim.new@jeeran.eg');
+
+      // ── the server rejects it (already taken): the message shows and nothing is lost
+      c = await show('customer');
+      await tester.tap(find.byKey(const Key('profile-edit')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      c.failWith = 'this email is already in use';
+      await tester.enterText(
+        find.byKey(const Key('f-email')),
+        'taken@jeeran.eg',
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const Key('save-profile')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('this email is already in use'), findsOneWidget);
+      await tester.tap(find.byKey(const Key('edit-close')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      // ── a Google/Apple sign-in cannot touch their email at all
+      c = await show('customer', social: true);
+      await tester.tap(find.byKey(const Key('profile-edit')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(
+        tester.widget<TextField>(find.byKey(const Key('f-email'))).readOnly,
+        isTrue,
+      );
+      expect(find.text('profile.email_hint_social'.tr()), findsOneWidget);
+      await tester.tap(find.byKey(const Key('edit-close')));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       // ── buyer: no seller block, no seller fields
       c = await show('admin');
