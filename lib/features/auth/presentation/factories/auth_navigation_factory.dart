@@ -19,6 +19,7 @@ class AuthNavigationFactory {
     if (state is AuthOtpSent) {
       _goToOtp(context, state.phone);
     } else if (state is AuthRecaptchaRequired) {
+      if (state.isRetry) _showRetryNotice(context);
       _goToRecaptcha(context, state.phone);
     } else if (state is AuthPhoneChecked) {
       _navigateAfterPhoneCheck(context, state, lastPhone);
@@ -93,5 +94,11 @@ class AuthNavigationFactory {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  static void _showRetryNotice(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("That check didn't go through — please verify again.")),
+    );
   }
 }

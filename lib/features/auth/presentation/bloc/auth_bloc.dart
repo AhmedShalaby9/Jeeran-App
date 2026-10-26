@@ -14,6 +14,7 @@ import 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository repository;
   String? _sessionInfo;
+  int _otpSendAttempts = 0;
 
   AuthBloc({required this.repository}) : super(AuthInitial()) {
     on<AuthLoginEvent>(_onLogin);
@@ -66,6 +67,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthSendOtpEvent event,
     Emitter<AuthState> emit,
   ) async {
+    _otpSendAttempts = 0;
     // staging has a static code and sends nothing, so there is nothing to prove with reCAPTCHA
     if (AppSettingsService.instance.otpTestMode) {
       await _onSendOtpRest(
@@ -82,13 +84,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
+    _otpSendAttempts++;
     final result = await repository.sendOtpRest(
       event.phone,
       event.recaptchaToken,
     );
-    result.fold((failure) => emit(AuthError(_mapFailure(failure))), (
-      sessionInfo,
-    ) {
+    result.fold((failure) {
+      // Google's own bot-risk check on the token failed, not the user's fault — one
+      // automatic retry with a fresh challenge before giving up and showing an error.
+      final recaptchaFailed = failure is ServerFailure && failure.code == 'recaptcha_failed';
+      if (recaptchaFailed && _otpSendAttempts < 2) {
+        emit(AuthRecaptchaRequired(event.phone, isRetry: true));
+        return;
+      }
+      emit(AuthError(_mapFailure(failure)));
+    }, (sessionInfo) {
       _sessionInfo = sessionInfo;
       emit(AuthOtpSent(phone: event.phone, isNewUser: false));
     });

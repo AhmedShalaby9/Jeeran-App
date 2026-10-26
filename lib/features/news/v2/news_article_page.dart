@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -30,6 +32,8 @@ class _NewsArticlePageState extends State<NewsArticlePage> {
   List<NewsItem> _more = const [];
   bool _failed = false;
   int _slide = 0;
+  final PageController _heroController = PageController();
+  Timer? _heroTimer;
 
   @override
   void initState() {
@@ -37,11 +41,21 @@ class _NewsArticlePageState extends State<NewsArticlePage> {
     _load();
   }
 
+  @override
+  void dispose() {
+    _heroTimer?.cancel();
+    _heroController.dispose();
+    super.dispose();
+  }
+
   Future<void> _load() async {
     setState(() => _failed = false);
     try {
       final a = await _api.byId(widget.item?.id ?? widget.id!);
-      if (mounted) setState(() => _a = a);
+      if (mounted) {
+        setState(() => _a = a);
+        _startHeroAutoScroll(a.media.length);
+      }
       final others = await _api.list();
       if (mounted) {
         setState(
@@ -51,6 +65,22 @@ class _NewsArticlePageState extends State<NewsArticlePage> {
     } catch (_) {
       if (mounted && _a == null) setState(() => _failed = true);
     }
+  }
+
+  /// The hero pager plays itself, a slide every 3s — a manual swipe just moves
+  /// the next tick's starting point, it never stops the loop.
+  void _startHeroAutoScroll(int count) {
+    _heroTimer?.cancel();
+    if (count <= 1) return;
+    _heroTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!_heroController.hasClients) return;
+      _slide = (_slide + 1) % count;
+      _heroController.animateToPage(
+        _slide,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   void _openMedia(String url) {
@@ -172,6 +202,7 @@ class _NewsArticlePageState extends State<NewsArticlePage> {
                           ),
                         ),
                       ),
+                    if (a.media.length > 1) _gallerySection(a),
                     if (_more.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
@@ -210,6 +241,52 @@ class _NewsArticlePageState extends State<NewsArticlePage> {
     );
   }
 
+  /// All of the story's media again, lower down, as a grid — the hero pager up top
+  /// is one slide at a time and doesn't show every shot together.
+  Widget _gallerySection(NewsItem a) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'news.gallery'.tr().toUpperCase(),
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.8,
+              color: JV2.inkMute,
+            ),
+          ),
+          const SizedBox(height: 10),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 1.3,
+            ),
+            itemCount: a.media.length,
+            itemBuilder: (_, i) {
+              final m = a.media[i];
+              final video = NewsItem.isVideo(m);
+              return GestureDetector(
+                onTap: () => _openMedia(m),
+                child: Photo(
+                  url: video ? null : m,
+                  radius: 14,
+                  child: video ? const PlayDot(size: 36) : null,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Images and videos in one pager; a video slide is a poster with a play button.
   Widget _gallery(NewsItem a) {
     return SizedBox(
@@ -217,6 +294,7 @@ class _NewsArticlePageState extends State<NewsArticlePage> {
       child: Stack(
         children: [
           PageView.builder(
+            controller: _heroController,
             itemCount: a.media.length,
             onPageChanged: (i) => setState(() => _slide = i),
             itemBuilder: (_, i) {

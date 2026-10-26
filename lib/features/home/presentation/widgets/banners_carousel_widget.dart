@@ -32,6 +32,10 @@ class _BannersCarouselViewState extends State<_BannersCarouselView> {
   Timer? _autoScrollTimer;
   int _currentPage = 0;
 
+  // The box must match what's actually being designed/uploaded (~2.7-3:1 wide), or
+  // BoxFit.cover crops both edges to fill a narrower box — cutting off banner text.
+  static const double _bannerAspectRatio = 2.8;
+
   @override
   void initState() {
     super.initState();
@@ -67,23 +71,30 @@ class _BannersCarouselViewState extends State<_BannersCarouselView> {
         }
       },
       builder: (context, state) {
-        if (state is BannersLoading) return _buildShimmer();
+        if (state is BannersLoading) return _buildShimmer(context);
         if (state is BannersLoaded && state.banners.isNotEmpty) {
-          return _buildCarousel(state.banners);
+          return _buildCarousel(context, state.banners);
         }
         return const SizedBox.shrink();
       },
     );
   }
 
-  Widget _buildCarousel(List<AppBanner> banners) {
+  /// Item width is `viewportFraction` of the full carousel width minus the per-item
+  /// horizontal padding (4px each side, see [_BannerItem]) — matches what each card
+  /// actually renders at, so the height we derive from it is exact, not a guess.
+  double _itemHeight(double carouselWidth) =>
+      (carouselWidth * 0.92 - 8) / _bannerAspectRatio;
+
+  Widget _buildCarousel(BuildContext context, List<AppBanner> banners) {
+    final height = _itemHeight(MediaQuery.sizeOf(context).width);
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            height: 160,
+            height: height,
             child: PageView.builder(
               controller: _pageController,
               padEnds: false,
@@ -118,12 +129,12 @@ class _BannersCarouselViewState extends State<_BannersCarouselView> {
     );
   }
 
-  Widget _buildShimmer() {
+  Widget _buildShimmer(BuildContext context) {
     return Shimmer.fromColors(
       baseColor: Colors.grey.shade300,
       highlightColor: Colors.grey.shade100,
       child: Container(
-        height: 160,
+        height: _itemHeight(MediaQuery.sizeOf(context).width),
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -204,7 +215,7 @@ class _BannerItem extends StatelessWidget {
         child: AppImage.network(
           banner.imageUrl,
           borderRadius: BorderRadius.circular(12),
-          fit: BoxFit.cover,
+          fit: BoxFit.fitWidth,
         ),
       ),
     );

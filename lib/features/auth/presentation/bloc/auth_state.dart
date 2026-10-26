@@ -65,9 +65,13 @@ class AuthOtpSent extends AuthState {
 
 class AuthRecaptchaRequired extends AuthState {
   final String phone;
-  const AuthRecaptchaRequired(this.phone);
+
+  /// True when this challenge is being shown again after Google's own check on the
+  /// first token failed (not the user's fault) — the UI tells them before retrying.
+  final bool isRetry;
+  const AuthRecaptchaRequired(this.phone, {this.isRetry = false});
   @override
-  List<Object?> get props => [phone];
+  List<Object?> get props => [phone, isRetry];
 }
 
 class AuthError extends AuthState {

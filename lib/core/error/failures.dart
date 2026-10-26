@@ -6,9 +6,13 @@ abstract class Failure extends Equatable {
 
 class ServerFailure extends Failure {
   final String? message;
-  const ServerFailure([this.message]);
+
+  /// Machine-readable reason from the API, e.g. `recaptcha_failed`.
+  final String? code;
+
+  const ServerFailure([this.message, this.code]);
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }
 
 class CacheFailure extends Failure {
