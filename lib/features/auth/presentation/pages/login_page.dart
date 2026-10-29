@@ -209,7 +209,15 @@ class _LoginPhotoGrid extends StatelessWidget {
   static const _smallTop = 'assets/onboarding/onb-ask.png';
   static const _smallBottom = 'assets/onboarding/onb-sell.png';
 
-  Widget _tile(String asset) {
+  // Same tinted-wash fallback as the onboarding screen's _Scene, for when
+  // the real photo isn't in assets/onboarding/ yet (one tint per tile).
+  static const _tints = [
+    Color(0x3D1A4A80), // .24
+    Color(0x47B8893D), // .28
+    Color(0x4212395F),
+  ];
+
+  Widget _tile(String asset, int tintIndex) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: Container(
@@ -220,7 +228,15 @@ class _LoginPhotoGrid extends StatelessWidget {
         child: Image.asset(
           asset,
           fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => const SizedBox.expand(),
+          errorBuilder: (_, _, _) => DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [const Color(0xFFE8EDF3), _tints[tintIndex]],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -232,15 +248,14 @@ class _LoginPhotoGrid extends StatelessWidget {
       height: 170,
       child: Row(
         children: [
-          Expanded(flex: 5, child: _tile(_big)),
-          const SizedBox(width: 8),
-          Expanded(
-            flex: 4,
+          Expanded(flex: 5, child: _tile(_big, 0)),
+           Expanded(
+            flex: 3,
             child: Column(
               children: [
-                Expanded(child: _tile(_smallTop)),
+                Expanded(child: _tile(_smallTop, 1)),
                 const SizedBox(height: 8),
-                Expanded(child: _tile(_smallBottom)),
+                Expanded(child: _tile(_smallBottom, 2)),
               ],
             ),
           ),
