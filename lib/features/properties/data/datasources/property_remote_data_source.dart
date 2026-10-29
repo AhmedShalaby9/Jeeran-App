@@ -17,6 +17,8 @@ abstract class PropertyRemoteDataSource {
   Future<void> updateProperty(int id, Map<String, dynamic> data);
   Future<void> approveProperty(int id);
   Future<void> rejectProperty(int id, String rejectionReason);
+  Future<void> markPropertySold(int id, bool sold);
+  Future<void> deleteProperty(int id);
 }
 
 class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
@@ -149,7 +151,7 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
   @override
   Future<void> updateProperty(int id, Map<String, dynamic> data) async {
     try {
-      final response = await apiClient.patch(
+      final response = await apiClient.put(
         ApiEndpoints.propertyById(id),
         data: data,
       );
@@ -182,6 +184,35 @@ class PropertyRemoteDataSourceImpl implements PropertyRemoteDataSource {
         ApiEndpoints.propertyReject(id),
         data: {'rejection_reason': rejectionReason},
       );
+      if (response.statusCode == 200) return;
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> markPropertySold(int id, bool sold) async {
+    try {
+      final response = await apiClient.patch(
+        ApiEndpoints.propertySold(id),
+        data: {'sold': sold},
+      );
+      if (response.statusCode == 200) return;
+      throw ServerException();
+    } on ServerException {
+      rethrow;
+    } catch (_) {
+      throw ServerException();
+    }
+  }
+
+  @override
+  Future<void> deleteProperty(int id) async {
+    try {
+      final response = await apiClient.delete(ApiEndpoints.propertyById(id));
       if (response.statusCode == 200) return;
       throw ServerException();
     } on ServerException {

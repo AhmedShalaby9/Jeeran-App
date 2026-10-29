@@ -27,6 +27,7 @@ class Property extends Equatable {
   final bool isActive;
   final bool isApproved;
   final String? rejectionReason;
+  final String? soldAt;
   final bool isFavorited;
   final String? publishedAt;
   final int? viewsCount;
@@ -85,6 +86,7 @@ class Property extends Equatable {
     this.isActive = true,
     this.isApproved = false,
     this.rejectionReason,
+    this.soldAt,
     this.isFavorited = false,
     this.publishedAt,
     this.viewsCount,
@@ -117,6 +119,8 @@ class Property extends Equatable {
   });
 
   String? get coverImage => images.isNotEmpty ? images.first : null;
+
+  bool get isSold => soldAt != null;
 
   /// The year it is delivered, when known.
   int? get deliveryYear =>
@@ -183,6 +187,7 @@ class Property extends Equatable {
     isActive,
     isApproved,
     rejectionReason,
+    soldAt,
     isFavorited,
     publishedAt,
     viewsCount,

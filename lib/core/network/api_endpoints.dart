@@ -40,6 +40,7 @@
   static String propertyById(int id) => '/properties/$id';
   static String propertyApprove(int id) => '/properties/$id/approve';
   static String propertyReject(int id) => '/properties/$id/reject';
+  static String propertySold(int id) => '/properties/$id/sold';
   static const String featuredProperties = '/properties/featured';
   static const String searchProperties = '/properties/search';
   static String similarProperties(int id) => '/properties/$id/similar';

@@ -123,4 +123,26 @@ class PropertyRepositoryImpl implements PropertyRepository {
       return Left(ServerFailure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> markPropertySold(int id, bool sold) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      await remoteDataSource.markPropertySold(id, sold);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteProperty(int id) async {
+    if (!await networkInfo.isConnected) return Left(NetworkFailure());
+    try {
+      await remoteDataSource.deleteProperty(id);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    }
+  }
 }

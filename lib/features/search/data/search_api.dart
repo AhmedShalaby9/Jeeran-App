@@ -396,14 +396,43 @@ class SearchApi {
     );
   }
 
-  /// Live compounds for the compound picker.
-  Future<List<Map<String, dynamic>>> compounds({int limit = 100}) async {
+  /// Live compounds for the compound picker. [q] searches by compound or
+  /// developer name server-side — there are 800+ compounds, far more than
+  /// any fixed page, so a name typed for an older one must reach the server.
+  Future<List<Map<String, dynamic>>> compounds({
+    String? q,
+    int limit = 60,
+  }) async {
     final res = await client.get(
       '/compounds',
-      queryParams: {'limit': limit},
+      queryParams: {
+        'limit': limit,
+        if (q != null && q.trim().isNotEmpty) 'q': q.trim(),
+      },
       headers: ApiClient.apiV2,
     );
     return _list(res.data['data']);
+  }
+
+  /// A single compound by id, for resolving a display name (e.g. the admin
+  /// news editor, which only stores the id).
+  Future<Map<String, dynamic>?> compoundById(int id) async {
+    try {
+      final res = await client.get('/compounds/$id', headers: ApiClient.apiV2);
+      return res.data['data'] as Map<String, dynamic>?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// A single developer by id — see [compoundById].
+  Future<Map<String, dynamic>?> developerById(int id) async {
+    try {
+      final res = await client.get('/developers/$id', headers: ApiClient.apiV2);
+      return res.data['data'] as Map<String, dynamic>?;
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<Suggestions> suggest(String q) async {

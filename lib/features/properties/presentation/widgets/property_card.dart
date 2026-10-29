@@ -260,6 +260,15 @@ class _HorizontalCard extends StatelessWidget {
                         spacing: 8,
                         runSpacing: 6,
                         children: [
+                          if (property.isSold)
+                            _TagChip(
+                              label: 'properties.sold_badge'.tr(),
+                              backgroundColor: AppColors.danger.withValues(
+                                alpha: 0.08,
+                              ),
+                              textColor: AppColors.danger,
+                              icon: Icons.sell_outlined,
+                            ),
                           if (property.propertyStatus != null &&
                               property.propertyStatus!.isNotEmpty)
                             _TagChip(

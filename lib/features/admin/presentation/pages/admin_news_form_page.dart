@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -5,11 +6,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:translator/translator.dart';
+import '../../../../core/di/injection_container.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../news/domain/entities/news.dart';
 import '../../../news/presentation/bloc/news_bloc.dart';
 import '../../../news/presentation/bloc/news_event.dart';
 import '../../../news/presentation/bloc/news_state.dart';
+import '../../../search/data/search_api.dart';
 import '../../../../core/widgets/jv2.dart';
 
 class AdminNewsFormPage extends StatefulWidget {
@@ -42,6 +46,13 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
   final List<XFile> _newMediaFiles = [];
   final _picker = ImagePicker();
 
+  // Linked compound / developer (optional)
+  final _searchApi = SearchApi(sl<ApiClient>());
+  int? _compoundId;
+  String? _compoundName;
+  int? _developerId;
+  String? _developerName;
+
   bool get _isEditing => widget.news != null;
 
   @override
@@ -53,6 +64,87 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
     _contentEnCtrl = TextEditingController(text: widget.news?.contentEn ?? '');
     _isActive = widget.news?.isActive ?? true;
     _existingMediaUrls = List<String>.from(widget.news?.media ?? []);
+
+    _compoundId = widget.news?.compoundId;
+    _developerId = widget.news?.developerId;
+    _resolveLinkedNames();
+  }
+
+  /// The form only stores ids — look the names up once for display.
+  Future<void> _resolveLinkedNames() async {
+    if (_compoundId != null) {
+      final c = await _searchApi.compoundById(_compoundId!);
+      if (mounted && c != null) {
+        setState(() {
+          _compoundName =
+              (c['name_en'] as String?)?.isNotEmpty == true
+              ? c['name_en'] as String
+              : (c['name_ar'] as String? ?? '#$_compoundId');
+        });
+      }
+    }
+    if (_developerId != null) {
+      final d = await _searchApi.developerById(_developerId!);
+      if (mounted && d != null) {
+        setState(() {
+          _developerName =
+              (d['name_en'] as String?)?.isNotEmpty == true
+              ? d['name_en'] as String
+              : (d['name_ar'] as String? ?? '#$_developerId');
+        });
+      }
+    }
+  }
+
+  Future<void> _pickCompound() async {
+    final picked = await showModalBottomSheet<_EntityPick>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _EntityPickerSheet(
+        title: 'admin.link_compound'.tr(),
+        search: (q) async {
+          final list = await _searchApi.compounds(q: q);
+          return [
+            for (final c in list)
+              _EntityPick(
+                id: c['id'] as int,
+                name:
+                    (c['name_en'] as String?)?.isNotEmpty == true
+                    ? c['name_en'] as String
+                    : (c['name_ar'] as String? ?? ''),
+              ),
+          ];
+        },
+      ),
+    );
+    if (picked != null) {
+      setState(() {
+        _compoundId = picked.id;
+        _compoundName = picked.name;
+      });
+    }
+  }
+
+  Future<void> _pickDeveloper() async {
+    final picked = await showModalBottomSheet<_EntityPick>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _EntityPickerSheet(
+        title: 'admin.link_developer'.tr(),
+        search: (q) async {
+          final list = await _searchApi.developers(q: q, limit: 60);
+          return [for (final d in list) _EntityPick(id: d.id, name: d.name(false))];
+        },
+      ),
+    );
+    if (picked != null) {
+      setState(() {
+        _developerId = picked.id;
+        _developerName = picked.name;
+      });
+    }
   }
 
   @override
@@ -157,6 +249,8 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
         isActive: _isActive,
         existingMediaUrls: _existingMediaUrls,
         newMedia: _newMediaFiles,
+        compoundId: _compoundId,
+        developerId: _developerId,
       ));
     } else {
       bloc.add(CreateNewsEvent(
@@ -165,6 +259,8 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
         contentAr: _contentArCtrl.text.trim(),
         contentEn: _contentEnCtrl.text.trim().isEmpty ? null : _contentEnCtrl.text.trim(),
         isActive: _isActive,
+        compoundId: _compoundId,
+        developerId: _developerId,
         newMedia: _newMediaFiles,
       ));
     }
@@ -296,6 +392,30 @@ class _AdminNewsFormPageState extends State<AdminNewsFormPage> {
                       onRemoveNew: (i) =>
                           setState(() => _newMediaFiles.removeAt(i)),
                       onAddMedia: _showMediaSourceSheet,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ── Link to compound / developer (optional) ───────
+                    _LinkRow(
+                      label: 'admin.link_compound'.tr(),
+                      value: _compoundName,
+                      onTap: isLoading ? null : _pickCompound,
+                      onClear: () =>
+                          setState(() {
+                            _compoundId = null;
+                            _compoundName = null;
+                          }),
+                    ),
+                    const SizedBox(height: 10),
+                    _LinkRow(
+                      label: 'admin.link_developer'.tr(),
+                      value: _developerName,
+                      onTap: isLoading ? null : _pickDeveloper,
+                      onClear: () =>
+                          setState(() {
+                            _developerId = null;
+                            _developerName = null;
+                          }),
                     ),
                     const SizedBox(height: 16),
 
@@ -711,6 +831,215 @@ class _MediaThumbFile extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ── Compound / developer link row ───────────────────────────────────────────
+
+class _LinkRow extends StatelessWidget {
+  final String label;
+  final String? value;
+  final VoidCallback? onTap;
+  final VoidCallback onClear;
+
+  const _LinkRow({
+    required this.label,
+    required this.value,
+    required this.onTap,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.inkMute,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      value ?? 'admin.link_none'.tr(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                        color: value == null
+                            ? AppColors.inkMute
+                            : AppColors.ink,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (value != null)
+                IconButton(
+                  onPressed: onClear,
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: AppColors.inkMute,
+                  ),
+                ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.inkMute,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Compound / developer search sheet ───────────────────────────────────────
+
+class _EntityPick {
+  final int id;
+  final String name;
+  const _EntityPick({required this.id, required this.name});
+}
+
+/// Debounced server-side search — there are hundreds of compounds/developers,
+/// so matching only against whatever page happened to load first is not good enough.
+class _EntityPickerSheet extends StatefulWidget {
+  final String title;
+  final Future<List<_EntityPick>> Function(String? q) search;
+  const _EntityPickerSheet({required this.title, required this.search});
+
+  @override
+  State<_EntityPickerSheet> createState() => _EntityPickerSheetState();
+}
+
+class _EntityPickerSheetState extends State<_EntityPickerSheet> {
+  List<_EntityPick>? _items;
+  bool _failed = false;
+  Timer? _debounce;
+  int _requestSeq = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _run(null);
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onQueryChanged(String v) {
+    _debounce?.cancel();
+    final trimmed = v.trim();
+    if (trimmed.isNotEmpty && trimmed.length < 3) return;
+    _debounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _run(trimmed.isEmpty ? null : trimmed),
+    );
+  }
+
+  Future<void> _run(String? q) async {
+    final seq = ++_requestSeq;
+    try {
+      final list = await widget.search(q);
+      if (!mounted || seq != _requestSeq) return;
+      setState(() {
+        _items = list;
+        _failed = false;
+      });
+    } catch (_) {
+      if (!mounted || seq != _requestSeq) return;
+      setState(() => _failed = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final list = _items ?? const <_EntityPick>[];
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Container(
+          height: MediaQuery.sizeOf(context).height * .75,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 18, 16, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      autofocus: false,
+                      onChanged: _onQueryChanged,
+                      decoration: InputDecoration(
+                        hintText: 'admin.link_search_hint'.tr(),
+                        prefixIcon: const Icon(Icons.search_rounded),
+                        filled: true,
+                        fillColor: AppColors.background,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: _failed
+                    ? Center(child: Text('admin.link_load_failed'.tr()))
+                    : _items == null
+                    ? const Center(child: CircularProgressIndicator())
+                    : list.isEmpty
+                    ? Center(child: Text('admin.link_no_results'.tr()))
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: list.length,
+                        itemBuilder: (_, i) => ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(list[i].name),
+                          onTap: () => Navigator.pop(context, list[i]),
+                        ),
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

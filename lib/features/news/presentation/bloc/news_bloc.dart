@@ -68,6 +68,8 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
       if (event.contentEn != null) 'content_en': event.contentEn,
       'is_active': event.isActive,
       if (uploadedUrls.isNotEmpty) 'media': uploadedUrls,
+      if (event.compoundId != null) 'compound_id': event.compoundId,
+      if (event.developerId != null) 'developer_id': event.developerId,
     });
     result.fold(
       (failure) => emit(NewsActionError(_mapFailure(failure))),
@@ -101,6 +103,8 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
       'content_en': event.contentEn,
       'is_active': event.isActive,
       'media': allMediaUrls,
+      'compound_id': event.compoundId, // null clears it
+      'developer_id': event.developerId, // null clears it
     });
     result.fold(
       (failure) => emit(NewsActionError(_mapFailure(failure))),

@@ -206,10 +206,15 @@ class ListingApi {
     return PriceBand.fromJson(res.data['data'] as Map<String, dynamic>);
   }
 
-  Future<List<CompoundRef>> compounds() async {
+  /// [q] searches by compound/developer name server-side — the picker no
+  /// longer tries to load the (800+) compound list and filter it locally.
+  Future<List<CompoundRef>> compounds({String? q, int limit = 60}) async {
     final res = await client.get(
       '/compounds',
-      queryParams: {'limit': 200},
+      queryParams: {
+        'limit': limit,
+        if (q != null && q.trim().isNotEmpty) 'q': q.trim(),
+      },
       headers: ApiClient.apiV2,
     );
     final d = res.data['data'];

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -394,33 +396,49 @@ class CompoundPicker extends StatefulWidget {
 class CompoundPickerState extends State<CompoundPicker> {
   List<CompoundRef>? _all;
   bool _failed = false;
-  String _q = '';
+  Timer? _debounce;
+  int _requestSeq = 0;
 
   @override
   void initState() {
     super.initState();
-    widget.api
-        .compounds()
-        .then((l) {
-          if (mounted) setState(() => _all = l);
-        })
-        .catchError((_) {
-          if (mounted) setState(() => _failed = true);
-        });
+    _search(null);
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onQueryChanged(String v) {
+    _debounce?.cancel();
+    final trimmed = v.trim();
+    // Wait for a real search term — 1-2 letters would just be noisy and expensive.
+    // Clearing the field back to empty still re-triggers, to restore the browse list.
+    if (trimmed.isNotEmpty && trimmed.length < 3) return;
+    _debounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _search(trimmed.isEmpty ? null : trimmed),
+    );
+  }
+
+  Future<void> _search(String? q) async {
+    final seq = ++_requestSeq;
+    setState(() => _failed = false);
+    try {
+      final list = await widget.api.compounds(q: q);
+      if (!mounted || seq != _requestSeq) return; // a newer search landed first
+      setState(() => _all = list);
+    } catch (_) {
+      if (!mounted || seq != _requestSeq) return;
+      setState(() => _failed = true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final q = _q.trim().toLowerCase();
-    final list = (_all ?? [])
-        .where(
-          (c) =>
-              q.isEmpty ||
-              '${c.nameAr} ${c.nameEn} ${c.developerEn ?? ''} ${c.developerAr ?? ''}'
-                  .toLowerCase()
-                  .contains(q),
-        )
-        .toList();
+    final list = _all ?? const <CompoundRef>[];
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
@@ -435,7 +453,7 @@ class CompoundPickerState extends State<CompoundPicker> {
                 child: TextField(
                   key: const Key('compound-search'),
                   autofocus: false,
-                  onChanged: (v) => setState(() => _q = v),
+                  onChanged: _onQueryChanged,
                   decoration: InputDecoration(
                     hintText: 'listing.search_compound'.tr(),
                     prefixIcon: const Icon(Icons.search_rounded),
@@ -457,6 +475,13 @@ class CompoundPickerState extends State<CompoundPicker> {
                                 strokeWidth: 2,
                                 color: JV2.goldHi,
                               ),
+                      )
+                    : list.isEmpty
+                    ? Center(
+                        child: Text(
+                          'listing.no_compounds_found'.tr(),
+                          style: const TextStyle(color: JV2.inkSub),
+                        ),
                       )
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(

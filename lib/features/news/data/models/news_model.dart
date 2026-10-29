@@ -13,6 +13,8 @@ class NewsModel extends News {
     super.titleEn,
     super.contentAr,
     super.contentEn,
+    super.compoundId,
+    super.developerId,
   });
 
   factory NewsModel.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,8 @@ class NewsModel extends News {
       titleEn: json['title_en'] as String? ?? '',
       contentAr: json['content_ar'] as String? ?? '',
       contentEn: json['content_en'] as String? ?? '',
+      compoundId: json['compound_id'] as int?,
+      developerId: json['developer_id'] as int?,
     );
   }
 }

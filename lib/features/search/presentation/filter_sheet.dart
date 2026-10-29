@@ -654,8 +654,8 @@ class _FilterSheetState extends State<_FilterSheet> {
       backgroundColor: Colors.transparent,
       builder: (_) => _PickerSheet(
         title: 'find.pick_compound'.tr(),
-        load: () async {
-          final list = await widget.api.compounds();
+        load: (q) async {
+          final list = await widget.api.compounds(q: q);
           return [
             for (final c in list)
               _PickItem(
@@ -694,8 +694,8 @@ class _FilterSheetState extends State<_FilterSheet> {
       backgroundColor: Colors.transparent,
       builder: (_) => _PickerSheet(
         title: 'find.pick_developer'.tr(),
-        load: () async => [
-          for (final d in await widget.api.developers())
+        load: (q) async => [
+          for (final d in await widget.api.developers(q: q))
             _PickItem(
               id: d.id,
               name: d.name(ar),
@@ -1079,9 +1079,12 @@ class _PickItem {
 }
 
 /// Searchable list used for the compound and developer pickers. Pops `{id, name}` or null.
+/// [load] is called with `null` for the initial browse list, then with the typed
+/// term — there are hundreds of compounds/developers, so the search must reach
+/// the server rather than filter whatever page happened to load first.
 class _PickerSheet extends StatefulWidget {
   final String title;
-  final Future<List<_PickItem>> Function() load;
+  final Future<List<_PickItem>> Function(String? q) load;
   const _PickerSheet({required this.title, required this.load});
 
   @override
@@ -1091,30 +1094,50 @@ class _PickerSheet extends StatefulWidget {
 class _PickerSheetState extends State<_PickerSheet> {
   List<_PickItem>? _items;
   bool _failed = false;
-  String _q = '';
+  Timer? _debounce;
+  int _requestSeq = 0;
 
   @override
   void initState() {
     super.initState();
-    widget
-        .load()
-        .then((v) {
-          if (mounted) setState(() => _items = v);
-        })
-        .catchError((_) {
-          if (mounted) setState(() => _failed = true);
-        });
+    _search(null);
+  }
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onQueryChanged(String v) {
+    _debounce?.cancel();
+    final trimmed = v.trim();
+    // Wait for a real search term — 1-2 letters would just be noisy and expensive.
+    if (trimmed.isNotEmpty && trimmed.length < 3) return;
+    _debounce = Timer(
+      const Duration(milliseconds: 350),
+      () => _search(trimmed.isEmpty ? null : trimmed),
+    );
+  }
+
+  Future<void> _search(String? q) async {
+    final seq = ++_requestSeq;
+    try {
+      final list = await widget.load(q);
+      if (!mounted || seq != _requestSeq) return; // a newer search landed first
+      setState(() {
+        _items = list;
+        _failed = false;
+      });
+    } catch (_) {
+      if (!mounted || seq != _requestSeq) return;
+      setState(() => _failed = true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final list = (_items ?? const <_PickItem>[])
-        .where(
-          (i) =>
-              i.name.toLowerCase().contains(_q.toLowerCase()) ||
-              i.sub.toLowerCase().contains(_q.toLowerCase()),
-        )
-        .toList();
+    final list = _items ?? const <_PickItem>[];
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
@@ -1163,7 +1186,7 @@ class _PickerSheetState extends State<_PickerSheet> {
                         const SizedBox(width: 9),
                         Expanded(
                           child: TextField(
-                            onChanged: (v) => setState(() => _q = v),
+                            onChanged: _onQueryChanged,
                             textAlignVertical: TextAlignVertical.center,
                             decoration: InputDecoration(
                               border: InputBorder.none,
@@ -1194,6 +1217,8 @@ class _PickerSheetState extends State<_PickerSheet> {
                   ? const Center(
                       child: CircularProgressIndicator(color: JV2.navy),
                     )
+                  : list.isEmpty
+                  ? Center(child: Text('find.no_matches'.tr(), style: JV2.sub))
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(
                         kSearchPad,

@@ -23,6 +23,8 @@ class CreateNewsEvent extends NewsEvent {
   final String? contentEn;
   final bool isActive;
   final List<XFile> newMedia;
+  final int? compoundId;
+  final int? developerId;
 
   const CreateNewsEvent({
     required this.titleAr,
@@ -31,10 +33,13 @@ class CreateNewsEvent extends NewsEvent {
     this.contentEn,
     this.isActive = true,
     this.newMedia = const [],
+    this.compoundId,
+    this.developerId,
   });
 
   @override
-  List<Object?> get props => [titleAr, titleEn, contentAr, contentEn, isActive, newMedia];
+  List<Object?> get props =>
+      [titleAr, titleEn, contentAr, contentEn, isActive, newMedia, compoundId, developerId];
 }
 
 class UpdateNewsEvent extends NewsEvent {
@@ -46,6 +51,8 @@ class UpdateNewsEvent extends NewsEvent {
   final bool isActive;
   final List<String> existingMediaUrls;
   final List<XFile> newMedia;
+  final int? compoundId;
+  final int? developerId;
 
   const UpdateNewsEvent({
     required this.id,
@@ -56,10 +63,15 @@ class UpdateNewsEvent extends NewsEvent {
     this.isActive = true,
     this.existingMediaUrls = const [],
     this.newMedia = const [],
+    this.compoundId,
+    this.developerId,
   });
 
   @override
-  List<Object?> get props => [id, titleAr, titleEn, contentAr, contentEn, isActive, existingMediaUrls, newMedia];
+  List<Object?> get props => [
+    id, titleAr, titleEn, contentAr, contentEn, isActive,
+    existingMediaUrls, newMedia, compoundId, developerId,
+  ];
 }
 
 class DeleteNewsEvent extends NewsEvent {

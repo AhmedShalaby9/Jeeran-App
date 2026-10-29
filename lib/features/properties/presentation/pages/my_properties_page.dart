@@ -213,6 +213,123 @@ class _PropertyCardWithFeaturedToggle extends StatefulWidget {
 class _PropertyCardWithFeaturedToggleState
     extends State<_PropertyCardWithFeaturedToggle> {
   bool _loading = false;
+  bool _soldLoading = false;
+  bool _deleteLoading = false;
+
+  Future<void> _confirmDelete() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('properties.delete_confirm_title'.tr()),
+        content: Text('properties.delete_confirm_body'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('properties.cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              'properties.delete'.tr(),
+              style: const TextStyle(color: AppColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _deleteLoading = true);
+    final result = await sl<PropertyRepository>().deleteProperty(
+      widget.property.id,
+    );
+    if (!mounted) return;
+    setState(() => _deleteLoading = false);
+
+    result.fold(
+      (failure) => AppSnackbar.show(
+        context,
+        message: 'Failed to delete listing.',
+        icon: Icons.error_outline_rounded,
+        iconColor: AppColors.danger,
+      ),
+      (_) {
+        AppSnackbar.show(
+          context,
+          message: 'properties.deleted_success'.tr(),
+          icon: Icons.delete_outline_rounded,
+          iconColor: AppColors.danger,
+        );
+        widget.onFeaturedToggled();
+      },
+    );
+  }
+
+  Future<void> _confirmToggleSold() async {
+    final sellingAgain = widget.property.isSold;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          (sellingAgain
+                  ? 'properties.mark_available_confirm_title'
+                  : 'properties.mark_sold_confirm_title')
+              .tr(),
+        ),
+        content: Text(
+          (sellingAgain
+                  ? 'properties.mark_available_confirm_body'
+                  : 'properties.mark_sold_confirm_body')
+              .tr(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('properties.cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(
+              (sellingAgain
+                      ? 'properties.mark_available'
+                      : 'properties.mark_sold')
+                  .tr(),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _soldLoading = true);
+    final result = await sl<PropertyRepository>().markPropertySold(
+      widget.property.id,
+      !sellingAgain,
+    );
+    if (!mounted) return;
+    setState(() => _soldLoading = false);
+
+    result.fold(
+      (failure) => AppSnackbar.show(
+        context,
+        message: 'Failed to update listing.',
+        icon: Icons.error_outline_rounded,
+        iconColor: AppColors.danger,
+      ),
+      (_) {
+        AppSnackbar.show(
+          context,
+          message: (sellingAgain
+                  ? 'properties.marked_available_success'
+                  : 'properties.marked_sold_success')
+              .tr(),
+          icon: sellingAgain ? Icons.check_circle_outline : Icons.sell_outlined,
+          iconColor: sellingAgain ? AppColors.success : AppColors.inkSub,
+        );
+        widget.onFeaturedToggled();
+      },
+    );
+  }
 
   Future<void> _toggle() async {
     final newValue = !widget.property.isFeatured;
@@ -296,6 +413,82 @@ class _PropertyCardWithFeaturedToggleState
                 size: 17,
                 color: AppColors.inkSub,
               ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 8,
+          right: 8,
+          child: GestureDetector(
+            key: Key('mark-sold-${widget.property.id}'),
+            onTap: _soldLoading ? null : _confirmToggleSold,
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: _soldLoading
+                  ? const Padding(
+                      padding: EdgeInsets.all(9),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.inkSub,
+                      ),
+                    )
+                  : Icon(
+                      widget.property.isSold
+                          ? Icons.undo_rounded
+                          : Icons.sell_outlined,
+                      size: 17,
+                      color: widget.property.isSold
+                          ? AppColors.success
+                          : AppColors.inkSub,
+                    ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: 50,
+          right: 8,
+          child: GestureDetector(
+            key: Key('delete-property-${widget.property.id}'),
+            onTap: _deleteLoading ? null : _confirmDelete,
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: _deleteLoading
+                  ? const Padding(
+                      padding: EdgeInsets.all(9),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.danger,
+                      ),
+                    )
+                  : const Icon(
+                      Icons.delete_outline_rounded,
+                      size: 17,
+                      color: AppColors.danger,
+                    ),
             ),
           ),
         ),

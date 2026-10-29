@@ -23,4 +23,6 @@ abstract class PropertyRepository {
   );
   Future<Either<Failure, void>> approveProperty(int id);
   Future<Either<Failure, void>> rejectProperty(int id, String rejectionReason);
+  Future<Either<Failure, void>> markPropertySold(int id, bool sold);
+  Future<Either<Failure, void>> deleteProperty(int id);
 }
