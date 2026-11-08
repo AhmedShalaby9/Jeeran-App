@@ -27,6 +27,7 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   late final _name = TextEditingController(text: widget.profile.name);
   late final _email = TextEditingController(text: widget.profile.email ?? '');
+  late final _phone = TextEditingController(text: widget.profile.phone ?? '');
   late final _city = TextEditingController(text: widget.profile.city ?? '');
   late final _company = TextEditingController(
     text: widget.profile.company ?? '',
@@ -52,21 +53,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
         if (mounted) _lang = context.locale.languageCode;
       });
     }
-    for (final c in [_name, _email, _city, _company, _bio]) {
+    for (final c in [_name, _email, _phone, _city, _company, _bio]) {
       c.addListener(() => setState(() => _dirty = true));
     }
   }
 
   @override
   void dispose() {
-    for (final c in [_name, _email, _city, _company, _bio]) {
+    for (final c in [_name, _email, _phone, _city, _company, _bio]) {
       c.dispose();
     }
     super.dispose();
   }
 
   bool get _emailOk =>
-      _p.isSocialLogin ||
       _email.text.trim().isEmpty ||
       _emailRe.hasMatch(_email.text.trim());
 
@@ -111,7 +111,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
         'city': _city.text.trim(),
         'profile_picture': _picture ?? '',
         'preferred_language': _lang,
-        if (!_p.isSocialLogin) 'email': _email.text.trim(),
+        'email': _email.text.trim(),
+        if (_p.isSocialLogin) 'phone_number': _phone.text.trim(),
         if (_p.isCustomer) ...{
           'company_name': _company.text.trim(),
           'bio': _bio.text.trim(),
@@ -231,21 +232,21 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 _section('profile.contact'.tr()),
                 _field(
                   'profile.mobile'.tr(),
-                  TextEditingController(text: _p.phone ?? ''),
-                  readOnly: true,
-                  trailing: _p.phone == null ? null : const VerifiedTick(),
-                  hint: 'profile.mobile_hint'.tr(),
+                  _phone,
+                  key: 'f-phone',
+                  readOnly: !_p.isSocialLogin,
+                  trailing: !_p.isSocialLogin && _p.phone != null ? const VerifiedTick() : null,
+                  hint: _p.isSocialLogin
+                      ? 'profile.mobile_hint_social'.tr()
+                      : 'profile.mobile_hint'.tr(),
                 ),
                 const SizedBox(height: 16),
                 _field(
                   'profile.email'.tr(),
                   _email,
                   key: 'f-email',
-                  readOnly: _p.isSocialLogin,
                   ltr: true,
-                  hint: _p.isSocialLogin
-                      ? 'profile.email_hint_social'.tr()
-                      : 'profile.email_hint'.tr(),
+                  hint: 'profile.email_hint'.tr(),
                 ),
                 if (!_emailOk) ...[
                   const SizedBox(height: 7),
