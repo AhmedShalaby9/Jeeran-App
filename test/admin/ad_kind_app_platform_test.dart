@@ -24,7 +24,7 @@ class _FakeApi extends AdStudioApi {
       'understood': {'audience': null, 'angle': null, 'feel': null, 'must_show': null},
       'facts': [],
       'images': [],
-      'subject': {'en': 'Jeeran', 'ar': 'جيران'},
+      'subject': {'en': 'Jeeran', 'ar': 'جييران'},
       'sponsor': null,
       'target': {'type': 'app', 'id': null},
     });

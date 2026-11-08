@@ -57,7 +57,7 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.byKey(const Key('ask-entry')), findsOneWidget);
       expect(find.text(ar ? 'كمبوند أو منطقة أو مطور' : 'Compound, area or developer'), findsNothing); // no search field
-      expect(find.text(ar ? 'اسأل جيران' : 'ASK JEERAN'), findsOneWidget);
+      expect(find.text(ar ? 'اسأل جييران' : 'ASK JEERAN'), findsOneWidget);
       // the first example question shows, then the next one takes over
       expect(find.byKey(const Key('ask-prompt-0')), findsOneWidget);
       await tester.pump(const Duration(milliseconds: 3300));
