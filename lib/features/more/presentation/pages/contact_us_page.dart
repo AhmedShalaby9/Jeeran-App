@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/jv2.dart';
@@ -193,7 +194,7 @@ class _ContactUsPageState extends State<ContactUsPage> {
                 runSpacing: 12,
                 children: [
                   _ContactChip(
-                    icon: Icons.chat_rounded,
+                    icon: FontAwesomeIcons.whatsapp,
                     label: '+20 115 546 4666',
                     color: const Color(0xFF25D366),
                     onTap: () async {

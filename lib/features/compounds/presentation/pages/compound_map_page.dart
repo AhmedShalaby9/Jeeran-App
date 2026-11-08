@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -366,7 +367,7 @@ class _CompoundMapPageState extends State<CompoundMapPage> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _CtaBtn(key: const Key('map-whatsapp'), icon: Icons.chat_rounded, label: 'map.whatsapp'.tr(), bg: const Color(0xFF3DD360), fg: Colors.white, onTap: _whatsapp),
+                      child: _CtaBtn(key: const Key('map-whatsapp'), icon: FontAwesomeIcons.whatsapp, label: 'map.whatsapp'.tr(), bg: const Color(0xFF3DD360), fg: Colors.white, onTap: _whatsapp),
                     ),
                   ],
                 ),

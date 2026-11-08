@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -249,7 +250,7 @@ class _ContactButtons extends StatelessWidget {
           ),
         if (ad.whatsappNumber != null)
           _ContactChip(
-            icon: Icons.chat_outlined,
+            icon: FontAwesomeIcons.whatsapp,
             label: 'WhatsApp',
             color: const Color(0xFF25D366),
             onTap: () => _launch('https://wa.me/${ad.whatsappNumber!.replaceAll(RegExp(r'\D'), '')}'),

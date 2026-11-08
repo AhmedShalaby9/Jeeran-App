@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -281,7 +282,7 @@ class _AdminCallRequestsPageState extends State<AdminCallRequestsPage> with Sing
           const SizedBox(height: 10),
           Wrap(spacing: 8, runSpacing: 6, children: [
             if (phone != null) _Btn(key: Key('cr-call-${r.id}'), icon: Icons.call_outlined, label: 'admin.cr_call'.tr(), onTap: () => _call(phone)),
-            if (phone != null) _Btn(key: Key('cr-wa-${r.id}'), icon: Icons.chat_outlined, label: 'WhatsApp', onTap: () => _whatsapp(phone)),
+            if (phone != null) _Btn(key: Key('cr-wa-${r.id}'), icon: FontAwesomeIcons.whatsapp, label: 'WhatsApp', onTap: () => _whatsapp(phone)),
             _Btn(key: Key('cr-note-${r.id}'), icon: Icons.edit_note_rounded, label: 'admin.cr_note'.tr(), onTap: busy ? null : () => _editNote(r)),
             if (r.status == 'new') _Btn(key: Key('cr-contacted-${r.id}'), icon: Icons.check_rounded, label: 'admin.cr_mark_contacted'.tr(), onTap: busy ? null : () => _change(r, status: 'contacted')),
             if (r.status != 'closed') _Btn(key: Key('cr-close-${r.id}'), icon: Icons.done_all_rounded, label: 'admin.cr_mark_closed'.tr(), onTap: busy ? null : () => _change(r, status: 'closed')),

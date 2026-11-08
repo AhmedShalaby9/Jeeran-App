@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
@@ -165,7 +166,7 @@ class _BannersCarouselViewState extends State<_BannersCarouselView> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.chat, color: Colors.green.shade600),
+                leading: Icon(FontAwesomeIcons.whatsapp, color: Colors.green.shade600),
                 title: Text('home.whatsapp'.tr()),
                 onTap: () {
                   Navigator.pop(context);
