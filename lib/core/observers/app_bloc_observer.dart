@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 class AppBlocObserver extends BlocObserver {
   @override
@@ -18,6 +19,16 @@ class AppBlocObserver extends BlocObserver {
         '📤 Event: ${event.runtimeType} → ${bloc.runtimeType} #${bloc.hashCode}',
       );
     }
+  }
+
+  @override
+  void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
+    super.onError(bloc, error, stackTrace);
+    Sentry.captureException(
+      error,
+      stackTrace: stackTrace,
+      hint: Hint.withMap({'bloc': '${bloc.runtimeType}'}),
+    );
   }
 
   @override

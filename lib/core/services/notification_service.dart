@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'firebase_options.dart';
 
 @pragma('vm:entry-point')
@@ -32,8 +33,9 @@ class NotificationService {
     try {
       await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
       debugPrint('[FCM] init: Firebase.initializeApp succeeded');
-    } catch (e) {
+    } catch (e, st) {
       debugPrint('[FCM] init: Firebase.initializeApp FAILED: $e');
+      Sentry.captureException(e, stackTrace: st);
       _readyCompleter.completeError(e);
       return;
     }
@@ -52,6 +54,7 @@ class NotificationService {
       debugPrint('[FCM] init: permission status = ${settings.authorizationStatus}');
     } catch (e) {
       debugPrint('[FCM] init: requestPermission FAILED: $e');
+      Sentry.addBreadcrumb(Breadcrumb(message: 'FCM permission request failed: $e', category: 'fcm', level: SentryLevel.warning));
     }
 
     // 3 — Background handler
@@ -99,8 +102,9 @@ class NotificationService {
       final token = await FirebaseMessaging.instance.getToken();
       debugPrint('[FCM] getToken: FCM token = $token');
       return token;
-    } catch (e) {
+    } catch (e, st) {
       debugPrint('[FCM] getToken: FAILED: $e');
+      Sentry.captureException(e, stackTrace: st);
       return null;
     }
   }

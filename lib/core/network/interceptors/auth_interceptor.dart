@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../navigation/app_navigator.dart';
 import '../../storage/app_storage.dart';
 import '../../../../features/auth/presentation/pages/login_page.dart';
@@ -19,6 +20,12 @@ class AuthInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     if (err.response?.statusCode == 401) {
+      Sentry.addBreadcrumb(Breadcrumb(
+        message: '401 → forced logout',
+        category: 'auth',
+        level: SentryLevel.warning,
+        data: {'url': err.requestOptions.uri.toString()},
+      ));
       AppStorage.clearAuth();
       _redirectToLogin();
     }

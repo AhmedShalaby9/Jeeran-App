@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'core/config/app_config.dart';
 import 'core/di/injection_container.dart' as di;
 import 'core/debug/network_inspector.dart';
@@ -22,18 +23,29 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.setEnvironment(AppEnvironment.production);
   await AppStorage.init();
+  if (AppStorage.isLoggedIn && AppStorage.userId != null) {
+    Sentry.configureScope((scope) => scope.setUser(SentryUser(id: '${AppStorage.userId}')));
+  }
   NotificationService.instance.init().catchError((e) => debugPrint('[FCM] NotificationService init failed: $e'));
   await EasyLocalization.ensureInitialized();
   await di.init();
   Bloc.observer = AppBlocObserver();
   _registerFcmToken().catchError((e) => debugPrint('FCM registration failed: $e'));
-  runApp(
-    EasyLocalization(
-      supportedLocales: const [Locale('en'), Locale('ar')],
-      path: 'assets/translations',
-      fallbackLocale: const Locale('en'),
-      startLocale: AppStorage.language != null ? Locale(AppStorage.language!) : const Locale('en'),
-      child: const JeeranApp(),
+  await SentryFlutter.init(
+    (options) {
+      options.dsn = 'https://a66054ec3e695498fa422ca808af06c7@o4512397080854528.ingest.de.sentry.io/4512397085507664';
+      options.environment = AppConfig.isProduction ? 'production' : 'staging';
+      options.tracesSampleRate = 1.0;
+      options.sendDefaultPii = false;
+    },
+    appRunner: () => runApp(
+      EasyLocalization(
+        supportedLocales: const [Locale('en'), Locale('ar')],
+        path: 'assets/translations',
+        fallbackLocale: const Locale('en'),
+        startLocale: AppStorage.language != null ? Locale(AppStorage.language!) : const Locale('en'),
+        child: const JeeranApp(),
+      ),
     ),
   );
 }
@@ -67,8 +79,9 @@ Future<void> _registerFcmToken() async {
       platform = 'ios';
     }
     debugPrint('[FCM reg] platform=$platform  deviceId=$deviceId');
-  } catch (e) {
+  } catch (e, st) {
     debugPrint('[FCM reg] deviceInfo FAILED: $e — skipping');
+    Sentry.captureException(e, stackTrace: st);
     return;
   }
   if (deviceId.isEmpty) {
@@ -80,10 +93,16 @@ Future<void> _registerFcmToken() async {
     deviceId: deviceId,
     platform: platform,
   );
-  result.fold((failure) => debugPrint('[FCM reg] API FAILED: $failure'), (_) {
-    debugPrint('[FCM reg] API success — token saved');
-    AppStorage.saveLastFcmToken(token);
-  });
+  result.fold(
+    (failure) {
+      debugPrint('[FCM reg] API FAILED: $failure');
+      Sentry.captureMessage('FCM token registration failed: $failure', level: SentryLevel.warning);
+    },
+    (_) {
+      debugPrint('[FCM reg] API success — token saved');
+      AppStorage.saveLastFcmToken(token);
+    },
+  );
 }
 
 class JeeranApp extends StatelessWidget {

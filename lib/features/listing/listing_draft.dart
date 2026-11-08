@@ -162,8 +162,6 @@ class ListingDraft {
     'pool_view',
     'private_garden',
     'golf_view',
-    'parking_view',
-    'street_view',
   ];
 
   double? get priceValue => double.tryParse(price.replaceAll(',', '').trim());

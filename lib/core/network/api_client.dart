@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../config/app_config.dart';
 import '../debug/network_inspector.dart';
 import '../error/exceptions.dart';
@@ -144,6 +145,7 @@ class ApiClient {
   }
 
   Exception _mapError(DioException e) {
+    _reportToSentry(e);
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.receiveTimeout:
@@ -161,6 +163,35 @@ class ApiClient {
       default:
         return ServerException();
     }
+  }
+
+  void _reportToSentry(DioException e) {
+    final statusCode = e.response?.statusCode;
+    final url = e.requestOptions.uri.toString();
+    final method = e.requestOptions.method;
+
+    // 4xx — breadcrumb only (useful context if a real error follows)
+    if (statusCode != null && statusCode >= 400 && statusCode < 500) {
+      Sentry.addBreadcrumb(Breadcrumb(
+        message: '$method $statusCode',
+        category: 'http',
+        level: SentryLevel.warning,
+        data: {'url': url, 'response': e.response?.data?.toString() ?? ''},
+      ));
+      return;
+    }
+
+    // 5xx, timeouts, connection errors — full exception
+    Sentry.captureException(
+      e,
+      stackTrace: e.stackTrace,
+      hint: Hint.withMap({
+        'url': url,
+        'method': method,
+        'status': statusCode?.toString() ?? e.type.name,
+        'response': e.response?.data?.toString(),
+      }),
+    );
   }
 
   String? _extractCode(Response? response) {
