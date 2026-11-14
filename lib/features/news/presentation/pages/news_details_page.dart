@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_image.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 import '../../domain/entities/news.dart';
 
 class NewsDetailsPage extends StatefulWidget {
@@ -128,7 +129,7 @@ class _NewsDetailsPageState extends State<NewsDetailsPage> {
                 ),
                 child: Center(
                   child: Icon(
-                    Icons.arrow_back,
+                    backArrowIcon(context),
                     color: _opacity < 0.5 ? Colors.white : AppColors.primary,
                   ),
                 ),
@@ -529,8 +530,8 @@ class NewsVideoPageState extends State<NewsVideoPage> {
                           child: Align(
                             alignment: Alignment.topLeft,
                             child: IconButton(
-                              icon: const Icon(
-                                Icons.arrow_back,
+                              icon: Icon(
+                                backArrowIcon(context),
                                 color: Colors.white,
                               ),
                               onPressed: () => Navigator.of(context).pop(),

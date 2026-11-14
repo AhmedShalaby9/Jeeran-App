@@ -1,6 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 import 'property_widgets.dart';
 
 class PropertyGallery extends StatelessWidget {
@@ -70,8 +71,8 @@ class PropertyGallery extends StatelessWidget {
               children: [
                 GlassButton(
                   onTap: onBack,
-                  child: const Icon(
-                    Icons.arrow_back_ios_new_rounded,
+                  child: Icon(
+                    backArrowIcon(context),
                     size: 16,
                     color: Colors.white,
                   ),

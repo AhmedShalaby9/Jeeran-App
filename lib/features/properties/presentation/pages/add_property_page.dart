@@ -6,6 +6,7 @@ import '../../../../core/storage/app_storage.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_snackbar.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 // PACKAGES DISABLED: import '../../../subscription/presentation/bloc/subscription_bloc.dart';
 // PACKAGES DISABLED: import '../../../subscription/presentation/bloc/subscription_state.dart';
 import '../../../listing/listing_flow.dart';
@@ -276,9 +277,7 @@ class _WizardHeader extends StatelessWidget {
             child: Row(
               children: [
                 _HeaderBtn(
-                  icon: step > 1
-                      ? Icons.arrow_back_ios_new_rounded
-                      : Icons.close_rounded,
+                  icon: step > 1 ? backArrowIcon(context) : Icons.close_rounded,
                   onTap: step > 1 ? onBack : onClose,
                 ),
                 Expanded(

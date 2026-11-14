@@ -1,5 +1,6 @@
 ﻿import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 
 class NavIconButton extends StatelessWidget {
   final VoidCallback onTap;
@@ -17,8 +18,8 @@ class NavIconButton extends StatelessWidget {
           shape: BoxShape.circle,
           color: AppColors.navButtonBg,
         ),
-        child: const Icon(
-          Icons.arrow_back_ios_new_rounded,
+        child: Icon(
+          backArrowIcon(context),
           size: 16,
           color: AppColors.ink,
         ),

@@ -3,6 +3,7 @@ import '../../../follow/presentation/follow_pill.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 import '../../domain/entities/project.dart';
 
 class ProjectDetailsAppBar extends StatelessWidget {
@@ -24,7 +25,7 @@ class ProjectDetailsAppBar extends StatelessWidget {
               color: Colors.black.withValues(alpha: 0.35),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 18),
+            child: Icon(backArrowIcon(context), color: Colors.white, size: 18),
           ),
         ),
       ),

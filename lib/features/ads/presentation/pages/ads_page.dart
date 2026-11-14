@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_loading.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 import '../bloc/ads_bloc.dart';
 import '../bloc/ads_event.dart';
 import '../bloc/ads_state.dart';
@@ -47,7 +48,7 @@ class _AdsView extends StatelessWidget {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.ink),
+          icon: Icon(backArrowIcon(context), size: 20, color: AppColors.ink),
           onPressed: () => Navigator.pop(context),
         ),
       ),

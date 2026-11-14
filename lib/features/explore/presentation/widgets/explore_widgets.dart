@@ -21,6 +21,12 @@ bool isRtl(BuildContext context) =>
 IconData chevronIcon(BuildContext context) =>
     isRtl(context) ? Icons.chevron_left_rounded : Icons.chevron_right_rounded;
 
+/// A "go back" icon that points the reading-backward direction: left in
+/// English, right in Arabic — not a fixed glyph.
+IconData backArrowIcon(BuildContext context) => isRtl(context)
+    ? Icons.arrow_forward_ios_rounded
+    : Icons.arrow_back_ios_new_rounded;
+
 /// Network image with the design's soft placeholder gradient behind it.
 class Photo extends StatelessWidget {
   final String? url;

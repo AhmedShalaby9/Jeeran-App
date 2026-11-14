@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 
 class ProfileHeader extends StatelessWidget {
   final int step;
@@ -34,8 +35,8 @@ class ProfileHeader extends StatelessWidget {
                       color: AppColors.navButtonBg,
                       borderRadius: BorderRadius.circular(18),
                     ),
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
+                    child: Icon(
+                      backArrowIcon(context),
                       size: 16,
                       color: AppColors.ink,
                     ),

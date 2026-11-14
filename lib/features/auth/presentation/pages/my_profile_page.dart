@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../bloc/auth_bloc.dart';
@@ -407,9 +408,7 @@ class _MyProfilePageState extends State<MyProfilePage>
                 borderRadius: BorderRadius.circular(18),
               ),
               child: Icon(
-                _isEditing
-                    ? Icons.close_rounded
-                    : Icons.arrow_back_ios_new_rounded,
+                _isEditing ? Icons.close_rounded : backArrowIcon(context),
                 size: 16,
                 color: AppColors.ink,
               ),

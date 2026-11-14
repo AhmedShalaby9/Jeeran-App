@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../../../core/utils/app_colors.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 
@@ -127,7 +128,7 @@ class _RecaptchaWebViewPageState extends State<RecaptchaWebViewPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          icon: Icon(backArrowIcon(context), size: 20),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(

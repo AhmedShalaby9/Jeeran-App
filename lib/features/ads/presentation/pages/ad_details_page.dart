@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_loading.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 import '../../domain/entities/ad.dart';
 
 class AdDetailsPage extends StatelessWidget {
@@ -135,7 +136,7 @@ class _AdSliverAppBar extends StatelessWidget {
         child: CircleAvatar(
           backgroundColor: Colors.black38,
           child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Colors.white),
+            icon: Icon(backArrowIcon(context), size: 18, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
         ),

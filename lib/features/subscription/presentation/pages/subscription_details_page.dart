@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_snackbar.dart';
+import '../../../explore/presentation/widgets/explore_widgets.dart' show backArrowIcon;
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../home/presentation/pages/home_page.dart';
@@ -308,7 +309,7 @@ class _SubscriptionDetailsView extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.navButtonBg),
-                child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: AppColors.ink),
+                child: Icon(backArrowIcon(context), size: 16, color: AppColors.ink),
               ),
             ),
             Expanded(
