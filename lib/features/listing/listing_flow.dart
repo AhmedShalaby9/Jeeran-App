@@ -132,6 +132,8 @@ class _ListingFlowState extends State<ListingFlow> {
       false; // the seller chose their own first photo: do not make a cover for them
   bool _autoCoverTried =
       false; // a new listing gets a cover made once, on the way to the review
+  bool _autoRegenTried =
+      false; // an edit with an existing AI cover gets it refreshed once, on the way to the review
   bool _wentToReview = false; // an edit that sent the listing back for a check
   final Map<String, String> _uploaded =
       {}; // local path → URL, so nothing uploads twice
@@ -383,6 +385,7 @@ class _ListingFlowState extends State<ListingFlow> {
     setState(() => _view = ListingView.review);
     if (_band == null) _loadBand();
     _autoCover();
+    _autoRegenOnEdit();
   }
 
   /// Contact details start as the account's; whatever the lister already has (or edits) stays.
@@ -404,6 +407,15 @@ class _ListingFlowState extends State<ListingFlow> {
         _d.photoCount == 0)
       return;
     _autoCoverTried = true;
+    await _makeCover(quiet: true);
+  }
+
+  /// Editing a listing that already has a Jeeran-made cover refreshes it once, so it reflects any changed
+  /// photos or facts. Never runs when the seller chose their own photo (no cover to refresh).
+  Future<void> _autoRegenOnEdit() async {
+    if (!_editing || _autoRegenTried || _coverOwn || _d.coverUrl == null)
+      return;
+    _autoRegenTried = true;
     await _makeCover(quiet: true);
   }
 

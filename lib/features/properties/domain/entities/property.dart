@@ -22,6 +22,7 @@ class Property extends Equatable {
   final String? state;
   final int? projectId;
   final List<String> images;
+  final bool coverIsAi;
   final String? videoUrl;
   final bool isFeatured;
   final bool isActive;
@@ -81,6 +82,7 @@ class Property extends Equatable {
     this.state,
     this.projectId,
     required this.images,
+    this.coverIsAi = false,
     this.videoUrl,
     this.isFeatured = false,
     this.isActive = true,
@@ -182,6 +184,7 @@ class Property extends Equatable {
     state,
     projectId,
     images,
+    coverIsAi,
     videoUrl,
     isFeatured,
     isActive,

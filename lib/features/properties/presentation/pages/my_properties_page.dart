@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../../core/storage/app_storage.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/app_snackbar.dart';
 // PACKAGES DISABLED: import '../../../subscription/presentation/bloc/subscription_bloc.dart';
 // PACKAGES DISABLED: import '../../../subscription/presentation/bloc/subscription_event.dart';
 // PACKAGES DISABLED: import '../../../subscription/presentation/bloc/subscription_state.dart';
+import '../../../listing/listing_api.dart';
 import '../../../listing/listing_flow.dart';
 import '../../domain/entities/property.dart';
 import '../../domain/entities/property_filter_params.dart';
@@ -215,6 +218,64 @@ class _PropertyCardWithFeaturedToggleState
   bool _loading = false;
   bool _soldLoading = false;
   bool _deleteLoading = false;
+  bool _coverRegenLoading = false;
+
+  /// Admin-only: makes a fresh Jeeran cover from the listing's own photos, no other field touched.
+  Future<void> _regenerateCover() async {
+    if (_coverRegenLoading) return;
+    final p = widget.property;
+    final sources = p.coverIsAi ? p.images.skip(1).toList() : p.images;
+    if (sources.isEmpty) return;
+
+    setState(() => _coverRegenLoading = true);
+    try {
+      final url = await ListingApi(sl<ApiClient>()).cover(
+        sources,
+        details: {
+          if (p.projectId != null) 'compound_id': p.projectId,
+          if (p.price != null) 'price': double.tryParse(p.price!),
+          if (p.propertyType != null) 'type': p.propertyType,
+          if (p.propertyStatus != null) 'purpose': p.propertyStatus,
+          if (p.bedrooms != null) 'bedrooms': p.bedrooms,
+          if (p.bathrooms != null) 'bathrooms': p.bathrooms,
+          if (p.size != null) 'size': double.tryParse(p.size!),
+        },
+      );
+      final result = await sl<PropertyRepository>().updateProperty(p.id, {
+        'images': [url, ...sources],
+        'cover_is_ai': true,
+      });
+      if (!mounted) return;
+      result.fold(
+        (failure) => AppSnackbar.show(
+          context,
+          message: 'Failed to regenerate cover.',
+          icon: Icons.error_outline_rounded,
+          iconColor: AppColors.danger,
+        ),
+        (_) {
+          AppSnackbar.show(
+            context,
+            message: 'Cover regenerated.',
+            icon: Icons.auto_awesome_rounded,
+            iconColor: AppColors.primary,
+          );
+          widget.onFeaturedToggled();
+        },
+      );
+    } catch (_) {
+      if (mounted) {
+        AppSnackbar.show(
+          context,
+          message: 'Failed to regenerate cover.',
+          icon: Icons.error_outline_rounded,
+          iconColor: AppColors.danger,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _coverRegenLoading = false);
+    }
+  }
 
   Future<void> _confirmDelete() async {
     final confirmed = await showDialog<bool>(
@@ -456,6 +517,43 @@ class _PropertyCardWithFeaturedToggleState
             ),
           ),
         ),
+        if (AppStorage.isAdmin)
+          Positioned(
+            top: 50,
+            right: 50,
+            child: GestureDetector(
+              key: Key('regenerate-cover-${widget.property.id}'),
+              onTap: _coverRegenLoading ? null : _regenerateCover,
+              child: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.12),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: _coverRegenLoading
+                    ? const Padding(
+                        padding: EdgeInsets.all(9),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.auto_awesome_rounded,
+                        size: 17,
+                        color: AppColors.primary,
+                      ),
+              ),
+            ),
+          ),
         Positioned(
           top: 50,
           right: 8,
