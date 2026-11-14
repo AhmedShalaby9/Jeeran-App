@@ -1027,6 +1027,8 @@ class _ShortcutPageState extends State<ShortcutPage> {
                         style: const TextStyle(fontSize: 14, color: JV2.ink),
                         textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
+                          isCollapsed: true,
+                          isDense: true,
                           border: InputBorder.none,
                           filled: false,
                           enabledBorder: InputBorder.none,

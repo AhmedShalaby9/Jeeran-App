@@ -24,16 +24,23 @@ void main() async {
   AppConfig.setEnvironment(AppEnvironment.production);
   await AppStorage.init();
   if (AppStorage.isLoggedIn && AppStorage.userId != null) {
-    Sentry.configureScope((scope) => scope.setUser(SentryUser(id: '${AppStorage.userId}')));
+    Sentry.configureScope(
+      (scope) => scope.setUser(SentryUser(id: '${AppStorage.userId}')),
+    );
   }
-  NotificationService.instance.init().catchError((e) => debugPrint('[FCM] NotificationService init failed: $e'));
+  NotificationService.instance.init().catchError(
+    (e) => debugPrint('[FCM] NotificationService init failed: $e'),
+  );
   await EasyLocalization.ensureInitialized();
   await di.init();
   Bloc.observer = AppBlocObserver();
-  _registerFcmToken().catchError((e) => debugPrint('FCM registration failed: $e'));
+  _registerFcmToken().catchError(
+    (e) => debugPrint('FCM registration failed: $e'),
+  );
   await SentryFlutter.init(
     (options) {
-      options.dsn = 'https://a66054ec3e695498fa422ca808af06c7@o4512397080854528.ingest.de.sentry.io/4512397085507664';
+      options.dsn =
+          'https://a66054ec3e695498fa422ca808af06c7@o4512397080854528.ingest.de.sentry.io/4512397085507664';
       options.environment = AppConfig.isProduction ? 'production' : 'staging';
       options.tracesSampleRate = 1.0;
       options.sendDefaultPii = false;
@@ -43,7 +50,9 @@ void main() async {
         supportedLocales: const [Locale('en'), Locale('ar')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
-        startLocale: AppStorage.language != null ? Locale(AppStorage.language!) : const Locale('en'),
+        startLocale: AppStorage.language != null
+            ? Locale(AppStorage.language!)
+            : const Locale('en'),
         child: const JeeranApp(),
       ),
     ),
@@ -96,7 +105,10 @@ Future<void> _registerFcmToken() async {
   result.fold(
     (failure) {
       debugPrint('[FCM reg] API FAILED: $failure');
-      Sentry.captureMessage('FCM token registration failed: $failure', level: SentryLevel.warning);
+      Sentry.captureMessage(
+        'FCM token registration failed: $failure',
+        level: SentryLevel.warning,
+      );
     },
     (_) {
       debugPrint('[FCM reg] API success — token saved');
@@ -125,7 +137,9 @@ class JeeranApp extends StatelessWidget {
 
   ThemeData _buildTheme(BuildContext context) {
     final isArabic = context.locale.languageCode == 'ar';
-    final textTheme = isArabic ? GoogleFonts.cairoTextTheme() : GoogleFonts.ubuntuTextTheme();
+    final textTheme = isArabic
+        ? GoogleFonts.cairoTextTheme()
+        : GoogleFonts.ubuntuTextTheme();
 
     return ThemeData(
       colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
@@ -148,7 +162,10 @@ class JeeranApp extends StatelessWidget {
         filled: true,
         fillColor: JV2.surface,
         hintStyle: const TextStyle(color: JV2.inkMute, fontSize: 15),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 15,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: JV2.line),
