@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/services/app_settings_service.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/widgets/jv2.dart';
 
@@ -195,10 +196,12 @@ class _ContactUsPageState extends State<ContactUsPage> {
                 children: [
                   _ContactChip(
                     icon: FontAwesomeIcons.whatsapp,
-                    label: '+20 115 546 4666',
+                    label: AppSettingsService.instance.whatsappDisplay,
                     color: const Color(0xFF25D366),
                     onTap: () async {
-                      final uri = Uri.parse('https://wa.me/201155464666');
+                      final uri = Uri.parse(
+                        'https://wa.me/${AppSettingsService.instance.whatsappDigits}',
+                      );
                       if (await canLaunchUrl(uri)) {
                         await launchUrl(
                           uri,

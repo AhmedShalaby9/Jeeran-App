@@ -22,6 +22,7 @@ class AppSettings {
   final String? aiGuideVideoUrl;
   final bool aiGuideVideoVisible;
   final String? contactPhone;
+  final String? whatsappNumber;
 
   /// The Mapbox public token, kept on the server and served by the settings API.
   final String? mapboxToken;
@@ -53,6 +54,7 @@ class AppSettings {
     this.aiGuideVideoUrl,
     this.aiGuideVideoVisible = false,
     this.contactPhone,
+    this.whatsappNumber,
     this.mapboxToken,
     this.otpTestMode = false,
     this.networkInspectorEnabled = false,
@@ -79,6 +81,7 @@ class AppSettings {
         aiGuideVideoUrl: json['ai_guide_video_url'] as String?,
         aiGuideVideoVisible: (json['ai_guide_video_visible'] as bool?) ?? false,
         contactPhone: json['contact_phone'] as String?,
+        whatsappNumber: json['whatsapp_number'] as String?,
         mapboxToken: json['mapbox_token'] as String?,
         otpTestMode: json['otp_test_mode'] == true,
         networkInspectorEnabled: json['network_inspector_enabled'] == true,
@@ -119,6 +122,19 @@ class AppSettingsService {
     final p = settings?.contactPhone?.trim();
     return (p == null || p.isEmpty) ? null : p;
   }
+
+  /// Number used by every WhatsApp button, from the dashboard `whatsapp_number` setting.
+  /// Falls back to the number shipped with the app when the API has none (or is unreachable).
+  static const _fallbackWhatsapp = '201155464666';
+
+  /// Digits only (no +, spaces or dashes), ready for `wa.me/<digits>`.
+  String get whatsappDigits {
+    final d = (settings?.whatsappNumber ?? '').replaceAll(RegExp(r'\D'), '');
+    return d.isEmpty ? _fallbackWhatsapp : d;
+  }
+
+  /// Human-readable form, e.g. `+201155464666`.
+  String get whatsappDisplay => '+$whatsappDigits';
 
   /// The privacy policy, falling back to the terms text while none has been written.
   String? privacy(String locale) {
