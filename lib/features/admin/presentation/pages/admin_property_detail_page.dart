@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../core/utils/app_colors.dart';
 import '../../../../core/utils/format_utils.dart';
+import '../../../listing/listing_api.dart';
 import '../../../properties/domain/entities/property.dart';
+import '../../../properties/domain/repositories/property_repository.dart';
 import '../../../properties/presentation/bloc/add_property_bloc.dart';
 import '../../../properties/presentation/bloc/properties_bloc.dart';
 import '../../../properties/presentation/bloc/properties_event.dart';
@@ -23,11 +26,65 @@ class AdminPropertyDetailPage extends StatefulWidget {
 
 class _AdminPropertyDetailPageState extends State<AdminPropertyDetailPage> {
   late Property _property;
+  bool _isRegeneratingCover = false;
 
   @override
   void initState() {
     super.initState();
     _property = widget.property;
+  }
+
+  /// Makes a fresh Jeeran cover from the listing's own photos; no other field is touched.
+  Future<void> _regenerateCover() async {
+    if (_isRegeneratingCover) return;
+    final sources = _property.coverIsAi
+        ? _property.images.skip(1).toList()
+        : _property.images;
+    if (sources.isEmpty) return;
+
+    setState(() => _isRegeneratingCover = true);
+    try {
+      final url = await ListingApi(sl<ApiClient>()).cover(
+        sources,
+        details: {
+          if (_property.projectId != null) 'compound_id': _property.projectId,
+          if (_property.price != null)
+            'price': double.tryParse(_property.price!),
+          if (_property.propertyType != null)
+            'type': _property.propertyType,
+          if (_property.propertyStatus != null)
+            'purpose': _property.propertyStatus,
+          if (_property.bedrooms != null) 'bedrooms': _property.bedrooms,
+          if (_property.bathrooms != null) 'bathrooms': _property.bathrooms,
+          if (_property.size != null) 'size': double.tryParse(_property.size!),
+        },
+      );
+      final result = await sl<PropertyRepository>().updateProperty(
+        _property.id,
+        {'images': [url, ...sources], 'cover_is_ai': true},
+      );
+      if (!mounted) return;
+      result.fold(
+        (failure) => ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('admin.cover_regenerate_failed'.tr())),
+        ),
+        (_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('admin.cover_regenerated'.tr())),
+          );
+          // the list shows the cover — pop back so it refreshes and picks up the new one
+          Navigator.pop(context, true);
+        },
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('admin.cover_regenerate_failed'.tr())),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isRegeneratingCover = false);
+    }
   }
 
   void _showApproveDialog(BuildContext context) {
@@ -130,6 +187,19 @@ class _AdminPropertyDetailPageState extends State<AdminPropertyDetailPage> {
         backgroundColor: AppColors.background,
         appBar: AppBar(
           title: Text('admin.property_detail'.tr()),
+          actions: [
+            IconButton(
+              tooltip: 'admin.regenerate_cover'.tr(),
+              onPressed: _isRegeneratingCover ? null : _regenerateCover,
+              icon: _isRegeneratingCover
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.auto_awesome_rounded),
+            ),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           backgroundColor: AppColors.primary,
